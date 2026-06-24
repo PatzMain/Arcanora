@@ -7,6 +7,7 @@ import * as statsCmd from '../commands/player/stats.js';
 import * as prestigeCmd from '../commands/player/prestige.js';
 import * as inviteCmd from '../commands/player/invite.js';
 import * as tutorialCmd from '../commands/player/tutorial.js';
+import * as helpCmd from '../commands/player/help.js';
 import * as exploreCmd from '../commands/combat/explore.js';
 import * as fightCmd from '../commands/combat/fight.js';
 import * as bagCmd from '../commands/inventory/bag.js';
@@ -29,6 +30,7 @@ export const commandsList = [
   prestigeCmd,
   inviteCmd,
   tutorialCmd,
+  helpCmd,
   exploreCmd,
   fightCmd,
   bagCmd,

@@ -1,12 +1,8 @@
-import { SlashCommandBuilder, type ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, ComponentType, type ChatInputCommandInteraction } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getActiveQuests, getCompletedQuests, startQuest } from '../../database/queries/quest.js';
 import { successEmbed, errorEmbed, questEmbed } from '../../utils/embeds.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { questsCatalog } from '../../utils/catalog.js';
 
 export const data = new SlashCommandBuilder()
   .setName('quests')
@@ -44,7 +40,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const player = await findOrCreatePlayer(discordId, username);
 
     const subcommand = interaction.options.getSubcommand();
-    const catalog = loadQuestsCatalog();
+    const catalog = questsCatalog;
 
     if (subcommand === 'active') {
       const activeDb = await getActiveQuests(player.id);
@@ -74,8 +70,83 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         };
       }).filter(Boolean) as any[];
 
-      const embed = questEmbed(mappedQuests);
-      return interaction.editReply({ embeds: [embed] });
+      let currentPage = 1;
+      const pageSize = 3;
+      const totalPages = Math.max(1, Math.ceil(mappedQuests.length / pageSize));
+
+      const getQuestsPageEmbed = (pageNum: number) => {
+        const pageQuests = mappedQuests.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+        const embed = questEmbed(pageQuests);
+        embed.setFooter({ text: `Arcanora — Discord MMORPG • Active Quests Page ${pageNum}/${totalPages}` });
+        return embed;
+      };
+
+      const prevBtn = new ButtonBuilder()
+        .setCustomId('quests_prev')
+        .setLabel('◀️ Previous')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(currentPage <= 1);
+
+      const nextBtn = new ButtonBuilder()
+        .setCustomId('quests_next')
+        .setLabel('Next ▶️')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(currentPage >= totalPages);
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(prevBtn, nextBtn);
+
+      const response = await interaction.editReply({
+        embeds: [getQuestsPageEmbed(currentPage)],
+        components: totalPages > 1 ? [row] : []
+      });
+
+      if (totalPages > 1) {
+        while (true) {
+          try {
+            const btnInteraction = await response.awaitMessageComponent({
+              filter: (i) => i.user.id === interaction.user.id,
+              time: 60_000,
+              componentType: ComponentType.Button
+            });
+
+            if (btnInteraction.customId === 'quests_prev') {
+              currentPage = Math.max(1, currentPage - 1);
+            } else if (btnInteraction.customId === 'quests_next') {
+              currentPage = Math.min(totalPages, currentPage + 1);
+            }
+
+            prevBtn.setDisabled(currentPage <= 1);
+            nextBtn.setDisabled(currentPage >= totalPages);
+            const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevBtn, nextBtn);
+
+            await btnInteraction.update({
+              embeds: [getQuestsPageEmbed(currentPage)],
+              components: [updatedRow]
+            });
+          } catch (e) {
+            const prevDisabled = new ButtonBuilder()
+              .setCustomId('quests_prev')
+              .setLabel('◀️ Previous')
+              .setStyle(ButtonStyle.Secondary)
+              .setDisabled(true);
+
+            const nextDisabled = new ButtonBuilder()
+              .setCustomId('quests_next')
+              .setLabel('Next ▶️')
+              .setStyle(ButtonStyle.Secondary)
+              .setDisabled(true);
+
+            const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevDisabled, nextDisabled);
+            try {
+              await interaction.editReply({
+                components: [disabledRow]
+              });
+            } catch {}
+            break;
+          }
+        }
+      }
+      return;
     }
 
     if (subcommand === 'board') {
@@ -114,7 +185,67 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
       const embed = successEmbed('Quest Board', description);
       embed.setColor(0x3B82F6); // Blue info color
-      return interaction.editReply({ embeds: [embed] });
+
+      const selectMenuOptions = available.map((q) => ({
+        label: q.name,
+        description: q.description.slice(0, 100),
+        value: q.id
+      }));
+
+      const row = selectMenuOptions.length > 0
+        ? new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            new StringSelectMenuBuilder()
+              .setCustomId('quests_board_select')
+              .setPlaceholder('Select a quest to accept')
+              .addOptions(selectMenuOptions)
+          )
+        : null;
+
+      const response = await interaction.editReply({
+        embeds: [embed],
+        components: row ? [row] : []
+      });
+
+      if (row) {
+        try {
+          const selectInteraction = await response.awaitMessageComponent({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: 60_000,
+            componentType: ComponentType.StringSelect
+          });
+
+          const questId = selectInteraction.values[0]!;
+          const quest = catalog.find((q) => q.id === questId);
+
+          if (!quest) {
+            const err = errorEmbed('Quest Not Found', `No quest matching ID **"${questId}"** was found on the board.`);
+            await selectInteraction.update({ embeds: [err], components: [] });
+            return;
+          }
+
+          // Start quest
+          await startQuest(player.id, quest.id);
+
+          const successEm = successEmbed(
+            'Quest Accepted',
+            `You have accepted the quest: **${quest.name}**!\n\n` +
+            `*Track your progress using \`/quests active\`.*`
+          );
+          await selectInteraction.update({ embeds: [successEm], components: [] });
+        } catch (e) {
+          // Timeout, disable the select menu
+          const disabledMenu = new StringSelectMenuBuilder()
+            .setCustomId('quests_board_select')
+            .setPlaceholder('Quest board timed out')
+            .setDisabled(true)
+            .addOptions({ label: 'Timed out', value: 'timeout' });
+          const disabledRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(disabledMenu);
+          try {
+            await interaction.editReply({ components: [disabledRow] });
+          } catch {}
+        }
+      }
+      return;
     }
 
     if (subcommand === 'accept') {
@@ -158,8 +289,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       );
       return interaction.editReply({ embeds: [embed] });
     }
-
-    return;
   } catch (error: any) {
     console.error(error);
     const embed = errorEmbed('Quest Board Error', 'Failed to retrieve quest board data.');
@@ -168,11 +297,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } else {
       await interaction.reply({ embeds: [embed], ephemeral: true });
     }
-    return;
   }
 }
 
-function loadQuestsCatalog(): any[] {
-  const filePath = join(process.cwd(), 'data', 'quests.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
-}
+

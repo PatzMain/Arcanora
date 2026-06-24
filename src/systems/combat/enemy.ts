@@ -1,11 +1,8 @@
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { cacheGet, cacheSet } from '../../utils/cache.js';
+import { enemiesCatalog } from '../../utils/catalog.js';
 import { rollChance, rollBetween } from '../../utils/random.js';
 import type { CombatState, EnemyStats, EnemyAbility } from './engine.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
 
 export interface EnemyData {
   id: string;
@@ -55,23 +52,11 @@ const ENEMIES_CACHE_KEY = 'enemies_catalog';
  * Loads all enemy definitions from enemies.json, caching for performance.
  */
 export function loadEnemies(): EnemyData[] {
-  const cached = cacheGet<EnemyData[]>(ENEMIES_CACHE_KEY);
-  if (cached) return cached;
-
-  const filePath = join(process.cwd(), 'data', 'enemies.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const enemies: EnemyData[] = JSON.parse(raw);
-
-  cacheSet(ENEMIES_CACHE_KEY, enemies);
-  return enemies;
+  return enemiesCatalog;
 }
 
-/**
- * Retrieves a single enemy by its unique ID.
- */
 export function getEnemyById(id: string): EnemyData | undefined {
-  const enemies = loadEnemies();
-  return enemies.find((e) => e.id === id);
+  return enemiesCatalog.find((e) => e.id === id);
 }
 
 /**

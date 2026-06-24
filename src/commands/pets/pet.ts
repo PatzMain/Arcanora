@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, type ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, type ChatInputCommandInteraction } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, unequipItem, removeItem } from '../../database/queries/inventory.js';
 import { db } from '../../database/client.js';
@@ -6,7 +6,7 @@ import { playerEquipment, inventory } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { loadPets, getPetPassiveStats } from '../../systems/pets.js';
 import { deductGold } from '../../economy/currency.js';
-import { successEmbed, errorEmbed } from '../../utils/embeds.js';
+import { successEmbed, errorEmbed, petEmbed } from '../../utils/embeds.js';
 
 export const data = new SlashCommandBuilder()
   .setName('pet')
@@ -72,21 +72,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (subcommand === 'info') {
       const passive = getPetPassiveStats(petDef, currentPetLevel);
 
-      const embed = successEmbed(
-        `🐾 Companion: ${petDef.name}`,
-        `*${petDef.description}*\n\n` +
-        `⭐ Pet Level: **Lv.${currentPetLevel}** / **${petDef.maxLevel}**\n` +
-        `🏅 Rarity: **${petDef.rarity.toUpperCase()}**\n\n` +
-        `**Passive Stat Bonuses:**\n` +
-        `⚔️ Attack: +**${passive.attack}**\n` +
-        `🛡️ Defense: +**${passive.defense}**\n` +
-        `❤️ Max HP: +**${passive.hpMax}**\n` +
-        `🍀 Luck: +**${passive.luck}**\n\n` +
-        `**Combat Ability:**\n` +
-        `🌀 **${petDef.ability.name}** (Cooldown: ${petDef.ability.cooldown} turns)\n` +
-        `*${petDef.ability.description}*`
+      const embed = petEmbed(
+        {
+          name: petDef.name,
+          description: petDef.description,
+          level: currentPetLevel,
+          maxLevel: petDef.maxLevel,
+          rarity: petDef.rarity,
+          ability: petDef.ability,
+        },
+        passive,
       );
-      embed.setColor(0x10B981); // Green companion theme
       return interaction.editReply({ embeds: [embed] });
     }
 
@@ -133,16 +129,82 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     if (subcommand === 'release') {
-      // Unequip first
-      await unequipItem(player.id, 'pet');
-      // Delete item from inventory
-      await removeItem(player.id, petInventoryRow.id, 1);
-
-      const embed = successEmbed(
-        'Companion Released',
-        `You released **${petDef.name}** back into the wild. You watched them disappear into the trees.`
+      const confirmEmbed = errorEmbed(
+        'Confirm Companion Release',
+        `Are you sure you want to release **${petDef.name}** (Lv.${currentPetLevel}) back into the wild?\n\n` +
+        `⚠️ **This action is permanent and cannot be undone!** You will lose this pet forever.`
       );
-      return interaction.editReply({ embeds: [embed] });
+      confirmEmbed.setColor(0xF59E0B); // Amber warning color
+
+      const confirmBtn = new ButtonBuilder()
+        .setCustomId('pet_release_confirm')
+        .setLabel('Yes, Release Pet')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji('🐾');
+
+      const cancelBtn = new ButtonBuilder()
+        .setCustomId('pet_release_cancel')
+        .setLabel('Cancel')
+        .setStyle(ButtonStyle.Secondary);
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(confirmBtn, cancelBtn);
+
+      const response = await interaction.editReply({
+        embeds: [confirmEmbed],
+        components: [row]
+      });
+
+      try {
+        const confirmation = await response.awaitMessageComponent({
+          filter: (i) => i.user.id === interaction.user.id,
+          time: 60_000,
+          componentType: ComponentType.Button
+        });
+
+        const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          confirmBtn.setDisabled(true),
+          cancelBtn.setDisabled(true)
+        );
+
+        if (confirmation.customId === 'pet_release_confirm') {
+          // Double check that the player still has the pet equipped (concurrency safety)
+          const currentEquip = await db.query.playerEquipment.findFirst({
+            where: eq(playerEquipment.playerId, player.id),
+          });
+          if (!currentEquip || currentEquip.pet !== equip.pet) {
+            const embed = errorEmbed('Release Denied', 'Your pet status has changed.');
+            await confirmation.update({ embeds: [embed], components: [disabledRow] });
+            return;
+          }
+
+          // Unequip first
+          await unequipItem(player.id, 'pet');
+          // Delete item from inventory
+          await removeItem(player.id, petInventoryRow.id, 1);
+
+          const successEm = successEmbed(
+            'Companion Released',
+            `You released **${petDef.name}** back into the wild. You watched them disappear into the trees.`
+          );
+          await confirmation.update({ embeds: [successEm], components: [disabledRow] });
+        } else {
+          const cancelEmbed = errorEmbed('Release Cancelled', `You chose to keep **${petDef.name}**.`);
+          cancelEmbed.setColor(0x9CA3AF); // Neutral grey
+          await confirmation.update({ embeds: [cancelEmbed], components: [disabledRow] });
+        }
+      } catch (e) {
+        const disabledRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          confirmBtn.setDisabled(true),
+          cancelBtn.setDisabled(true)
+        );
+        const timeoutEmbed = errorEmbed('Release Timed Out', 'No response received within 60 seconds. Pet release cancelled.');
+        timeoutEmbed.setColor(0x9CA3AF);
+        await interaction.editReply({
+          embeds: [timeoutEmbed],
+          components: [disabledRow]
+        });
+      }
+      return;
     }
 
     return;
@@ -154,6 +216,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } else {
       await interaction.reply({ embeds: [embed], ephemeral: true });
     }
-    return;
   }
 }

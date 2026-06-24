@@ -6,8 +6,22 @@ import { handleShopInteraction } from '../commands/economy/shop.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
 import { getPlayerByDiscordId } from '../database/queries/player.js';
+import { checkRateLimit } from '../utils/rateLimit.js';
 
 export async function execute(interaction: Interaction) {
+  // Rate Limit Check
+  const rateLimitStatus = checkRateLimit(interaction.user.id);
+  if (rateLimitStatus.limited) {
+    if (interaction.isRepliable()) {
+      const seconds = (rateLimitStatus.retryAfterMs / 1000).toFixed(1);
+      const embed = errorEmbed(
+        'Slow Down!',
+        `You are performing actions too quickly. Please wait **${seconds}** seconds.`
+      );
+      await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+    }
+    return;
+  }
   // 1. Handle Slash Commands
   if (interaction.isChatInputCommand()) {
     const cmdName = interaction.commandName;
@@ -20,7 +34,7 @@ export async function execute(interaction: Interaction) {
 
     try {
       // Access Control: check if player profile exists
-      if (cmdName !== 'tutorial' && cmdName !== 'invite') {
+      if (cmdName !== 'tutorial' && cmdName !== 'invite' && cmdName !== 'help') {
         const player = await getPlayerByDiscordId(interaction.user.id);
         if (!player) {
           const embed = errorEmbed(

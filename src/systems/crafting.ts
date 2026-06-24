@@ -1,10 +1,5 @@
 import { rollChance, rollBetween } from '../utils/random.js';
-import { cacheGet, cacheSet } from '../utils/cache.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { recipesCatalog } from '../utils/catalog.js';
 
 /**
  * A crafting recipe definition.
@@ -27,23 +22,11 @@ const RECIPES_CACHE_KEY = 'recipes_data';
  * Loads all crafting recipes from recipes.json, caching for performance.
  */
 export function loadRecipes(): Recipe[] {
-  const cached = cacheGet<Recipe[]>(RECIPES_CACHE_KEY);
-  if (cached) return cached;
-
-  const filePath = join(process.cwd(), 'data', 'recipes.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const recipes: Recipe[] = JSON.parse(raw);
-
-  cacheSet(RECIPES_CACHE_KEY, recipes);
-  return recipes;
+  return recipesCatalog;
 }
 
-/**
- * Retrieves a single recipe by its unique ID.
- */
 export function getRecipeById(id: string): Recipe | undefined {
-  const recipes = loadRecipes();
-  return recipes.find((r) => r.id === id);
+  return recipesCatalog.find((r) => r.id === id);
 }
 
 /**

@@ -1,12 +1,10 @@
-import { cacheGet, cacheSet } from '../utils/cache.js';
+import { itemsCatalog } from '../utils/catalog.js';
 import { deductGold, awardGold } from './currency.js';
 import { addItem, removeItem } from '../database/queries/inventory.js';
 import { db } from '../database/client.js';
 import { players, inventory } from '../database/schema.js';
 import { eq, and } from 'drizzle-orm';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+
 
 // ─── TYPES ───────────────────────────────────────────────────────
 
@@ -31,17 +29,7 @@ const CACHE_KEY = 'shop:items_catalog';
  * Returns the cached copy on subsequent calls within the TTL window.
  */
 function loadItemCatalog(): ShopItem[] {
-  const cached = cacheGet<ShopItem[]>(CACHE_KEY);
-  if (cached) return cached;
-
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const items: ShopItem[] = JSON.parse(raw);
-
-  // Cache for 10 minutes — item data is essentially static
-  cacheSet(CACHE_KEY, items, 600);
-  return items;
+  return itemsCatalog;
 }
 
 // ─── SHOP BROWSING ───────────────────────────────────────────────

@@ -6,9 +6,7 @@ import {
   ButtonStyle,
   StringSelectMenuBuilder
 } from 'discord.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { itemsCatalog } from '../../utils/catalog.js';
 import { eq, and } from 'drizzle-orm';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, addItem } from '../../database/queries/inventory.js';
@@ -30,7 +28,7 @@ import {
   lootEmbed
 } from '../../utils/embeds.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
 
 export const data = new SlashCommandBuilder()
   .setName('explore')
@@ -125,7 +123,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (encounter.type === 'treasure') {
       // Fetch stats to use luck
       const equippedDbItems = await getEquippedItems(player.id);
-      const itemsCatalog = loadItemsCatalog();
+
       const equippedItemsList = equippedDbItems.map((dbItem) => {
         const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
         return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
@@ -179,7 +177,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // Load player stats & equipment
     const equippedDbItems = await getEquippedItems(player.id);
-    const itemsCatalog = loadItemsCatalog();
+
     const equippedItemsList = equippedDbItems.map((dbItem) => {
       const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
       return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
@@ -271,11 +269,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 }
 
-// Helper to load items catalog statically (same as resolver)
-function loadItemsCatalog(): any[] {
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
-}
+
 
 async function getCombatSkillsRow(playerId: string, playerClass: string) {
   try {
@@ -309,7 +303,7 @@ async function getCombatSkillsRow(playerId: string, playerClass: string) {
 async function getCombatItemsRow(playerId: string) {
   try {
     const dbItems = await db.select().from(inventory).where(and(eq(inventory.playerId, playerId), eq(inventory.equipped, false)));
-    const catalog = loadItemsCatalog();
+    const catalog = itemsCatalog;
 
     const consumables = dbItems.map(dbItem => {
       const def = catalog.find(i => i.id === dbItem.itemId);

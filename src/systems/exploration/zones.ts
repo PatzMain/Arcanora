@@ -1,10 +1,5 @@
-import { cacheGet, cacheSet } from '../../utils/cache.js';
 import { weightedRandom, type WeightedEntry } from '../../utils/random.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { zonesCatalog } from '../../utils/catalog.js';
 
 /**
  * Represents the data structure for a game zone.
@@ -34,15 +29,7 @@ const CACHE_KEY = 'zones_data';
  * Loads zone definitions from zones.json, caching the result for performance.
  */
 export function loadZones(): ZoneData[] {
-  const cached = cacheGet<ZoneData[]>(CACHE_KEY);
-  if (cached) return cached;
-
-  const filePath = join(process.cwd(), 'data', 'zones.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const zones: ZoneData[] = JSON.parse(raw);
-
-  cacheSet(CACHE_KEY, zones);
-  return zones;
+  return zonesCatalog;
 }
 
 /**

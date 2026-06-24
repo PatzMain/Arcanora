@@ -1,4 +1,13 @@
-import { SlashCommandBuilder, type ChatInputCommandInteraction } from 'discord.js';
+import {
+  SlashCommandBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  ComponentType,
+  type ChatInputCommandInteraction,
+  type MessageActionRowComponentBuilder,
+} from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import {
   createGuild,
@@ -129,7 +138,139 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         playerRank
       );
 
-      return interaction.editReply({ embeds: [embed] });
+      // ── Build interactive action rows based on player's relationship to the guild ──
+      const actionRows: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+
+      if (playerRank === 'non-member') {
+        // Non-member viewing a guild → offer a Join button (if guild isn't full)
+        if (guildInfo.memberCount < 30) {
+          const joinBtn = new ButtonBuilder()
+            .setCustomId('guild_join')
+            .setLabel('Join Guild')
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('🤝');
+          actionRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(joinBtn));
+        }
+      } else if (playerRank === 'leader') {
+        // Leader viewing own guild → Leave (disband) + Kick dropdown
+        const leaveBtn = new ButtonBuilder()
+          .setCustomId('guild_leave')
+          .setLabel('Disband Guild')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('🚪');
+        actionRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(leaveBtn));
+
+        // Kick select menu (only if there are non-leader members)
+        const kickable = members.filter((m) => m.rank !== 'leader');
+        if (kickable.length > 0) {
+          const kickMenu = new StringSelectMenuBuilder()
+            .setCustomId('guild_kick')
+            .setPlaceholder('⚔️ Kick a member…')
+            .addOptions(
+              kickable.slice(0, 25).map((m) => ({
+                label: m.username,
+                description: `Lv.${m.level} — ${m.rank}`,
+                value: m.playerId,
+              }))
+            );
+          actionRows.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(kickMenu));
+        }
+      } else {
+        // Regular member or officer viewing own guild → Leave button
+        const leaveBtn = new ButtonBuilder()
+          .setCustomId('guild_leave')
+          .setLabel('Leave Guild')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('🚪');
+        actionRows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(leaveBtn));
+      }
+
+      const response = await interaction.editReply({
+        embeds: [embed],
+        components: actionRows.length > 0 ? actionRows : [],
+      });
+
+      // ── Await a single component interaction (60s timeout) ──
+      if (actionRows.length > 0) {
+        try {
+          const collected = await response.awaitMessageComponent({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: 60_000,
+          });
+
+          // Disable all components after interaction
+          const disabledRows = actionRows.map((row) => {
+            const newRow = ActionRowBuilder.from(row);
+            newRow.components.forEach((c: any) => c.setDisabled(true));
+            return newRow as ActionRowBuilder<MessageActionRowComponentBuilder>;
+          });
+
+          if (collected.customId === 'guild_join') {
+            // Verify they still have no guild
+            const currentGuild = await getPlayerGuild(player.id);
+            if (currentGuild) {
+              const errEmbed = errorEmbed('Already in Guild', 'You must leave your current guild first.');
+              await collected.update({ embeds: [errEmbed], components: disabledRows });
+              return;
+            }
+            // Re-check capacity
+            const freshGuild = await getGuildByName(guildInfo.name);
+            if (!freshGuild || freshGuild.memberCount >= 30) {
+              const errEmbed = errorEmbed('Guild Full', 'This guild is now at maximum capacity.');
+              await collected.update({ embeds: [errEmbed], components: disabledRows });
+              return;
+            }
+            await addMember(guildInfo.id, player.id);
+            const joinEmbed = successEmbed('Guild Joined', `You have joined **${guildInfo.name}**! 🎉`);
+            await collected.update({ embeds: [joinEmbed], components: disabledRows });
+
+          } else if (collected.customId === 'guild_leave') {
+            const currentGuild = await getPlayerGuild(player.id);
+            if (!currentGuild) {
+              const errEmbed = errorEmbed('No Guild', 'You are no longer in a guild.');
+              await collected.update({ embeds: [errEmbed], components: disabledRows });
+              return;
+            }
+            if (currentGuild.rank === 'leader') {
+              await db.delete(guilds).where(eq(guilds.id, currentGuild.guildId));
+              const disbandEmbed = successEmbed(
+                'Guild Disbanded',
+                `You have disbanded **${currentGuild.guildName}**.\n*All members have been removed.*`
+              );
+              await collected.update({ embeds: [disbandEmbed], components: disabledRows });
+            } else {
+              await removeMember(currentGuild.guildId, player.id);
+              const leftEmbed = successEmbed('Guild Left', `You have left **${currentGuild.guildName}**.`);
+              await collected.update({ embeds: [leftEmbed], components: disabledRows });
+            }
+
+          } else if (collected.customId === 'guild_kick' && collected.isStringSelectMenu()) {
+            const targetPlayerId = collected.values[0];
+            const currentGuild = await getPlayerGuild(player.id);
+            if (!currentGuild || currentGuild.rank !== 'leader') {
+              const errEmbed = errorEmbed('Unauthorized', 'You are no longer the guild leader.');
+              await collected.update({ embeds: [errEmbed], components: disabledRows });
+              return;
+            }
+            const targetMember = members.find((m) => m.playerId === targetPlayerId);
+            await removeMember(currentGuild.guildId, targetPlayerId);
+            const kickEmbed = successEmbed(
+              'Member Kicked',
+              `Kicked **${targetMember?.username ?? 'Unknown'}** from the guild.`
+            );
+            await collected.update({ embeds: [kickEmbed], components: disabledRows });
+          }
+        } catch {
+          // Timeout — disable all components silently
+          const disabledRows = actionRows.map((row) => {
+            const newRow = ActionRowBuilder.from(row);
+            newRow.components.forEach((c: any) => c.setDisabled(true));
+            return newRow as ActionRowBuilder<MessageActionRowComponentBuilder>;
+          });
+          await interaction.editReply({ embeds: [embed], components: disabledRows }).catch(() => {});
+        }
+      }
+      return;
     }
 
     if (subcommand === 'create') {

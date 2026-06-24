@@ -1,9 +1,4 @@
-import { cacheGet, cacheSet } from '../utils/cache.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { achievementsCatalog } from '../utils/catalog.js';
 
 /**
  * Represents an achievement definition.
@@ -43,23 +38,11 @@ const ACHIEVEMENTS_CACHE_KEY = 'achievements_data';
  * Loads all achievement definitions from achievements.json, caching for performance.
  */
 export function loadAchievements(): AchievementData[] {
-  const cached = cacheGet<AchievementData[]>(ACHIEVEMENTS_CACHE_KEY);
-  if (cached) return cached;
-
-  const filePath = join(process.cwd(), 'data', 'achievements.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const achievements: AchievementData[] = JSON.parse(raw);
-
-  cacheSet(ACHIEVEMENTS_CACHE_KEY, achievements);
-  return achievements;
+  return achievementsCatalog;
 }
 
-/**
- * Retrieves a single achievement by its unique ID.
- */
 export function getAchievementById(id: string): AchievementData | undefined {
-  const achievements = loadAchievements();
-  return achievements.find((a) => a.id === id);
+  return achievementsCatalog.find((a) => a.id === id);
 }
 
 /**

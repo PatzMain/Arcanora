@@ -2,11 +2,7 @@ import { SlashCommandBuilder, PermissionFlagsBits, type ChatInputCommandInteract
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { addItem } from '../../database/queries/inventory.js';
 import { successEmbed, errorEmbed } from '../../utils/embeds.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { itemsCatalog } from '../../utils/catalog.js';
 
 export const data = new SlashCommandBuilder()
   .setName('give-item')
@@ -50,7 +46,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Load or register the target player
     const targetPlayer = await findOrCreatePlayer(targetUser.id, targetUser.username);
 
-    const catalog = loadItemsCatalog();
+    const catalog = itemsCatalog;
     const itemDef = catalog.find(
       (i) =>
         i.id.toLowerCase() === inputName ||
@@ -81,9 +77,4 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await interaction.reply({ embeds: [embed], ephemeral: true });
     }
   }
-}
-
-function loadItemsCatalog(): any[] {
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
 }

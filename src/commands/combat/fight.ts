@@ -15,11 +15,9 @@ import { getEnemyById } from '../../systems/combat/enemy.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { combatEmbed, errorEmbed } from '../../utils/embeds.js';
 import { SKILLS } from '../../systems/combat/skills.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { itemsCatalog } from '../../utils/catalog.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
 
 export const data = new SlashCommandBuilder()
   .setName('fight')
@@ -70,7 +68,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // Load player stats & equipment
     const equippedDbItems = await getEquippedItems(player.id);
-    const itemsCatalog = loadItemsCatalog();
+
     const equippedItemsList = equippedDbItems.map((dbItem) => {
       const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
       return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
@@ -130,10 +128,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 }
 
-function loadItemsCatalog(): any[] {
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
-}
+
 
 async function getCombatSkillsRow(playerId: string, playerClass: string) {
   try {
@@ -167,7 +162,7 @@ async function getCombatSkillsRow(playerId: string, playerClass: string) {
 async function getCombatItemsRow(playerId: string) {
   try {
     const dbItems = await db.select().from(inventory).where(and(eq(inventory.playerId, playerId), eq(inventory.equipped, false)));
-    const catalog = loadItemsCatalog();
+    const catalog = itemsCatalog;
 
     const consumables = dbItems.map(dbItem => {
       const def = catalog.find(i => i.id === dbItem.itemId);

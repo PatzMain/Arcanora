@@ -16,8 +16,7 @@ import { successEmbed, errorEmbed } from '../../utils/embeds.js';
 import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { itemsCatalog } from '../../utils/catalog.js';
 
 export const data = new SlashCommandBuilder()
   .setName('shop')
@@ -152,7 +151,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const inputName = interaction.options.getString('item', true).toLowerCase();
       const quantity = interaction.options.getInteger('quantity') || 1;
 
-      const catalog = loadItemsCatalog();
+      const catalog = itemsCatalog;
 
       // Find the item definition
       const itemDef = catalog.find(
@@ -261,7 +260,4 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
   }
 }
 
-function loadItemsCatalog(): any[] {
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
-}
+

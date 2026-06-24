@@ -1,10 +1,5 @@
 import { rollChance, rollBetween } from '../../utils/random.js';
-import { cacheGet, cacheSet } from '../../utils/cache.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { itemsCatalog } from '../../utils/catalog.js';
 
 /**
  * Represents a resolved loot drop with item and quantity.
@@ -30,23 +25,11 @@ const ITEMS_CACHE_KEY = 'items_data';
  * Loads the full item catalog from items.json, caching for performance.
  */
 export function loadItems(): any[] {
-  const cached = cacheGet<any[]>(ITEMS_CACHE_KEY);
-  if (cached) return cached;
-
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const items: any[] = JSON.parse(raw);
-
-  cacheSet(ITEMS_CACHE_KEY, items);
-  return items;
+  return itemsCatalog;
 }
 
-/**
- * Retrieves a single item by its ID from the item catalog.
- */
 export function getItemData(itemId: string): any {
-  const items = loadItems();
-  return items.find((item: any) => item.id === itemId);
+  return itemsCatalog.find((item: any) => item.id === itemId);
 }
 
 /**

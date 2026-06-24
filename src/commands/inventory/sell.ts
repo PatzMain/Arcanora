@@ -5,11 +5,9 @@ import { db } from '../../database/client.js';
 import { inventory } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { successEmbed, errorEmbed } from '../../utils/embeds.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { itemsCatalog } from '../../utils/catalog.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
 
 export const data = new SlashCommandBuilder()
   .setName('sell')
@@ -47,7 +45,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       .from(inventory)
       .where(eq(inventory.playerId, player.id));
 
-    const catalog = loadItemsCatalog();
+    const catalog = itemsCatalog;
 
     // Find non-equipped item
     const targetItem = dbInventory.find((dbItem) => {
@@ -106,7 +104,4 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 }
 
-function loadItemsCatalog(): any[] {
-  const filePath = join(process.cwd(), 'data', 'items.json');
-  return JSON.parse(readFileSync(filePath, 'utf-8'));
-}
+

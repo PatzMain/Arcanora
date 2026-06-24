@@ -1,9 +1,4 @@
-import { cacheGet, cacheSet } from '../utils/cache.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { petsCatalog } from '../utils/catalog.js';
 
 /**
  * Represents a pet definition from the data files.
@@ -35,23 +30,11 @@ const PETS_CACHE_KEY = 'pets_data';
  * Loads all pet definitions from pets.json, caching for performance.
  */
 export function loadPets(): PetData[] {
-  const cached = cacheGet<PetData[]>(PETS_CACHE_KEY);
-  if (cached) return cached;
-
-  const filePath = join(process.cwd(), 'data', 'pets.json');
-  const raw = readFileSync(filePath, 'utf-8');
-  const pets: PetData[] = JSON.parse(raw);
-
-  cacheSet(PETS_CACHE_KEY, pets);
-  return pets;
+  return petsCatalog;
 }
 
-/**
- * Retrieves a single pet by its unique ID.
- */
 export function getPetById(id: string): PetData | undefined {
-  const pets = loadPets();
-  return pets.find((p) => p.id === id);
+  return petsCatalog.find((p) => p.id === id);
 }
 
 /**
