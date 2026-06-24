@@ -1,6 +1,8 @@
 import { type Interaction, MessageFlags } from 'discord.js';
 import { commandsList } from './ready.js';
 import { handleCombatInteraction } from '../systems/combat/handler.js';
+import { handleTutorialInteraction } from '../commands/player/tutorial.js';
+import { handleShopInteraction } from '../commands/economy/shop.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
 import { getPlayerByDiscordId } from '../database/queries/player.js';
@@ -45,13 +47,27 @@ export async function execute(interaction: Interaction) {
     return;
   }
 
-  // 2. Handle Combat Interactions (Buttons & Select Menus)
+  // 2. Handle Component Interactions (Buttons & Select Menus)
   if (interaction.isButton() || interaction.isStringSelectMenu()) {
-    if (interaction.customId.startsWith('combat_')) {
+    const customId = interaction.customId;
+
+    if (customId.startsWith('combat_')) {
       try {
         await handleCombatInteraction(interaction);
       } catch (error) {
-        logger.error({ error, customId: interaction.customId }, 'Error processing combat interaction');
+        logger.error({ error, customId }, 'Error processing combat interaction');
+      }
+    } else if (customId.startsWith('shop_')) {
+      try {
+        await handleShopInteraction(interaction);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing shop interaction');
+      }
+    } else if (customId.startsWith('tutorial_') && interaction.isStringSelectMenu()) {
+      try {
+        await handleTutorialInteraction(interaction);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing tutorial interaction');
       }
     }
   }
