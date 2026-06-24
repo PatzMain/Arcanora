@@ -1,0 +1,13 @@
+{
+  "id": "ach_guild_join",
+  "name": "Strength in Numbers",
+  "description": "Join or create a Guild.",
+  "condition": {
+    "type": "guild_joined",
+    "value": 1
+  },
+  "rewards": {
+    "gold": 200
+  },
+  "hidden": false
+}

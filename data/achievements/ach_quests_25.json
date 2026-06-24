@@ -1,0 +1,15 @@
+{
+  "id": "ach_quests_25",
+  "name": "Hero of the People",
+  "description": "Complete 25 quests.",
+  "condition": {
+    "type": "quests_completed",
+    "value": 25
+  },
+  "rewards": {
+    "gold": 1000,
+    "gems": 10,
+    "title": "Adventurer"
+  },
+  "hidden": false
+}

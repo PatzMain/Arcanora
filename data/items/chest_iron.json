@@ -1,0 +1,15 @@
+{
+  "id": "chest_iron",
+  "name": "Soldier's Iron Plate",
+  "description": "Smelted iron chestplate. Rather heavy.",
+  "type": "chest",
+  "rarity": "uncommon",
+  "stats": {
+    "defense": 10,
+    "hpMax": 40
+  },
+  "buyPrice": 300,
+  "sellPrice": 100,
+  "levelReq": 5,
+  "maxDurability": 80
+}

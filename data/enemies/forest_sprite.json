@@ -1,0 +1,38 @@
+{
+  "id": "forest_sprite",
+  "name": "Forest Sprite",
+  "description": "A playful but mischievous forest spirit that flits through the meadows.",
+  "zone": "verdant_meadows",
+  "rarity": "normal",
+  "level": 1,
+  "stats": {
+    "hp": 50,
+    "attack": 10,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "spark",
+      "name": "Spark",
+      "damage": 12,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_herbs",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "potion_health_small",
+      "dropRate": 15,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 15,
+  "goldReward": 10
+}

@@ -1,0 +1,16 @@
+{
+  "id": "gloves_crystal",
+  "name": "Crystalline Mittens",
+  "description": "Gloves that sparkle with frost magic.",
+  "type": "gloves",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "manaMax": 20,
+    "speed": 10
+  },
+  "buyPrice": 420,
+  "sellPrice": 150,
+  "levelReq": 12,
+  "maxDurability": 90
+}

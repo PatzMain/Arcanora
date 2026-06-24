@@ -1,0 +1,17 @@
+{
+  "id": "boots_abyssal",
+  "name": "Void Walker Boots",
+  "description": "Boots that hover slightly off the ground, negating friction.",
+  "type": "boots",
+  "rarity": "mythic",
+  "stats": {
+    "defense": 20,
+    "speed": 10,
+    "critChance": 4,
+    "luck": 10
+  },
+  "buyPrice": 5200,
+  "sellPrice": 2100,
+  "levelReq": 18,
+  "maxDurability": 180
+}

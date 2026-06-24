@@ -1,0 +1,10 @@
+{
+  "id": "mat_obsidian_chunk",
+  "name": "Obsidian Chunk",
+  "description": "Dark volcanic glass that is incredibly sharp and hard.",
+  "type": "material",
+  "rarity": "epic",
+  "buyPrice": 300,
+  "sellPrice": 120,
+  "levelReq": 12
+}

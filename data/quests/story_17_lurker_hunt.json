@@ -1,0 +1,19 @@
+{
+  "id": "story_17_lurker_hunt",
+  "name": "Deep Predators",
+  "description": "Slay 5 Deep Lurkers that prey on deep-sea divers.",
+  "type": "story",
+  "levelReq": 17,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "deep_lurker",
+      "required": 5
+    }
+  ],
+  "rewards": {
+    "gold": 3500,
+    "gems": 45
+  }
+}

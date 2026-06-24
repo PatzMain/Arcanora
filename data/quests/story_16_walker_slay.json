@@ -1,0 +1,19 @@
+{
+  "id": "story_16_walker_slay",
+  "name": "Void Shadows",
+  "description": "Slay 6 Void Walkers in the deep darkness.",
+  "type": "story",
+  "levelReq": 16,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "void_walker",
+      "required": 6
+    }
+  ],
+  "rewards": {
+    "gold": 3000,
+    "gems": 40
+  }
+}

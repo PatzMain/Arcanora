@@ -1,0 +1,21 @@
+{
+  "id": "story_09_colossus_defeat",
+  "name": "The Crystal Giant",
+  "description": "Defeat the Crystal Colossus to unlock the deep volcanic tunnels.",
+  "type": "story",
+  "levelReq": 9,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "crystal_colossus",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 1000,
+    "gems": 25,
+    "itemId": "mat_crystal_shard",
+    "itemQty": 3
+  }
+}

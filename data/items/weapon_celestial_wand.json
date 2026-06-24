@@ -1,0 +1,15 @@
+{
+  "id": "weapon_celestial_wand",
+  "name": "Celestial Star Wand",
+  "description": "A wand holding element of starlight. Great for spellcasters.",
+  "type": "weapon",
+  "rarity": "rare",
+  "stats": {
+    "attack": 20,
+    "manaMax": 30
+  },
+  "buyPrice": 1200,
+  "sellPrice": 480,
+  "levelReq": 11,
+  "maxDurability": 110
+}

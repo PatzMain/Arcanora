@@ -1,0 +1,58 @@
+{
+  "id": "crystal_colossus",
+  "name": "Crystal Colossus",
+  "description": "A towering mountain of crystal and rock, stomping around the deepest caves.",
+  "zone": "crystal_caverns",
+  "rarity": "boss",
+  "level": 10,
+  "stats": {
+    "hp": 1100,
+    "attack": 50,
+    "defense": 40,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "quake",
+      "name": "Colossal Stomp",
+      "damage": 65,
+      "chance": 35
+    },
+    {
+      "id": "harden",
+      "name": "Crystal Fortification",
+      "effect": {
+        "id": "iron_will",
+        "name": "Crystal Shield",
+        "type": "buff",
+        "stat": "defense",
+        "value": 15,
+        "duration": 4,
+        "target": "self"
+      },
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_crystal_shard",
+      "dropRate": 100,
+      "minQty": 6,
+      "maxQty": 12
+    },
+    {
+      "itemId": "mat_silver_ore",
+      "dropRate": 80,
+      "minQty": 3,
+      "maxQty": 6
+    },
+    {
+      "itemId": "boots_leather",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 800,
+  "goldReward": 600
+}

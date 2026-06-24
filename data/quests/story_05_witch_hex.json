@@ -1,0 +1,21 @@
+{
+  "id": "story_05_witch_hex",
+  "name": "Witch of the Woods",
+  "description": "Defeat the Nightshade Witch deep inside the Whispering Canopy.",
+  "type": "story",
+  "levelReq": 5,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "nightshade_witch",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 500,
+    "gems": 15,
+    "itemId": "potion_rejuvenation",
+    "itemQty": 1
+  }
+}

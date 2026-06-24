@@ -3,7 +3,6 @@ import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { loadRecipes, canCraft, executeCraft } from '../../systems/crafting.js';
-import { checkLevelUp } from '../../systems/progression/leveling.js';
 import { updatePlayerLevel } from '../../database/queries/player.js';
 import { db } from '../../database/client.js';
 import { inventory } from '../../database/schema.js';
@@ -90,14 +89,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       if (!result.success) {
         // Award 20% pity experience
         const expReward = Math.max(1, Math.round(recipe.craftingExpReward * 0.2));
-        const check = checkLevelUp(player.level, player.exp + expReward);
-        await updatePlayerLevel(player.id, check.newLevel, check.remainingExp);
+        await updatePlayerLevel(player.id, player.level, player.exp + expReward);
 
-        let failDesc = `You failed to craft **${recipe.name}** and lost the materials.\n\n` +
+        const failDesc = `You failed to craft **${recipe.name}** and lost the materials.\n\n` +
           `✨ Gained **+${expReward}** pity EXP.`;
-        if (check.levelsGained > 0) {
-          failDesc += `\n🎉 **LEVEL UP!** You reached **Level ${check.newLevel}**!`;
-        }
 
         return { embeds: [errorEmbed('Crafting Failed', failDesc)], components: [] };
       }
@@ -108,8 +103,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
       await addItem(player.id, result.resultItemId, result.resultQuantity);
 
-      const check = checkLevelUp(player.level, player.exp + recipe.craftingExpReward);
-      await updatePlayerLevel(player.id, check.newLevel, check.remainingExp);
+      await updatePlayerLevel(player.id, player.level, player.exp + recipe.craftingExpReward);
 
       let successDesc = `🎉 Successfully crafted **x${result.resultQuantity}** **${resultName}**!\n` +
         `🏅 Quality Roll: **${result.quality.toUpperCase()}**\n\n` +
@@ -117,10 +111,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
       if (result.quality === 'perfect') {
         successDesc += `\n*Perfect craft! Double yield bonus applied.*`;
-      }
-
-      if (check.levelsGained > 0) {
-        successDesc += `\n\n🎉 **LEVEL UP!** You reached **Level ${check.newLevel}**!`;
       }
 
       const embed = successEmbed('Crafting Success', successDesc);

@@ -1,0 +1,17 @@
+{
+  "id": "chest_abyssal",
+  "name": "Void Warden Plate",
+  "description": "A chestplate made of solidified stars and void energy. Offers ultimate defense.",
+  "type": "chest",
+  "rarity": "mythic",
+  "stats": {
+    "defense": 60,
+    "hpMax": 300,
+    "attack": 10,
+    "luck": 10
+  },
+  "buyPrice": 12000,
+  "sellPrice": 4800,
+  "levelReq": 18,
+  "maxDurability": 220
+}

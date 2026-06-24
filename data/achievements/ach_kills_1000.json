@@ -1,0 +1,15 @@
+{
+  "id": "ach_kills_1000",
+  "name": "The Reaper",
+  "description": "Defeat 1000 monsters in combat.",
+  "condition": {
+    "type": "kills",
+    "value": 1000
+  },
+  "rewards": {
+    "gold": 10000,
+    "gems": 100,
+    "title": "Legendary Reaper"
+  },
+  "hidden": false
+}

@@ -1,0 +1,14 @@
+{
+  "id": "accessory_dragon_claw_talisman",
+  "name": "Dragon Claw Talisman",
+  "description": "A small amulet containing a real dragon claw, radiating fire energy.",
+  "type": "accessory",
+  "rarity": "rare",
+  "stats": {
+    "attack": 10,
+    "critChance": 4
+  },
+  "buyPrice": 1500,
+  "sellPrice": 600,
+  "levelReq": 12
+}

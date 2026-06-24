@@ -1,0 +1,46 @@
+{
+  "id": "lava_hound",
+  "name": "Lava Hound",
+  "description": "A flaming beast with magma drool and soot-black fur.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 11,
+  "stats": {
+    "hp": 240,
+    "attack": 40,
+    "defense": 20,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "fire_bite",
+      "name": "Flame Bite",
+      "damage": 45,
+      "effect": {
+        "id": "burn",
+        "name": "Burning",
+        "type": "debuff",
+        "damagePerTurn": 10,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "potion_health_medium",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 160,
+  "goldReward": 120
+}

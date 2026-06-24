@@ -1,0 +1,41 @@
+{
+  "id": "glowbat_swarm",
+  "name": "Glowbat Swarm",
+  "description": "A swarm of small bats that glow blue. They attack in annoying numbers.",
+  "zone": "crystal_caverns",
+  "rarity": "normal",
+  "level": 6,
+  "stats": {
+    "hp": 110,
+    "attack": 20,
+    "defense": 10,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "swarm_bite",
+      "name": "Numbing Swarm",
+      "damage": 22,
+      "effect": {
+        "id": "slowed",
+        "name": "Slowed",
+        "type": "debuff",
+        "stat": "speed",
+        "value": 5,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "potion_health_small",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 70,
+  "goldReward": 50
+}

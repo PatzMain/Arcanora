@@ -1,0 +1,44 @@
+{
+  "id": "the_nameless_one",
+  "name": "The Nameless One",
+  "description": "An ancient eldritch god sealed in the ocean floor, awakened and seeking vengeance.",
+  "zone": "abyssal_depths",
+  "rarity": "boss",
+  "level": 20,
+  "stats": {
+    "hp": 4500,
+    "attack": 140,
+    "defense": 100,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "obliterate",
+      "name": "Void Obliteration",
+      "damage": 180,
+      "chance": 35
+    },
+    {
+      "id": "heal_abyss",
+      "name": "Abyssal Regeneration",
+      "healing": 250,
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 100,
+      "minQty": 8,
+      "maxQty": 16
+    },
+    {
+      "itemId": "mat_gold_ore",
+      "dropRate": 100,
+      "minQty": 6,
+      "maxQty": 12
+    }
+  ],
+  "expReward": 5000,
+  "goldReward": 4000
+}

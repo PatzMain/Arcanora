@@ -1,0 +1,38 @@
+{
+  "id": "shadow_forest",
+  "name": "Whispering Canopy",
+  "description": "A dark, ancient forest shrouded in twilight. Towering trees weave together a thick whispering canopy that blocks the sun, concealing ancient threats.",
+  "minLevel": 3,
+  "maxLevel": 6,
+  "explorationCooldown": 90,
+  "enemies": [
+    "shadow_stalker",
+    "dark_treant",
+    "venom_spider",
+    "cursed_owl",
+    "nightshade_witch",
+    "ancient_hollow"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 50
+    },
+    {
+      "type": "empty",
+      "weight": 20
+    },
+    {
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
+      "weight": 12
+    },
+    {
+      "type": "boss",
+      "weight": 3
+    }
+  ]
+}

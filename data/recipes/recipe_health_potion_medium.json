@@ -1,0 +1,20 @@
+{
+  "id": "recipe_health_potion_medium",
+  "name": "Medium Health Potion Brewing",
+  "description": "Brew a Medium Health Potion using wild herbs and a small health potion.",
+  "resultItemId": "potion_health_medium",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_herbs",
+      "quantity": 3
+    },
+    {
+      "itemId": "potion_health_small",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 3,
+  "successRate": 95,
+  "craftingExpReward": 25
+}

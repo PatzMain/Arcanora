@@ -1,0 +1,15 @@
+{
+  "id": "ach_lvl_20",
+  "name": "God among Mortals",
+  "description": "Reach the maximum level of 20.",
+  "condition": {
+    "type": "level",
+    "value": 20
+  },
+  "rewards": {
+    "gold": 5000,
+    "gems": 50,
+    "title": "Ascended"
+  },
+  "hidden": false
+}

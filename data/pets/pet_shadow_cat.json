@@ -1,0 +1,20 @@
+{
+  "id": "pet_shadow_cat",
+  "name": "Shadow Cat",
+  "description": "A mysterious feline that walks between shadows.",
+  "rarity": "rare",
+  "baseStats": {
+    "attack": 4,
+    "defense": 2,
+    "hpMax": 15,
+    "luck": 3
+  },
+  "ability": {
+    "name": "Shadow Scratch",
+    "description": "Deals 20 damage and applies a minor bleeding debuff (3 dmg/turn for 2 turns).",
+    "effect": "damage:20:dot:3:2",
+    "cooldown": 3
+  },
+  "maxLevel": 15,
+  "expPerLevel": 150
+}

@@ -1,0 +1,16 @@
+{
+  "id": "chest_crystal",
+  "name": "Crystalline Robes",
+  "description": "Woven with magic-infused threads and decorated with floating crystal plates.",
+  "type": "chest",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "manaMax": 60,
+    "hpMax": 50
+  },
+  "buyPrice": 1100,
+  "sellPrice": 380,
+  "levelReq": 12,
+  "maxDurability": 100
+}

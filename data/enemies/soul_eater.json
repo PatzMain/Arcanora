@@ -1,0 +1,41 @@
+{
+  "id": "soul_eater",
+  "name": "Soul Eater",
+  "description": "A floating eye surrounded by tendrils, feeding on the sanity of travelers.",
+  "zone": "abyssal_depths",
+  "rarity": "normal",
+  "level": 18,
+  "stats": {
+    "hp": 460,
+    "attack": 80,
+    "defense": 50,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "mind_blast",
+      "name": "Mind Blast",
+      "damage": 80,
+      "effect": {
+        "id": "silenced",
+        "name": "Insanity",
+        "type": "debuff",
+        "stat": "attack",
+        "value": 15,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "potion_mana_large",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 450,
+  "goldReward": 350
+}

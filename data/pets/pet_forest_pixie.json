@@ -1,0 +1,20 @@
+{
+  "id": "pet_forest_pixie",
+  "name": "Forest Pixie",
+  "description": "A glowing green fairy that whispers luck and healing words.",
+  "rarity": "common",
+  "baseStats": {
+    "attack": 1,
+    "defense": 1,
+    "hpMax": 5,
+    "luck": 2
+  },
+  "ability": {
+    "name": "Pixie Dust",
+    "description": "Sprinkles magical dust to heal you for 10 HP.",
+    "effect": "heal:10",
+    "cooldown": 3
+  },
+  "maxLevel": 10,
+  "expPerLevel": 100
+}

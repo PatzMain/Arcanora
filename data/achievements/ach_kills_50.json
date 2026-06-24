@@ -1,0 +1,14 @@
+{
+  "id": "ach_kills_50",
+  "name": "Seasoned Hunter",
+  "description": "Defeat 50 monsters in combat.",
+  "condition": {
+    "type": "kills",
+    "value": 50
+  },
+  "rewards": {
+    "gold": 500,
+    "gems": 5
+  },
+  "hidden": false
+}

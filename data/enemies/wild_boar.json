@@ -1,0 +1,32 @@
+{
+  "id": "wild_boar",
+  "name": "Wild Boar",
+  "description": "A bad-tempered beast that charges anyone who enters its territory.",
+  "zone": "verdant_meadows",
+  "rarity": "normal",
+  "level": 1,
+  "stats": {
+    "hp": 60,
+    "attack": 10,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "gore",
+      "name": "Gore",
+      "damage": 15,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 20,
+  "goldReward": 12
+}

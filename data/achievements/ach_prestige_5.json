@@ -1,0 +1,14 @@
+{
+  "id": "ach_prestige_5",
+  "name": "Eternal Wanderer",
+  "description": "Perform 5 Prestige resets.",
+  "condition": {
+    "type": "prestige",
+    "value": 5
+  },
+  "rewards": {
+    "gems": 50,
+    "title": "Immortal"
+  },
+  "hidden": false
+}

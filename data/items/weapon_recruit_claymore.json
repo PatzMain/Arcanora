@@ -1,0 +1,14 @@
+{
+  "id": "weapon_recruit_claymore",
+  "name": "Recruit's Claymore",
+  "description": "A heavy iron claymore for young initiates.",
+  "type": "weapon",
+  "rarity": "common",
+  "stats": {
+    "attack": 10
+  },
+  "buyPrice": 75,
+  "sellPrice": 20,
+  "levelReq": 2,
+  "maxDurability": 60
+}

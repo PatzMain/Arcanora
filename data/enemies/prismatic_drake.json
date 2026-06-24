@@ -1,0 +1,44 @@
+{
+  "id": "prismatic_drake",
+  "name": "Prismatic Drake",
+  "description": "A small dragon whose scales reflect the colors of the rainbow.",
+  "zone": "crystal_caverns",
+  "rarity": "rare",
+  "level": 9,
+  "stats": {
+    "hp": 280,
+    "attack": 30,
+    "defense": 20,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "crystal_breath",
+      "name": "Prismatic Beam",
+      "damage": 48,
+      "chance": 35
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_crystal_shard",
+      "dropRate": 90,
+      "minQty": 2,
+      "maxQty": 5
+    },
+    {
+      "itemId": "weapon_rusty_dagger",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    },
+    {
+      "itemId": "potion_health_large",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 250,
+  "goldReward": 180
+}

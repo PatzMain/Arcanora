@@ -1,0 +1,15 @@
+{
+  "id": "weapon_silver_rapier",
+  "name": "Silver Duelist Rapier",
+  "description": "A light rapier made of silver alloy, fast and precise.",
+  "type": "weapon",
+  "rarity": "uncommon",
+  "stats": {
+    "attack": 10,
+    "speed": 10
+  },
+  "buyPrice": 400,
+  "sellPrice": 150,
+  "levelReq": 6,
+  "maxDurability": 90
+}

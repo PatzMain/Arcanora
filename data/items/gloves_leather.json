@@ -1,0 +1,15 @@
+{
+  "id": "gloves_leather",
+  "name": "Scout's Leather Gloves",
+  "description": "Soft leather gloves for a steady hand.",
+  "type": "gloves",
+  "rarity": "common",
+  "stats": {
+    "defense": 10,
+    "speed": 10
+  },
+  "buyPrice": 30,
+  "sellPrice": 10,
+  "levelReq": 1,
+  "maxDurability": 40
+}

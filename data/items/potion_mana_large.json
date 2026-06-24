@@ -1,0 +1,13 @@
+{
+  "id": "potion_mana_large",
+  "name": "Large Mana Potion",
+  "description": "Restores 100 Mana instantly.",
+  "type": "consumable",
+  "rarity": "rare",
+  "stats": {
+    "mana": 100
+  },
+  "buyPrice": 150,
+  "sellPrice": 60,
+  "levelReq": 8
+}

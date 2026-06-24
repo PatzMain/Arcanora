@@ -1,0 +1,15 @@
+{
+  "id": "gloves_obsidian",
+  "name": "Obsidian Claws",
+  "description": "Gloves tipped with sharp obsidian shards.",
+  "type": "gloves",
+  "rarity": "epic",
+  "stats": {
+    "defense": 10,
+    "attack": 10
+  },
+  "buyPrice": 1500,
+  "sellPrice": 550,
+  "levelReq": 15,
+  "maxDurability": 140
+}

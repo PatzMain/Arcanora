@@ -1,0 +1,20 @@
+{
+  "id": "recipe_iron_helmet",
+  "name": "Iron Helmet Smithing",
+  "description": "Forge a Soldier's Iron Helm from iron ore and raw leather.",
+  "resultItemId": "helmet_iron",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_iron_ore",
+      "quantity": 5
+    },
+    {
+      "itemId": "mat_leather",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 85,
+  "craftingExpReward": 80
+}

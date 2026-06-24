@@ -1,0 +1,20 @@
+{
+  "id": "weekly_boss_slayer",
+  "name": "Weekly Executioner",
+  "description": "Defeat any 3 Dungeon or Zone Bosses.",
+  "type": "weekly",
+  "levelReq": 3,
+  "repeatable": true,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "boss",
+      "required": 3
+    }
+  ],
+  "rewards": {
+    "gold": 1500,
+    "exp": 1000,
+    "gems": 20
+  }
+}

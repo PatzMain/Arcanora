@@ -1,0 +1,15 @@
+{
+  "id": "helmet_iron",
+  "name": "Soldier's Iron Helm",
+  "description": "A sturdy helmet made of smelted iron.",
+  "type": "helmet",
+  "rarity": "uncommon",
+  "stats": {
+    "defense": 10,
+    "hpMax": 20
+  },
+  "buyPrice": 150,
+  "sellPrice": 50,
+  "levelReq": 5,
+  "maxDurability": 70
+}

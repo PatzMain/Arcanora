@@ -1,0 +1,16 @@
+{
+  "id": "boots_crystal",
+  "name": "Glass slippers",
+  "description": "Glows in the dark and makes you feel lighter.",
+  "type": "boots",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "speed": 10,
+    "luck": 10
+  },
+  "buyPrice": 440,
+  "sellPrice": 155,
+  "levelReq": 12,
+  "maxDurability": 90
+}

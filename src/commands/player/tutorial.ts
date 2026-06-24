@@ -9,6 +9,7 @@ import {
 } from 'discord.js';
 import { findOrCreatePlayer, getPlayerByDiscordId } from '../../database/queries/player.js';
 import { addItem, equipItem } from '../../database/queries/inventory.js';
+import { startQuest } from '../../database/queries/quest.js';
 import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
@@ -32,10 +33,10 @@ function getTutorialEmbed(username: string): EmbedBuilder {
       {
         name: '⚔️ Core Gameplay Commands',
         value:
-          '• `/combat explore` — Choose a zone, start an encounter, and battle enemies.\n' +
-          '• `/player profile` — Check your level, class, gold, gems, and equipped gear.\n' +
-          '• `/player stats` — Break down your effective stats (HP, Mana, Attack, Defense, Crit).\n' +
-          '• `/inventory bag` — Browse your collected weapons, armor, accessories, and materials.'
+          '• `/map` — View the world map, travel to unlocked locations, and explore.\n' +
+          '• `/combat explore` — Explore your current zone to start battles or find treasures.\n' +
+          '• `/player profile` — Check your level, class, active story quest, and equipment.\n' +
+          '• `/inventory bag` — Browse your bag, equip gear, and manage items.'
       },
       {
         name: '🏪 Economy & Progression',
@@ -43,7 +44,7 @@ function getTutorialEmbed(username: string): EmbedBuilder {
           '• `/economy shop` — Browse items currently sold by the merchant.\n' +
           '• `/economy buy` — Purchase consumables, materials, or basic gear.\n' +
           '• `/inventory sell` — Sell items in your bag to earn gold.\n' +
-          '• `/quest` — View your daily and main quests. Quests are great sources of XP and Gems!'
+          '• `/quest` — View your daily and main quests. Quests are the ONLY way to level up!'
       },
       {
         name: '🛠️ Dungeons & Crafting',
@@ -185,6 +186,9 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
     await equipItem(player.id, weaponRow.id, 'weapon');
     await equipItem(player.id, chestRow.id, 'chest');
 
+    // Auto-accept the first story quest
+    await startQuest(player.id, 'story_01_begin');
+
     // 5. Build success embed
     const classNames: Record<string, string> = {
       warrior: '⚔️ Warrior',
@@ -210,14 +214,15 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
         `**Starting Equipment Equipped**:\n` +
         `• ⚔️ Weapon: *${weaponNames[starterWeaponId]}*\n` +
         `• 🛡️ Armor: *Scout's Leather Vest*\n\n` +
-        `You also received **🪙 500 starting gold**!`
+        `You also received **🪙 500 starting gold**!\n\n` +
+        `📖 **First Quest Accepted**: *Explore the Verdant Outpost once to get your bearings.*`
       )
       .addFields(
         {
           name: '🚀 What Next?',
           value:
-            'Use the **/combat explore** command to choose a zone, start battles, and level up!\n' +
-            'You can view your stats anytime with **/player profile**.'
+            'Use the **/map** command to view the world, travel, and start exploring the Verdant Outpost!\n' +
+            'You can view your stats and current story quest anytime with **/player profile**.'
         }
       )
       .setFooter({ text: 'Arcanora — Discord MMORPG' })

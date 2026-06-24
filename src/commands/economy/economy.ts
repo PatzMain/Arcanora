@@ -94,14 +94,14 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
 
   // 1. Navigation buttons row
   const prevBtn = new ButtonBuilder()
-    .setCustomId(`shop_prev_${activePage}`)
+    .setCustomId(`shop_prev_${player.discordId}_${activePage}`)
     .setLabel('Previous')
     .setStyle(ButtonStyle.Secondary)
     .setEmoji('◀️')
     .setDisabled(activePage === 1);
 
   const nextBtn = new ButtonBuilder()
-    .setCustomId(`shop_next_${activePage}`)
+    .setCustomId(`shop_next_${player.discordId}_${activePage}`)
     .setLabel('Next')
     .setStyle(ButtonStyle.Secondary)
     .setEmoji('▶️')
@@ -124,7 +124,7 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
     });
 
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId(`shop_buy_select_${activePage}`)
+      .setCustomId(`shop_buy_select_${player.discordId}_${activePage}`)
       .setPlaceholder('Select an item to purchase (1x)...')
       .addOptions(selectOptions);
 
@@ -290,6 +290,15 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
   try {
     const discordId = interaction.user.id;
     const customId = interaction.customId;
+    const parts = customId.split('_');
+
+    const ownerDiscordId = interaction.isButton() ? parts[2] : parts[3];
+
+    if (interaction.user.id !== ownerDiscordId) {
+      const embed = errorEmbed('Access Denied', 'This merchant shop menu is not yours!');
+      await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return;
+    }
 
     const player = await db.query.players.findFirst({
       where: eq(players.discordId, discordId)
@@ -302,9 +311,8 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
     }
 
     if (interaction.isButton()) {
-      const parts = customId.split('_');
       const action = parts[1] || 'next';
-      const currentPage = parseInt(parts[2] || '1');
+      const currentPage = parseInt(parts[3] || '1');
       const targetPage = action === 'prev' ? currentPage - 1 : currentPage + 1;
 
       const messageOptions = getShopMessageOptions(player, targetPage);
@@ -313,8 +321,7 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
     }
 
     if (interaction.isStringSelectMenu()) {
-      const parts = customId.split('_');
-      const currentPage = parseInt(parts[3] || '1');
+      const currentPage = parseInt(parts[4] || '1');
       const itemId = interaction.values[0];
 
       if (!itemId) {

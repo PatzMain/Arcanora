@@ -132,9 +132,9 @@ export function scaleEnemyStats(
   const scalingFactor = 1 + levelDiff * 0.05;
 
   return {
-    hp: Math.round(enemy.stats.hp * scalingFactor),
-    attack: Math.round(enemy.stats.attack * scalingFactor),
-    defense: Math.round(enemy.stats.defense * scalingFactor),
-    speed: enemy.stats.speed, // Keep speed constant
+    hp: Math.round((enemy.stats.hp * scalingFactor) / 10) * 10,
+    attack: Math.round((enemy.stats.attack * scalingFactor) / 10) * 10,
+    defense: Math.round((enemy.stats.defense * scalingFactor) / 10) * 10,
+    speed: Math.round(enemy.stats.speed / 10) * 10,
   };
 }

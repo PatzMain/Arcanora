@@ -1,0 +1,41 @@
+{
+  "id": "ash_wraith",
+  "name": "Ash Wraith",
+  "description": "A ghostly entity formed from volcanic smoke and embers.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 12,
+  "stats": {
+    "hp": 200,
+    "attack": 40,
+    "defense": 20,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "suffocate",
+      "name": "Ash Choke",
+      "damage": 38,
+      "effect": {
+        "id": "blind",
+        "name": "Blinded",
+        "type": "debuff",
+        "stat": "attack",
+        "value": 10,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "potion_mana_medium",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 180,
+  "goldReward": 130
+}

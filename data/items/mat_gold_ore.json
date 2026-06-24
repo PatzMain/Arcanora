@@ -1,0 +1,10 @@
+{
+  "id": "mat_gold_ore",
+  "name": "Gold Ore",
+  "description": "Extremely valuable ore used for luxury crafting and high-end gear.",
+  "type": "material",
+  "rarity": "epic",
+  "buyPrice": 250,
+  "sellPrice": 100,
+  "levelReq": 12
+}

@@ -1,0 +1,20 @@
+{
+  "id": "pet_fire_imp",
+  "name": "Fire Imp",
+  "description": "A tiny, naughty demon with a hot temper.",
+  "rarity": "uncommon",
+  "baseStats": {
+    "attack": 3,
+    "defense": 1,
+    "hpMax": 10,
+    "luck": 0
+  },
+  "ability": {
+    "name": "Fire Spit",
+    "description": "Spits a fireball dealing 15 damage.",
+    "effect": "damage:15",
+    "cooldown": 2
+  },
+  "maxLevel": 10,
+  "expPerLevel": 120
+}

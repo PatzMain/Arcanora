@@ -1,0 +1,38 @@
+{
+  "id": "void_walker",
+  "name": "Void Walker",
+  "description": "An ethereal creature composed of absolute darkness and static energy.",
+  "zone": "abyssal_depths",
+  "rarity": "normal",
+  "level": 16,
+  "stats": {
+    "hp": 380,
+    "attack": 70,
+    "defense": 40,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "void_bolt",
+      "name": "Void Bolt",
+      "damage": 85,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "potion_mana_large",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 350,
+  "goldReward": 250
+}

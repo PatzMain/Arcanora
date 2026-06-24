@@ -1,0 +1,10 @@
+{
+  "id": "mat_spider_silk",
+  "name": "Spider Silk",
+  "description": "Very fine, strong webbing used for sewing high-quality gear.",
+  "type": "material",
+  "rarity": "uncommon",
+  "buyPrice": 40,
+  "sellPrice": 15,
+  "levelReq": 3
+}

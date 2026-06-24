@@ -6,6 +6,9 @@ import {
   playerEquipment,
   dailyLogins,
 } from '../schema.js';
+import { getEquippedItems } from './inventory.js';
+import { computeStats } from '../../systems/progression/stats.js';
+import { itemsCatalog } from '../../utils/catalog.js';
 
 /**
  * Find an existing player by Discord ID, or create a new one with default
@@ -153,3 +156,42 @@ export async function incrementQuestsCompleted(playerId: string) {
     .returning({ totalQuestsCompleted: players.totalQuestsCompleted });
   return updated;
 }
+
+/**
+ * Retrieves a player by Discord ID, computes their stats, and clamps their current HP/Mana to max HP/Mana if they exceed them, updating the database.
+ */
+export async function getPlayerWithClampedStats(discordId: string) {
+  const player = await getPlayerByDiscordId(discordId);
+  if (!player) return null;
+
+  const equippedDbItems = await getEquippedItems(player.id);
+  const equippedItemsList = equippedDbItems.map((dbItem) => {
+    const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+    return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
+  });
+
+  const stats = computeStats(
+    player.level,
+    player.prestige,
+    player.playerClass,
+    equippedItemsList,
+    null,
+    []
+  );
+
+  if (player.hpCurrent > stats.hpMax || player.manaCurrent > stats.manaMax) {
+    const clampedHp = Math.min(stats.hpMax, player.hpCurrent);
+    const clampedMana = Math.min(stats.manaMax, player.manaCurrent);
+
+    await db
+      .update(players)
+      .set({ hpCurrent: clampedHp, manaCurrent: clampedMana })
+      .where(eq(players.id, player.id));
+
+    player.hpCurrent = clampedHp;
+    player.manaCurrent = clampedMana;
+  }
+
+  return player;
+}
+

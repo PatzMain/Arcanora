@@ -1,0 +1,32 @@
+{
+  "id": "cave_troll",
+  "name": "Cave Troll",
+  "description": "A smelly, dim-witted giant carrying a massive stone club.",
+  "zone": "crystal_caverns",
+  "rarity": "normal",
+  "level": 8,
+  "stats": {
+    "hp": 220,
+    "attack": 30,
+    "defense": 20,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "club_smash",
+      "name": "Earthquake Smash",
+      "damage": 42,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 70,
+      "minQty": 2,
+      "maxQty": 4
+    }
+  ],
+  "expReward": 100,
+  "goldReward": 75
+}

@@ -1,4 +1,5 @@
 import { achievementsCatalog } from '../utils/catalog.js';
+import { Registry } from '../utils/registry.js';
 
 /**
  * Represents an achievement definition.
@@ -31,6 +32,39 @@ export interface AchievementPlayerData {
   prestige: number;
   hasGuild: boolean;
 }
+
+export interface AchievementEvaluator {
+  evaluate(playerData: AchievementPlayerData, conditionValue: number): boolean;
+  getCurrentValue(playerData: AchievementPlayerData): number;
+}
+
+export const achievementEvaluatorRegistry = new Registry<AchievementEvaluator>();
+
+// Register default evaluators
+achievementEvaluatorRegistry.register('kills', {
+  evaluate: (pd, val) => pd.totalKills >= val,
+  getCurrentValue: (pd) => pd.totalKills
+});
+achievementEvaluatorRegistry.register('level', {
+  evaluate: (pd, val) => pd.level >= val,
+  getCurrentValue: (pd) => pd.level
+});
+achievementEvaluatorRegistry.register('gold', {
+  evaluate: (pd, val) => pd.gold >= val,
+  getCurrentValue: (pd) => pd.gold
+});
+achievementEvaluatorRegistry.register('quests', {
+  evaluate: (pd, val) => pd.totalQuestsCompleted >= val,
+  getCurrentValue: (pd) => pd.totalQuestsCompleted
+});
+achievementEvaluatorRegistry.register('prestige', {
+  evaluate: (pd, val) => pd.prestige >= val,
+  getCurrentValue: (pd) => pd.prestige
+});
+achievementEvaluatorRegistry.register('guild', {
+  evaluate: (pd) => pd.hasGuild === true,
+  getCurrentValue: (pd) => pd.hasGuild ? 1 : 0
+});
 
 const ACHIEVEMENTS_CACHE_KEY = 'achievements_data';
 
@@ -70,29 +104,9 @@ export function checkAchievements(
 
     const { type, value } = achievement.condition;
     let met = false;
-
-    switch (type) {
-      case 'kills':
-        met = playerData.totalKills >= value;
-        break;
-      case 'level':
-        met = playerData.level >= value;
-        break;
-      case 'gold':
-        met = playerData.gold >= value;
-        break;
-      case 'quests':
-        met = playerData.totalQuestsCompleted >= value;
-        break;
-      case 'prestige':
-        met = playerData.prestige >= value;
-        break;
-      case 'guild':
-        met = playerData.hasGuild === true;
-        break;
-      default:
-        // Unknown condition type — skip
-        break;
+    const evaluator = achievementEvaluatorRegistry.get(type);
+    if (evaluator) {
+      met = evaluator.evaluate(playerData, value);
     }
 
     if (met) {
@@ -119,28 +133,9 @@ export function getAchievementProgress(
   const { type, value } = achievement.condition;
   let current = 0;
 
-  switch (type) {
-    case 'kills':
-      current = playerData.totalKills;
-      break;
-    case 'level':
-      current = playerData.level;
-      break;
-    case 'gold':
-      current = playerData.gold;
-      break;
-    case 'quests':
-      current = playerData.totalQuestsCompleted;
-      break;
-    case 'prestige':
-      current = playerData.prestige;
-      break;
-    case 'guild':
-      current = playerData.hasGuild ? 1 : 0;
-      break;
-    default:
-      current = 0;
-      break;
+  const evaluator = achievementEvaluatorRegistry.get(type);
+  if (evaluator) {
+    current = evaluator.getCurrentValue(playerData);
   }
 
   const required = type === 'guild' ? 1 : value;

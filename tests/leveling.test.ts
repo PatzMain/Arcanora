@@ -46,19 +46,19 @@ describe('Progression Systems — Leveling & Growth', () => {
   describe('Stat Growth Calculations', () => {
     it('should return correct base stats for level 1', () => {
       const stats = getStatGrowth(1);
-      expect(stats.hpMax).toBe(65);
-      expect(stats.manaMax).toBe(28);
-      expect(stats.attack).toBe(8);
-      expect(stats.defense).toBe(5);
+      expect(stats.hpMax).toBe(80);
+      expect(stats.manaMax).toBe(40);
+      expect(stats.attack).toBe(10);
+      expect(stats.defense).toBe(10);
     });
 
     it('should increase stats linearly with level', () => {
       const lv1 = getStatGrowth(1);
       const lv2 = getStatGrowth(2);
-      expect(lv2.hpMax - lv1.hpMax).toBe(15);
-      expect(lv2.manaMax - lv1.manaMax).toBe(8);
-      expect(lv2.attack - lv1.attack).toBe(3);
-      expect(lv2.defense - lv1.defense).toBe(2);
+      expect(lv2.hpMax - lv1.hpMax).toBe(20);
+      expect(lv2.manaMax - lv1.manaMax).toBe(10);
+      expect(lv2.attack - lv1.attack).toBe(10);
+      expect(lv2.defense - lv1.defense).toBe(10);
     });
   });
 });

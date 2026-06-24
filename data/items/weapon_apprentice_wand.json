@@ -1,0 +1,16 @@
+{
+  "id": "weapon_apprentice_wand",
+  "name": "Apprentice Wand",
+  "description": "A wand tipped with a small sapphire, channeling magical power.",
+  "type": "weapon",
+  "rarity": "uncommon",
+  "stats": {
+    "attack": 10,
+    "manaMax": 30,
+    "critDmg": 10
+  },
+  "buyPrice": 320,
+  "sellPrice": 110,
+  "levelReq": 5,
+  "maxDurability": 70
+}

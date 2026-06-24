@@ -1,0 +1,14 @@
+{
+  "id": "ach_lvl_2",
+  "name": "First Steps",
+  "description": "Take your first steps by reaching level 2.",
+  "condition": {
+    "type": "level",
+    "value": 2
+  },
+  "rewards": {
+    "gold": 100,
+    "gems": 2
+  },
+  "hidden": false
+}

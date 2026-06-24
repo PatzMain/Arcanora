@@ -1,0 +1,13 @@
+{
+  "id": "ach_craft_1",
+  "name": "Novice Craftsman",
+  "description": "Craft your first item.",
+  "condition": {
+    "type": "items_crafted",
+    "value": 1
+  },
+  "rewards": {
+    "gold": 50
+  },
+  "hidden": false
+}

@@ -1,0 +1,32 @@
+{
+  "id": "dark_treant",
+  "name": "Dark Treant",
+  "description": "A corrupted tree brought to life by dark forest magic.",
+  "zone": "shadow_forest",
+  "rarity": "normal",
+  "level": 4,
+  "stats": {
+    "hp": 130,
+    "attack": 20,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "root_smash",
+      "name": "Root Smash",
+      "damage": 25,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_wood",
+      "dropRate": 80,
+      "minQty": 2,
+      "maxQty": 4
+    }
+  ],
+  "expReward": 45,
+  "goldReward": 30
+}

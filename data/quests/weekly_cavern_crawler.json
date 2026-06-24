@@ -1,0 +1,20 @@
+{
+  "id": "weekly_cavern_crawler",
+  "name": "Weekly Cavern Crawler",
+  "description": "Defeat 12 Crystal Golems in the Caverns.",
+  "type": "weekly",
+  "levelReq": 6,
+  "repeatable": true,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "crystal_golem",
+      "required": 12
+    }
+  ],
+  "rewards": {
+    "gold": 1500,
+    "exp": 1200,
+    "gems": 15
+  }
+}

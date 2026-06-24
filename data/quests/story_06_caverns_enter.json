@@ -1,0 +1,19 @@
+{
+  "id": "story_06_caverns_enter",
+  "name": "The Crystal Cave",
+  "description": "Travel to the Glittering Depths and explore it once.",
+  "type": "story",
+  "levelReq": 6,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "crystal_caverns",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 600,
+    "gems": 15
+  }
+}

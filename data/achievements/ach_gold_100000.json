@@ -1,0 +1,14 @@
+{
+  "id": "ach_gold_100000",
+  "name": "Arcanora Tycoon",
+  "description": "Amass 100,000 gold.",
+  "condition": {
+    "type": "gold_earned",
+    "value": 100000
+  },
+  "rewards": {
+    "gems": 100,
+    "title": "Tycoon"
+  },
+  "hidden": false
+}

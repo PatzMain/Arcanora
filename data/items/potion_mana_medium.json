@@ -1,0 +1,13 @@
+{
+  "id": "potion_mana_medium",
+  "name": "Medium Mana Potion",
+  "description": "Restores 40 Mana instantly.",
+  "type": "consumable",
+  "rarity": "uncommon",
+  "stats": {
+    "mana": 40
+  },
+  "buyPrice": 60,
+  "sellPrice": 24,
+  "levelReq": 3
+}

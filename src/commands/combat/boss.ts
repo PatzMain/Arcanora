@@ -15,7 +15,6 @@ import { calculateBossRewards } from '../../systems/bosses.js';
 import { getEquippedItems, addItem } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
-import { checkLevelUp } from '../../systems/progression/leveling.js';
 import { resolveLoot } from '../../systems/exploration/loot.js';
 import { executeSkill, getSkillById, SKILLS } from '../../systems/combat/skills.js';
 import { calculateDamage } from '../../systems/combat/engine.js';
@@ -47,12 +46,22 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const username = interaction.user.username;
 
     // Load active boss in this channel
-    const activeBoss = await db.query.worldBosses.findFirst({
+    let activeBoss = await db.query.worldBosses.findFirst({
       where: and(
         eq(worldBosses.channelId, channelId),
         isNull(worldBosses.defeatedAt)
       )
     });
+
+    // Fallback to global boss
+    if (!activeBoss) {
+      activeBoss = await db.query.worldBosses.findFirst({
+        where: and(
+          eq(worldBosses.channelId, 'GLOBAL'),
+          isNull(worldBosses.defeatedAt)
+        )
+      });
+    }
 
     if (!activeBoss) {
       const embed = errorEmbed(
@@ -335,14 +344,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 enemyDef.level
               );
 
-              const check = checkLevelUp(pl.level, pl.exp + rewards.exp);
-
               await db
                 .update(players)
                 .set({
-                  gold: pl.gold + rewards.gold,
-                  level: check.newLevel,
-                  exp: check.remainingExp
+                  gold: pl.gold + rewards.gold
                 })
                 .where(eq(players.id, pl.id));
 
@@ -367,7 +372,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               rewardsList.push({
                 username: p.username,
                 gold: rewards.gold,
-                exp: rewards.exp,
+                exp: 0,
                 bonusLoot: gotBonusLoot
               });
             }

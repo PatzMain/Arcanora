@@ -1,0 +1,15 @@
+{
+  "id": "weapon_rusty_dagger",
+  "name": "Rusty Iron Dagger",
+  "description": "A small, chipped dagger. Good for quick strikes.",
+  "type": "weapon",
+  "rarity": "common",
+  "stats": {
+    "attack": 10,
+    "speed": 10
+  },
+  "buyPrice": 45,
+  "sellPrice": 12,
+  "levelReq": 1,
+  "maxDurability": 30
+}

@@ -1,0 +1,13 @@
+{
+  "id": "potion_health_small",
+  "name": "Small Health Potion",
+  "description": "Restores 30 HP instantly.",
+  "type": "consumable",
+  "rarity": "common",
+  "stats": {
+    "hp": 30
+  },
+  "buyPrice": 20,
+  "sellPrice": 8,
+  "levelReq": 1
+}

@@ -57,6 +57,24 @@ export const data = new SlashCommandBuilder()
             { name: 'The Nameless One (Lv.20)', value: 'the_nameless_one' }
           )
       )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('spawn-global-boss')
+      .setDescription('Admin: Spawn a Global World Boss.')
+      .addStringOption((option) =>
+        option
+          .setName('boss_id')
+          .setDescription('The ID of the boss to spawn (e.g. mushroom_guardian).')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Mushroom Guardian (Lv.3)', value: 'mushroom_guardian' },
+            { name: 'Ancient Hollow (Lv.6)', value: 'ancient_hollow' },
+            { name: 'Crystal Colossus (Lv.10)', value: 'crystal_colossus' },
+            { name: 'Infernal Titan (Lv.15)', value: 'infernal_titan' },
+            { name: 'The Nameless One (Lv.20)', value: 'the_nameless_one' }
+          )
+      )
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -135,6 +153,41 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await (interaction.channel as any)?.send({ embeds: [announcement] });
 
       const replyEmbed = successEmbed('Boss Spawned', `Spawned boss **${enemyDef.name}** with **${computedMaxHp.toLocaleString()}** HP.`);
+      await interaction.editReply({ embeds: [replyEmbed] });
+    } else if (subcommand === 'spawn-global-boss') {
+      const bossId = interaction.options.getString('boss_id', true);
+      const enemyDef = getEnemyById(bossId);
+
+      if (!enemyDef || enemyDef.rarity !== 'boss') {
+        const embed = errorEmbed('Invalid Boss ID', 'The specified enemy ID is not a registered boss.');
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      const computedMaxHp = calculateWorldBossHp(enemyDef.stats.hp, 10);
+
+      await db
+        .insert(worldBosses)
+        .values({
+          bossId: enemyDef.id,
+          hpCurrent: computedMaxHp,
+          hpMax: computedMaxHp,
+          channelId: 'GLOBAL'
+        })
+        .returning();
+
+      const announcement = successEmbed(
+        '🚨 GLOBAL WORLD BOSS SPAWNED! 🚨',
+        `🛡️ An ancient global threat has emerged!\n\n` +
+        `👿 **${enemyDef.name}** (Lv.**${enemyDef.level}**)\n` +
+        `❤️ Health: **${computedMaxHp.toLocaleString()}** / **${computedMaxHp.toLocaleString()}**\n\n` +
+        `*All adventurers from all channels are summoned to battle! Type \`/boss fight\` to join the raid.*`
+      );
+      announcement.setColor(0xEF4444);
+
+      await (interaction.channel as any)?.send({ embeds: [announcement] });
+
+      const replyEmbed = successEmbed('Global Boss Spawned', `Spawned global boss **${enemyDef.name}** with **${computedMaxHp.toLocaleString()}** HP.`);
       await interaction.editReply({ embeds: [replyEmbed] });
     }
   } catch (error: any) {

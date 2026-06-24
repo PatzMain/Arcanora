@@ -1,0 +1,40 @@
+{
+  "id": "thornback_beetle",
+  "name": "Thornback Beetle",
+  "description": "An armored insect covered in sharp spiky protrusions.",
+  "zone": "verdant_meadows",
+  "rarity": "normal",
+  "level": 2,
+  "stats": {
+    "hp": 70,
+    "attack": 10,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "needle_spray",
+      "name": "Needle Spray",
+      "damage": 10,
+      "effect": {
+        "id": "bleed",
+        "name": "Bleeding",
+        "type": "debuff",
+        "damagePerTurn": 3,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_copper_ore",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 25,
+  "goldReward": 15
+}

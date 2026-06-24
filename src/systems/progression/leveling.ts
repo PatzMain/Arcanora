@@ -88,12 +88,12 @@ export function getStatGrowth(level: number): {
   luck: number;
 } {
   return {
-    hpMax: 50 + 15 * level,
-    manaMax: 20 + 8 * level,
-    attack: 5 + 3 * level,
-    defense: 3 + 2 * level,
-    speed: 2 + 1 * level,
-    luck: 1 + 1 * level,
+    hpMax: 60 + 20 * level,     // Level 1: 80, Level 20: 460
+    manaMax: 30 + 10 * level,   // Level 1: 40, Level 20: 230
+    attack: 10 * level,         // Level 1: 10, Level 20: 200
+    defense: 10 * level,        // Level 1: 10, Level 20: 200
+    speed: 10 * level,          // Level 1: 10, Level 20: 200
+    luck: 10 * level,           // Level 1: 10, Level 20: 200
   };
 }
 

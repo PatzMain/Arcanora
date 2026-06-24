@@ -1,0 +1,19 @@
+{
+  "id": "story_04_stalker_slay",
+  "name": "Forest Stalkers",
+  "description": "Slay 5 Shadow Stalkers to purge the canopy's edge.",
+  "type": "story",
+  "levelReq": 4,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "shadow_stalker",
+      "required": 5
+    }
+  ],
+  "rewards": {
+    "gold": 400,
+    "gems": 10
+  }
+}

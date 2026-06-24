@@ -1,0 +1,13 @@
+{
+  "id": "potion_health_medium",
+  "name": "Medium Health Potion",
+  "description": "Restores 80 HP instantly.",
+  "type": "consumable",
+  "rarity": "uncommon",
+  "stats": {
+    "hp": 80
+  },
+  "buyPrice": 50,
+  "sellPrice": 20,
+  "levelReq": 3
+}

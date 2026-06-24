@@ -1,0 +1,17 @@
+{
+  "id": "weapon_abyssal_bow",
+  "name": "Abyssal Whispering Bow",
+  "description": "A mythic bow that fires arrows made of condensed shadow energy.",
+  "type": "weapon",
+  "rarity": "mythic",
+  "stats": {
+    "attack": 70,
+    "speed": 10,
+    "critChance": 15,
+    "luck": 10
+  },
+  "buyPrice": 9800,
+  "sellPrice": 3900,
+  "levelReq": 18,
+  "maxDurability": 180
+}

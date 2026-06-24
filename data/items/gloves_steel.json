@@ -1,0 +1,15 @@
+{
+  "id": "gloves_steel",
+  "name": "Knight's Steel Gauntlets",
+  "description": "Fitted steel gauntlets offering protection and punch power.",
+  "type": "gloves",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "attack": 10
+  },
+  "buyPrice": 400,
+  "sellPrice": 140,
+  "levelReq": 10,
+  "maxDurability": 100
+}

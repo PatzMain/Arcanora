@@ -1,0 +1,15 @@
+{
+  "id": "ach_boss_1",
+  "name": "Giant Slayer",
+  "description": "Defeat a World Boss.",
+  "condition": {
+    "type": "bosses_defeated",
+    "value": 1
+  },
+  "rewards": {
+    "gold": 500,
+    "gems": 10,
+    "title": "Giant Slayer"
+  },
+  "hidden": false
+}

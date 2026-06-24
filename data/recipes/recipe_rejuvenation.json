@@ -1,0 +1,24 @@
+{
+  "id": "recipe_rejuvenation",
+  "name": "Rejuvenation Potion Alchemy",
+  "description": "Brew a legendary Rejuvenation Potion that fully restores health and mana.",
+  "resultItemId": "potion_rejuvenation",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "potion_health_large",
+      "quantity": 1
+    },
+    {
+      "itemId": "potion_mana_large",
+      "quantity": 1
+    },
+    {
+      "itemId": "mat_crystal_shard",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 12,
+  "successRate": 80,
+  "craftingExpReward": 150
+}

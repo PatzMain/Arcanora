@@ -1,0 +1,32 @@
+{
+  "id": "gem_serpent",
+  "name": "Gem Serpent",
+  "description": "A crystalline snake that shimmers under cave light.",
+  "zone": "crystal_caverns",
+  "rarity": "normal",
+  "level": 7,
+  "stats": {
+    "hp": 140,
+    "attack": 20,
+    "defense": 20,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "crystal_bite",
+      "name": "Crystalline Bite",
+      "damage": 32,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_crystal_shard",
+      "dropRate": 60,
+      "minQty": 1,
+      "maxQty": 3
+    }
+  ],
+  "expReward": 80,
+  "goldReward": 60
+}

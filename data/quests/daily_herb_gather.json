@@ -1,0 +1,19 @@
+{
+  "id": "daily_herb_gather",
+  "name": "Daily Herbalist",
+  "description": "Gather 3 Wild Herbs to supply the local healers.",
+  "type": "daily",
+  "levelReq": 1,
+  "repeatable": true,
+  "conditions": [
+    {
+      "type": "gather",
+      "target": "mat_herbs",
+      "required": 3
+    }
+  ],
+  "rewards": {
+    "gold": 120,
+    "exp": 60
+  }
+}

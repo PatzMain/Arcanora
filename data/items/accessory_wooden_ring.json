@@ -1,0 +1,13 @@
+{
+  "id": "accessory_wooden_ring",
+  "name": "Wooden Ring",
+  "description": "A simple carved ring of luck.",
+  "type": "accessory",
+  "rarity": "common",
+  "stats": {
+    "luck": 10
+  },
+  "buyPrice": 30,
+  "sellPrice": 10,
+  "levelReq": 1
+}

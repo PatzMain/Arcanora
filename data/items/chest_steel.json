@@ -1,0 +1,15 @@
+{
+  "id": "chest_steel",
+  "name": "Knight's Steel Cuirass",
+  "description": "Finely crafted steel plate protecting all vital organs.",
+  "type": "chest",
+  "rarity": "rare",
+  "stats": {
+    "defense": 20,
+    "hpMax": 90
+  },
+  "buyPrice": 1000,
+  "sellPrice": 350,
+  "levelReq": 10,
+  "maxDurability": 110
+}

@@ -1,0 +1,16 @@
+{
+  "id": "chest_godshield_plates",
+  "name": "Aegis of the Godshield",
+  "description": "Mythic chestplate modeled after the armor of divine warriors.",
+  "type": "chest",
+  "rarity": "mythic",
+  "stats": {
+    "defense": 60,
+    "hpMax": 150,
+    "attack": 20
+  },
+  "buyPrice": 22000,
+  "sellPrice": 8800,
+  "levelReq": 20,
+  "maxDurability": 240
+}

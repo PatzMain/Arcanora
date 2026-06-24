@@ -1,0 +1,15 @@
+{
+  "id": "weapon_hunting_bow",
+  "name": "Short Hunting Bow",
+  "description": "A basic flexible wooden bow used by scouts.",
+  "type": "weapon",
+  "rarity": "common",
+  "stats": {
+    "attack": 10,
+    "critChance": 2
+  },
+  "buyPrice": 60,
+  "sellPrice": 20,
+  "levelReq": 1,
+  "maxDurability": 35
+}

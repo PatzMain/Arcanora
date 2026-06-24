@@ -1,0 +1,20 @@
+{
+  "id": "recipe_obsidian_greathelm",
+  "name": "Obsidian Greathelm Forging",
+  "description": "Forge an Obsidian Greathelm from obsidian chunks and gold ore.",
+  "resultItemId": "helmet_obsidian",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "quantity": 8
+    },
+    {
+      "itemId": "mat_gold_ore",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 15,
+  "successRate": 70,
+  "craftingExpReward": 350
+}

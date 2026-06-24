@@ -1,0 +1,13 @@
+{
+  "id": "potion_mana_small",
+  "name": "Small Mana Potion",
+  "description": "Restores 15 Mana instantly.",
+  "type": "consumable",
+  "rarity": "common",
+  "stats": {
+    "mana": 20
+  },
+  "buyPrice": 25,
+  "sellPrice": 10,
+  "levelReq": 1
+}

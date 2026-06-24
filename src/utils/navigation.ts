@@ -22,10 +22,10 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'tutorial_complete':
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('combat_explore', userId))
-          .setLabel('Explore')
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Open Map')
           .setStyle(ButtonStyle.Primary)
-          .setEmoji('⚔️'),
+          .setEmoji('🗺️'),
         new ButtonBuilder()
           .setCustomId(buildNavId('player_profile', userId))
           .setLabel('View Profile')
@@ -145,10 +145,10 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'quest_board':
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('combat_explore', userId))
-          .setLabel('Go Explore')
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Open Map')
           .setStyle(ButtonStyle.Primary)
-          .setEmoji('⚔️')
+          .setEmoji('🗺️')
       );
       hasButtons = true;
       break;
@@ -156,10 +156,10 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'quest_daily_result':
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('combat_explore', userId))
-          .setLabel('Go Explore')
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Open Map')
           .setStyle(ButtonStyle.Primary)
-          .setEmoji('⚔️'),
+          .setEmoji('🗺️'),
         new ButtonBuilder()
           .setCustomId(buildNavId('inventory_bag', userId))
           .setLabel('View Bag')
@@ -250,6 +250,11 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
   // Route to the appropriate command runner
   try {
     switch (targetAction) {
+      case 'player_map': {
+        const { runMap } = await import('../commands/player/map.js');
+        await runMap(interaction);
+        break;
+      }
       case 'combat_explore': {
         const { runExplore } = await import('../commands/combat/combat.js');
         // If extra is provided, it's the zoneId. Otherwise, let explore prompt or pick a default/previous one

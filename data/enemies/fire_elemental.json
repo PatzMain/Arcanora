@@ -1,0 +1,32 @@
+{
+  "id": "fire_elemental",
+  "name": "Fire Elemental",
+  "description": "Pure living fire that incinerates everything in its path.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 13,
+  "stats": {
+    "hp": 280,
+    "attack": 50,
+    "defense": 20,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "fireball",
+      "name": "Inferno Blast",
+      "damage": 55,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_gold_ore",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 200,
+  "goldReward": 150
+}

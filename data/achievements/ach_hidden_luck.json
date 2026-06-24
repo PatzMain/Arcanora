@@ -1,0 +1,15 @@
+{
+  "id": "ach_hidden_luck",
+  "name": "Blessed by RNG",
+  "description": "Roll a perfect quality item during crafting.",
+  "condition": {
+    "type": "items_crafted",
+    "value": 999
+  },
+  "rewards": {
+    "gold": 500,
+    "gems": 10,
+    "title": "Blessed"
+  },
+  "hidden": true
+}

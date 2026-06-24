@@ -1,0 +1,10 @@
+{
+  "id": "mat_crystal_shard",
+  "name": "Crystal Shard",
+  "description": "A magical crystal pulsing with elemental energy.",
+  "type": "material",
+  "rarity": "rare",
+  "buyPrice": 120,
+  "sellPrice": 50,
+  "levelReq": 8
+}

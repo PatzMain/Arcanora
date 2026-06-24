@@ -1,0 +1,16 @@
+{
+  "id": "weapon_assassins_dirk",
+  "name": "Assassin's Dirk",
+  "description": "A fine-edged dagger crafted for backstabbing.",
+  "type": "weapon",
+  "rarity": "uncommon",
+  "stats": {
+    "attack": 10,
+    "speed": 10,
+    "critChance": 5
+  },
+  "buyPrice": 280,
+  "sellPrice": 90,
+  "levelReq": 5,
+  "maxDurability": 60
+}

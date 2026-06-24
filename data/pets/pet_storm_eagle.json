@@ -1,0 +1,20 @@
+{
+  "id": "pet_storm_eagle",
+  "name": "Storm Eagle",
+  "description": "A majestic eagle that channels electric wind.",
+  "rarity": "rare",
+  "baseStats": {
+    "attack": 5,
+    "defense": 1,
+    "hpMax": 15,
+    "luck": 2
+  },
+  "ability": {
+    "name": "Thunder Strike",
+    "description": "Strikes the target with lightning, dealing 25 damage.",
+    "effect": "damage:25",
+    "cooldown": 3
+  },
+  "maxLevel": 15,
+  "expPerLevel": 150
+}

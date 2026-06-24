@@ -1,0 +1,32 @@
+{
+  "id": "deep_lurker",
+  "name": "Deep Lurker",
+  "description": "An angler-like monster with hundreds of teeth, glowing in the black depths.",
+  "zone": "abyssal_depths",
+  "rarity": "normal",
+  "level": 17,
+  "stats": {
+    "hp": 420,
+    "attack": 70,
+    "defense": 50,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "consume",
+      "name": "Abyssal Bite",
+      "damage": 90,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 60,
+      "minQty": 1,
+      "maxQty": 3
+    }
+  ],
+  "expReward": 400,
+  "goldReward": 300
+}

@@ -1,0 +1,19 @@
+{
+  "id": "story_02_meadows_clear",
+  "name": "Outpost Security",
+  "description": "Cull 5 Wild Boars to help secure the outpost.",
+  "type": "story",
+  "levelReq": 2,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "wild_boar",
+      "required": 5
+    }
+  ],
+  "rewards": {
+    "gold": 200,
+    "gems": 5
+  }
+}

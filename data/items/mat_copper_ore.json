@@ -1,0 +1,10 @@
+{
+  "id": "mat_copper_ore",
+  "name": "Copper Ore",
+  "description": "A soft metal ore used in basic metalwork.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 20,
+  "sellPrice": 7,
+  "levelReq": 1
+}

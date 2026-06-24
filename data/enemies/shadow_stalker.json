@@ -1,0 +1,38 @@
+{
+  "id": "shadow_stalker",
+  "name": "Shadow Stalker",
+  "description": "A shadowy canine entity that hunts in silent packs.",
+  "zone": "shadow_forest",
+  "rarity": "normal",
+  "level": 3,
+  "stats": {
+    "hp": 90,
+    "attack": 10,
+    "defense": 10,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "shadow_strike",
+      "name": "Shadow Strike",
+      "damage": 20,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_wood",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 3
+    },
+    {
+      "itemId": "potion_mana_small",
+      "dropRate": 20,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 35,
+  "goldReward": 25
+}

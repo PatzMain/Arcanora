@@ -1,0 +1,16 @@
+{
+  "id": "boots_obsidian",
+  "name": "Obsidian Greaves",
+  "description": "Thick heavy obsidian guards for legs and feet.",
+  "type": "boots",
+  "rarity": "epic",
+  "stats": {
+    "defense": 20,
+    "speed": 10,
+    "hpMax": 40
+  },
+  "buyPrice": 1600,
+  "sellPrice": 600,
+  "levelReq": 15,
+  "maxDurability": 140
+}

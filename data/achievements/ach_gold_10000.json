@@ -1,0 +1,14 @@
+{
+  "id": "ach_gold_10000",
+  "name": "Guild Financier",
+  "description": "Amass 10,000 gold.",
+  "condition": {
+    "type": "gold_earned",
+    "value": 10000
+  },
+  "rewards": {
+    "gems": 20,
+    "title": "Merchant"
+  },
+  "hidden": false
+}

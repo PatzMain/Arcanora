@@ -1,0 +1,19 @@
+{
+  "id": "story_10_wastes_enter",
+  "name": "Entering the Volcano",
+  "description": "Travel to Brimstone Peak and explore it once.",
+  "type": "story",
+  "levelReq": 10,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "volcanic_wastes",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 1200,
+    "gems": 25
+  }
+}

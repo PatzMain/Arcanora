@@ -1,0 +1,53 @@
+{
+  "id": "magma_wyrm",
+  "name": "Magma Wyrm",
+  "description": "A massive lava-dwelling serpent that swims through magma currents.",
+  "zone": "volcanic_wastes",
+  "rarity": "rare",
+  "level": 14,
+  "stats": {
+    "hp": 480,
+    "attack": 60,
+    "defense": 40,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "magma_spit",
+      "name": "Magma Torrent",
+      "damage": 70,
+      "effect": {
+        "id": "melted",
+        "name": "Melted Armor",
+        "type": "debuff",
+        "stat": "defense",
+        "value": 15,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 35
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 90,
+      "minQty": 2,
+      "maxQty": 6
+    },
+    {
+      "itemId": "weapon_hunting_bow",
+      "dropRate": 35,
+      "minQty": 1,
+      "maxQty": 1
+    },
+    {
+      "itemId": "potion_health_large",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 500,
+  "goldReward": 400
+}

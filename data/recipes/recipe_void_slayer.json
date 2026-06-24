@@ -1,0 +1,24 @@
+{
+  "id": "recipe_void_slayer",
+  "name": "Void Slayer Greatsword Crafting",
+  "description": "Assemble the mythic Void Slayer Greatsword from void essence, obsidian chunks, and gold ore.",
+  "resultItemId": "weapon_void_slayer",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_void_essence",
+      "quantity": 10
+    },
+    {
+      "itemId": "mat_obsidian_chunk",
+      "quantity": 5
+    },
+    {
+      "itemId": "mat_gold_ore",
+      "quantity": 5
+    }
+  ],
+  "levelReq": 18,
+  "successRate": 60,
+  "craftingExpReward": 1000
+}

@@ -7,10 +7,11 @@ import { handleNavInteraction } from '../utils/navigation.js';
 import { handleBagInteraction, handleEquipInteraction, handleSellInteraction } from '../commands/inventory/inventory.js';
 import { handleQuestsInteraction, handleQuestsBoardSelect } from '../commands/quests/quest.js';
 import { handlePrestigeInteraction } from '../commands/player/player.js';
+import { handleMapTravelInteraction } from '../commands/player/map.js';
 import { handleGuildInteraction, handleLeaderboardInteraction } from '../commands/guilds/guild.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
-import { getPlayerByDiscordId } from '../database/queries/player.js';
+import { getPlayerWithClampedStats } from '../database/queries/player.js';
 import { checkRateLimit } from '../utils/rateLimit.js';
 
 export async function execute(interaction: Interaction) {
@@ -40,7 +41,7 @@ export async function execute(interaction: Interaction) {
     try {
       // Access Control: check if player profile exists
       if (cmdName !== 'tutorial' && cmdName !== 'invite' && cmdName !== 'help') {
-        const player = await getPlayerByDiscordId(interaction.user.id);
+        const player = await getPlayerWithClampedStats(interaction.user.id);
         if (!player) {
           const embed = errorEmbed(
             '🌌 Welcome to Arcanora!',
@@ -141,6 +142,12 @@ export async function execute(interaction: Interaction) {
         await handleLeaderboardInteraction(interaction as any);
       } catch (error) {
         logger.error({ error, customId }, 'Error processing leaderboard interaction');
+      }
+    } else if (customId.startsWith('map_travel_')) {
+      try {
+        await handleMapTravelInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing map travel interaction');
       }
     }
   }

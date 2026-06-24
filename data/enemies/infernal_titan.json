@@ -1,0 +1,66 @@
+{
+  "id": "infernal_titan",
+  "name": "Infernal Titan",
+  "description": "A giant titan made of molten obsidian, wielding a hammer of pure fire.",
+  "zone": "volcanic_wastes",
+  "rarity": "boss",
+  "level": 15,
+  "stats": {
+    "hp": 2200,
+    "attack": 80,
+    "defense": 60,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "cataclysm",
+      "name": "Volcanic Cataclysm",
+      "damage": 110,
+      "effect": {
+        "id": "burn",
+        "name": "Melting Burn",
+        "type": "debuff",
+        "damagePerTurn": 15,
+        "duration": 4,
+        "target": "player"
+      },
+      "chance": 30
+    },
+    {
+      "id": "roar",
+      "name": "Molten Roar",
+      "effect": {
+        "id": "empowered",
+        "name": "Titan Rage",
+        "type": "buff",
+        "stat": "attack",
+        "value": 20,
+        "duration": 5,
+        "target": "self"
+      },
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 100,
+      "minQty": 8,
+      "maxQty": 16
+    },
+    {
+      "itemId": "mat_gold_ore",
+      "dropRate": 90,
+      "minQty": 4,
+      "maxQty": 8
+    },
+    {
+      "itemId": "chest_leather",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 1800,
+  "goldReward": 1500
+}

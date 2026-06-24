@@ -1,0 +1,14 @@
+{
+  "id": "accessory_iron_ring",
+  "name": "Iron Signet Ring",
+  "description": "A ring representing military service. Boosts defense.",
+  "type": "accessory",
+  "rarity": "uncommon",
+  "stats": {
+    "defense": 10,
+    "hpMax": 10
+  },
+  "buyPrice": 120,
+  "sellPrice": 45,
+  "levelReq": 5
+}

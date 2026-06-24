@@ -1,0 +1,20 @@
+{
+  "id": "weekly_iron_miner",
+  "name": "Weekly Supplier",
+  "description": "Gather 10 Iron Ore chunks.",
+  "type": "weekly",
+  "levelReq": 5,
+  "repeatable": true,
+  "conditions": [
+    {
+      "type": "gather",
+      "target": "mat_iron_ore",
+      "required": 10
+    }
+  ],
+  "rewards": {
+    "gold": 1000,
+    "exp": 800,
+    "gems": 10
+  }
+}

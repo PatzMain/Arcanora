@@ -1,0 +1,13 @@
+{
+  "id": "ach_gold_1000",
+  "name": "Saving Up",
+  "description": "Amass 1,000 gold.",
+  "condition": {
+    "type": "gold_earned",
+    "value": 1000
+  },
+  "rewards": {
+    "gems": 5
+  },
+  "hidden": false
+}

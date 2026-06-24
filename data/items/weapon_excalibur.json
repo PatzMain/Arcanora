@@ -1,0 +1,16 @@
+{
+  "id": "weapon_excalibur",
+  "name": "Iron Vanguard Greatsword",
+  "description": "A masterfully forged steel sword radiating holy power.",
+  "type": "weapon",
+  "rarity": "rare",
+  "stats": {
+    "attack": 30,
+    "defense": 10,
+    "hpMax": 30
+  },
+  "buyPrice": 950,
+  "sellPrice": 350,
+  "levelReq": 10,
+  "maxDurability": 120
+}

@@ -1,0 +1,19 @@
+{
+  "id": "story_15_depths_enter",
+  "name": "The Abyss",
+  "description": "Travel to the Abyssal Trench and explore it once.",
+  "type": "story",
+  "levelReq": 15,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "abyssal_depths",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 2500,
+    "gems": 40
+  }
+}

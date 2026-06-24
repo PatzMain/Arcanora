@@ -1,0 +1,20 @@
+{
+  "id": "pet_golden_dragon",
+  "name": "Golden Dragon",
+  "description": "The ultimate symbol of wealth and power, breathing golden flames.",
+  "rarity": "legendary",
+  "baseStats": {
+    "attack": 10,
+    "defense": 5,
+    "hpMax": 40,
+    "luck": 6
+  },
+  "ability": {
+    "name": "Golden Supernova",
+    "description": "Deals 50 fire damage.",
+    "effect": "damage:50",
+    "cooldown": 3
+  },
+  "maxLevel": 20,
+  "expPerLevel": 250
+}

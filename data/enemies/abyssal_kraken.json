@@ -1,0 +1,44 @@
+{
+  "id": "abyssal_kraken",
+  "name": "Abyssal Kraken",
+  "description": "A legendary multi-tentacled sea monster capable of dragging entire ships down to the deep.",
+  "zone": "abyssal_depths",
+  "rarity": "boss",
+  "level": 18,
+  "stats": {
+    "hp": 3500,
+    "attack": 120,
+    "defense": 80,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "tentacle_constriction",
+      "name": "Tentacle Constriction",
+      "damage": 140,
+      "chance": 40
+    },
+    {
+      "id": "ink_cloud_defense",
+      "name": "Ink Cloud Defense",
+      "healing": 150,
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_gold_ore",
+      "dropRate": 100,
+      "minQty": 4,
+      "maxQty": 8
+    },
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 50,
+      "minQty": 2,
+      "maxQty": 4
+    }
+  ],
+  "expReward": 3000,
+  "goldReward": 2000
+}

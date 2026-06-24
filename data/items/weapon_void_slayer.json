@@ -1,0 +1,17 @@
+{
+  "id": "weapon_void_slayer",
+  "name": "Void Slayer Greatsword",
+  "description": "A heavy sword forged from void materials, pulling in surrounding light.",
+  "type": "weapon",
+  "rarity": "mythic",
+  "stats": {
+    "attack": 80,
+    "critChance": 12,
+    "critDmg": 50,
+    "luck": 10
+  },
+  "buyPrice": 10000,
+  "sellPrice": 4000,
+  "levelReq": 18,
+  "maxDurability": 200
+}

@@ -1,0 +1,10 @@
+{
+  "id": "mat_void_essence",
+  "name": "Void Essence",
+  "description": "A swirling vortex of absolute darkness. Radiant with mythic energy.",
+  "type": "material",
+  "rarity": "mythic",
+  "buyPrice": 1000,
+  "sellPrice": 400,
+  "levelReq": 18
+}

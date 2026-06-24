@@ -1,5 +1,6 @@
 import type { CombatStats, StatusEffect } from './engine.js';
 import { rollChance, rollBetween } from '../../utils/random.js';
+import { Registry } from '../../utils/registry.js';
 
 // ─── Skill Types ─────────────────────────────────────────────────────
 
@@ -30,9 +31,16 @@ export interface SkillResult {
   description: string;
 }
 
-// ─── Skill Definitions ──────────────────────────────────────────────
+export interface SkillBehavior {
+  execute(skill: SkillDefinition, casterStats: CombatStats, targetStats: CombatStats): SkillResult;
+}
 
-export const SKILLS: SkillDefinition[] = [
+export const skillsRegistry = new Registry<SkillDefinition>();
+export const skillBehaviorRegistry = new Registry<SkillBehavior>();
+
+// ─── Initial Skill Definitions ──────────────────────────────────────────────
+
+const INITIAL_SKILLS: SkillDefinition[] = [
   // ── Warrior Skills ──
   {
     id: 'warrior_power_strike',
@@ -358,6 +366,35 @@ export const SKILLS: SkillDefinition[] = [
   },
 ];
 
+// Populate the registry with initial skills
+for (const skill of INITIAL_SKILLS) {
+  skillsRegistry.register(skill.id, skill);
+}
+
+// Backward-compatible Proxy array for SKILLS
+export const SKILLS: SkillDefinition[] = new Proxy([] as SkillDefinition[], {
+  get(target, prop) {
+    const all = skillsRegistry.getAll();
+    const value = Reflect.get(all, prop);
+    if (typeof value === 'function') {
+      return value.bind(all);
+    }
+    return value;
+  },
+  getOwnPropertyDescriptor(target, prop) {
+    const all = skillsRegistry.getAll();
+    return Reflect.getOwnPropertyDescriptor(all, prop);
+  },
+  ownKeys() {
+    const all = skillsRegistry.getAll();
+    return Reflect.ownKeys(all);
+  },
+  has(target, prop) {
+    const all = skillsRegistry.getAll();
+    return Reflect.has(all, prop);
+  }
+});
+
 // ─── Lookup Helpers ──────────────────────────────────────────────────
 
 /**
@@ -396,6 +433,11 @@ export function executeSkill(
   casterStats: CombatStats,
   _targetStats: CombatStats,
 ): SkillResult {
+  const customBehavior = skillBehaviorRegistry.get(skill.id);
+  if (customBehavior) {
+    return customBehavior.execute(skill, casterStats, _targetStats);
+  }
+
   let totalDamage = 0;
   let totalHealing = 0;
   const appliedEffects: StatusEffect[] = [];

@@ -1,0 +1,40 @@
+{
+  "id": "obsidian_scorpion",
+  "name": "Obsidian Scorpion",
+  "description": "A massive scorpion with a glass-like shell and deadly venom.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 12,
+  "stats": {
+    "hp": 260,
+    "attack": 40,
+    "defense": 30,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "sting",
+      "name": "Noxious Sting",
+      "damage": 42,
+      "effect": {
+        "id": "poison",
+        "name": "Obsidian Poison",
+        "type": "debuff",
+        "damagePerTurn": 12,
+        "duration": 4,
+        "target": "player"
+      },
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 60,
+      "minQty": 1,
+      "maxQty": 3
+    }
+  ],
+  "expReward": 180,
+  "goldReward": 130
+}

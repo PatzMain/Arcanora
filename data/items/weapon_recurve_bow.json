@@ -1,0 +1,16 @@
+{
+  "id": "weapon_recurve_bow",
+  "name": "Recurve Bow",
+  "description": "A composite bow that shoots arrows with impressive velocity.",
+  "type": "weapon",
+  "rarity": "uncommon",
+  "stats": {
+    "attack": 10,
+    "critChance": 4,
+    "speed": 10
+  },
+  "buyPrice": 310,
+  "sellPrice": 105,
+  "levelReq": 5,
+  "maxDurability": 70
+}

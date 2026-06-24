@@ -10,8 +10,10 @@ import {
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems } from '../../database/queries/inventory.js';
 import { getPlayerGuild } from '../../database/queries/guild.js';
+import { getActiveQuests } from '../../database/queries/quest.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { getXpForLevel } from '../../systems/progression/leveling.js';
+import { questsCatalog } from '../../utils/catalog.js';
 import { canPrestige, getPrestigeRewards, calculatePrestigeReset } from '../../systems/progression/prestige.js';
 import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
@@ -93,7 +95,20 @@ export async function runProfile(
 
     const guildMemberInfo = await getPlayerGuild(player.id);
     const guildName = guildMemberInfo?.guildName || undefined;
-    const expToNext = getXpForLevel(player.level + 1);
+
+    // Fetch active story quest name
+    const activeQuests = await getActiveQuests(player.id);
+    const activeStoryDb = activeQuests.find((q) => {
+      const def = questsCatalog.find((qc) => qc.id === q.questId);
+      return def?.type === 'story';
+    });
+    let storyQuestName = 'None';
+    if (activeStoryDb) {
+      const def = questsCatalog.find((qc) => qc.id === activeStoryDb.questId);
+      storyQuestName = def ? def.name : activeStoryDb.questId;
+    } else if (player.level === 20) {
+      storyQuestName = '🏆 Story Complete (Max Level)';
+    }
 
     const embed = profileEmbed(
       {
@@ -107,8 +122,7 @@ export async function runProfile(
         maxHp: stats.hpMax,
         currentMana: player.manaCurrent,
         maxMana: stats.manaMax,
-        exp: player.exp,
-        expToNext
+        storyQuestName
       },
       stats,
       equippedItemsList,

@@ -1,0 +1,38 @@
+{
+  "id": "abyssal_depths",
+  "name": "Abyssal Trench",
+  "description": "A silent, freezing ocean trench plunged into perpetual darkness. Unspeakable gargantuan horrors and lost relics of forgotten ages lie buried in its crushing depths.",
+  "minLevel": 15,
+  "maxLevel": 20,
+  "explorationCooldown": 180,
+  "enemies": [
+    "void_walker",
+    "deep_lurker",
+    "abyssal_kraken",
+    "soul_eater",
+    "eldritch_horror",
+    "the_nameless_one"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 35
+    },
+    {
+      "type": "empty",
+      "weight": 15
+    },
+    {
+      "type": "treasure",
+      "weight": 22
+    },
+    {
+      "type": "rare_mob",
+      "weight": 20
+    },
+    {
+      "type": "boss",
+      "weight": 8
+    }
+  ]
+}

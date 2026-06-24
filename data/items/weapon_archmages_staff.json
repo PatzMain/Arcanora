@@ -1,0 +1,17 @@
+{
+  "id": "weapon_archmages_staff",
+  "name": "Archmage's Staff",
+  "description": "A legendary staff containing a massive glowing crystal sphere.",
+  "type": "weapon",
+  "rarity": "epic",
+  "stats": {
+    "attack": 40,
+    "manaMax": 60,
+    "critDmg": 30,
+    "luck": 10
+  },
+  "buyPrice": 3500,
+  "sellPrice": 1200,
+  "levelReq": 15,
+  "maxDurability": 150
+}

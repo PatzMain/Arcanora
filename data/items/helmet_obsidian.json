@@ -1,0 +1,15 @@
+{
+  "id": "helmet_obsidian",
+  "name": "Obsidian Greathelm",
+  "description": "Heavy volcanic stone helmet, almost indestructible.",
+  "type": "helmet",
+  "rarity": "epic",
+  "stats": {
+    "defense": 20,
+    "hpMax": 80
+  },
+  "buyPrice": 1800,
+  "sellPrice": 700,
+  "levelReq": 15,
+  "maxDurability": 140
+}

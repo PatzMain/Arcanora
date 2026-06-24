@@ -1,0 +1,20 @@
+{
+  "id": "recipe_apprentice_wand",
+  "name": "Apprentice Wand Crafting",
+  "description": "Craft an Apprentice Wand from wood and crystal shards.",
+  "resultItemId": "weapon_apprentice_wand",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_wood",
+      "quantity": 4
+    },
+    {
+      "itemId": "mat_crystal_shard",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 85,
+  "craftingExpReward": 110
+}

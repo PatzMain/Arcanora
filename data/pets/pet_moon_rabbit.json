@@ -1,0 +1,20 @@
+{
+  "id": "pet_moon_rabbit",
+  "name": "Moon Rabbit",
+  "description": "A fluffy rabbit said to live on the moon, bringing good fortune.",
+  "rarity": "common",
+  "baseStats": {
+    "attack": 0,
+    "defense": 1,
+    "hpMax": 10,
+    "luck": 3
+  },
+  "ability": {
+    "name": "Lucky Carrot",
+    "description": "Feeds you a lucky carrot, restoring 12 HP.",
+    "effect": "heal:12",
+    "cooldown": 3
+  },
+  "maxLevel": 10,
+  "expPerLevel": 100
+}

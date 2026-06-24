@@ -1,0 +1,16 @@
+{
+  "id": "helmet_steel",
+  "name": "Knight's Steel Helm",
+  "description": "Polished steel headwear offering excellent defense.",
+  "type": "helmet",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "hpMax": 50,
+    "defense%": 2
+  },
+  "buyPrice": 500,
+  "sellPrice": 180,
+  "levelReq": 10,
+  "maxDurability": 100
+}

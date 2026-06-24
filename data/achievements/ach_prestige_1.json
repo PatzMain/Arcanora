@@ -1,0 +1,14 @@
+{
+  "id": "ach_prestige_1",
+  "name": "Reborn",
+  "description": "Perform your first Prestige reset.",
+  "condition": {
+    "type": "prestige",
+    "value": 1
+  },
+  "rewards": {
+    "gems": 10,
+    "title": "Reborn"
+  },
+  "hidden": false
+}

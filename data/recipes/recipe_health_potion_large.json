@@ -1,0 +1,24 @@
+{
+  "id": "recipe_health_potion_large",
+  "name": "Large Health Potion Brewing",
+  "description": "Brew a Large Health Potion using herbs, crystal shards, and a medium health potion.",
+  "resultItemId": "potion_health_large",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_herbs",
+      "quantity": 5
+    },
+    {
+      "itemId": "mat_crystal_shard",
+      "quantity": 1
+    },
+    {
+      "itemId": "potion_health_medium",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 8,
+  "successRate": 90,
+  "craftingExpReward": 60
+}

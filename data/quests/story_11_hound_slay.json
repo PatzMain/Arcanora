@@ -1,0 +1,19 @@
+{
+  "id": "story_11_hound_slay",
+  "name": "Fire Hounds",
+  "description": "Slay 6 Lava Hounds on the volcanic slopes.",
+  "type": "story",
+  "levelReq": 11,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "lava_hound",
+      "required": 6
+    }
+  ],
+  "rewards": {
+    "gold": 1400,
+    "gems": 30
+  }
+}

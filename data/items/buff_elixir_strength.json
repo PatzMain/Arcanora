@@ -1,0 +1,13 @@
+{
+  "id": "buff_elixir_strength",
+  "name": "Strength Elixir",
+  "description": "Increases attack by 5 for the next battle.",
+  "type": "consumable",
+  "rarity": "rare",
+  "stats": {
+    "attack": 10
+  },
+  "buyPrice": 200,
+  "sellPrice": 80,
+  "levelReq": 5
+}

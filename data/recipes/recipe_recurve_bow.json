@@ -1,0 +1,20 @@
+{
+  "id": "recipe_recurve_bow",
+  "name": "Recurve Bow Crafting",
+  "description": "Craft a Recurve Bow from hardwood and strong spider silk.",
+  "resultItemId": "weapon_recurve_bow",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_wood",
+      "quantity": 6
+    },
+    {
+      "itemId": "mat_spider_silk",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 85,
+  "craftingExpReward": 110
+}

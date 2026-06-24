@@ -1,0 +1,14 @@
+{
+  "id": "chest_leather_vest",
+  "name": "Tanned Leather Vest",
+  "description": "A basic vest offering light protection.",
+  "type": "chest",
+  "rarity": "common",
+  "stats": {
+    "defense": 10
+  },
+  "buyPrice": 50,
+  "sellPrice": 15,
+  "levelReq": 2,
+  "maxDurability": 50
+}

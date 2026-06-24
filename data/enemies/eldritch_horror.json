@@ -1,0 +1,47 @@
+{
+  "id": "eldritch_horror",
+  "name": "Eldritch Horror",
+  "description": "A mass of eyeballs and tentacles that defies reality.",
+  "zone": "abyssal_depths",
+  "rarity": "rare",
+  "level": 19,
+  "stats": {
+    "hp": 850,
+    "attack": 100,
+    "defense": 60,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "gaze",
+      "name": "Eldritch Gaze",
+      "damage": 115,
+      "effect": {
+        "id": "terror",
+        "name": "Abyssal Terror",
+        "type": "debuff",
+        "stat": "speed",
+        "value": 10,
+        "duration": 4,
+        "target": "player"
+      },
+      "chance": 40
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 90,
+      "minQty": 2,
+      "maxQty": 6
+    },
+    {
+      "itemId": "potion_health_large",
+      "dropRate": 60,
+      "minQty": 2,
+      "maxQty": 3
+    }
+  ],
+  "expReward": 1000,
+  "goldReward": 800
+}

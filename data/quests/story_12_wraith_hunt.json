@@ -1,0 +1,19 @@
+{
+  "id": "story_12_wraith_hunt",
+  "name": "Magma Spirits",
+  "description": "Slay 5 Ash Wraiths hovering above the magma rivers.",
+  "type": "story",
+  "levelReq": 12,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "ash_wraith",
+      "required": 5
+    }
+  ],
+  "rewards": {
+    "gold": 1600,
+    "gems": 30
+  }
+}

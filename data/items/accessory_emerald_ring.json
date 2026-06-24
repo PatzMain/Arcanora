@@ -1,0 +1,15 @@
+{
+  "id": "accessory_emerald_ring",
+  "name": "Emerald Ring of Fortune",
+  "description": "A stunning green gemstone ring that brings massive luck.",
+  "type": "accessory",
+  "rarity": "epic",
+  "stats": {
+    "luck": 10,
+    "speed": 10,
+    "hpMax": 30
+  },
+  "buyPrice": 2200,
+  "sellPrice": 800,
+  "levelReq": 14
+}

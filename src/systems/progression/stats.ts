@@ -128,15 +128,15 @@ export function computeStats(
     }
   }
 
-  // Step 7: Round all final values
-  stats.hpMax = Math.round(stats.hpMax);
-  stats.manaMax = Math.round(stats.manaMax);
-  stats.attack = Math.round(stats.attack);
-  stats.defense = Math.round(stats.defense);
+  // Step 7: Round all final values (stats in multiples of 10, except crits)
+  stats.hpMax = Math.round(stats.hpMax / 10) * 10;
+  stats.manaMax = Math.round(stats.manaMax / 10) * 10;
+  stats.attack = Math.round(stats.attack / 10) * 10;
+  stats.defense = Math.round(stats.defense / 10) * 10;
   stats.critChance = Math.round(stats.critChance * 100) / 100; // Keep 2 decimals for %
   stats.critDmg = Math.round(stats.critDmg * 100) / 100; // Keep 2 decimals for %
-  stats.speed = Math.round(stats.speed);
-  stats.luck = Math.round(stats.luck);
+  stats.speed = Math.round(stats.speed / 10) * 10;
+  stats.luck = Math.round(stats.luck / 10) * 10;
 
   return stats;
 }

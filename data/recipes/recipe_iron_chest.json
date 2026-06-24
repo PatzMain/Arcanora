@@ -1,0 +1,20 @@
+{
+  "id": "recipe_iron_chest",
+  "name": "Iron Chestplate Smithing",
+  "description": "Forge a Soldier's Iron Plate from iron ore and raw leather.",
+  "resultItemId": "chest_iron",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_iron_ore",
+      "quantity": 10
+    },
+    {
+      "itemId": "mat_leather",
+      "quantity": 4
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 80,
+  "craftingExpReward": 150
+}

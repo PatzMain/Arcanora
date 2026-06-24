@@ -1,0 +1,17 @@
+{
+  "id": "helmet_abyssal",
+  "name": "Void Gazer Cowl",
+  "description": "A cowl of shadows that blocks mental attacks and grants deep wisdom.",
+  "type": "helmet",
+  "rarity": "mythic",
+  "stats": {
+    "defense": 30,
+    "hpMax": 150,
+    "manaMax": 80,
+    "luck": 10
+  },
+  "buyPrice": 6000,
+  "sellPrice": 2400,
+  "levelReq": 18,
+  "maxDurability": 180
+}

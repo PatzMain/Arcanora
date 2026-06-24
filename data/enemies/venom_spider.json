@@ -1,0 +1,40 @@
+{
+  "id": "venom_spider",
+  "name": "Venom Spider",
+  "description": "A massive arachnid hiding in cobwebbed canopies.",
+  "zone": "shadow_forest",
+  "rarity": "normal",
+  "level": 4,
+  "stats": {
+    "hp": 90,
+    "attack": 20,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "poison_bite",
+      "name": "Poison Bite",
+      "damage": 18,
+      "effect": {
+        "id": "poison",
+        "name": "Poison",
+        "type": "debuff",
+        "damagePerTurn": 5,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_spider_silk",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 45,
+  "goldReward": 30
+}

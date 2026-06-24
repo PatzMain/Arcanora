@@ -1,0 +1,21 @@
+{
+  "id": "story_18_kraken_defeat",
+  "name": "The Terror of the Deep",
+  "description": "Defeat the Abyssal Kraken in the ocean trench.",
+  "type": "story",
+  "levelReq": 18,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "abyssal_kraken",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 4000,
+    "gems": 45,
+    "itemId": "potion_rejuvenation",
+    "itemQty": 3
+  }
+}

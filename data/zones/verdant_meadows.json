@@ -1,0 +1,37 @@
+{
+  "id": "verdant_meadows",
+  "name": "Verdant Outpost",
+  "description": "A lush, sun-drenched outpost surrounded by rolling green hills, wild flowers, and gentle wildlife. The perfect staging ground for novice adventurers.",
+  "minLevel": 1,
+  "maxLevel": 3,
+  "explorationCooldown": 60,
+  "enemies": [
+    "forest_sprite",
+    "wild_boar",
+    "thornback_beetle",
+    "rabid_wolf",
+    "mushroom_guardian"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 55
+    },
+    {
+      "type": "empty",
+      "weight": 20
+    },
+    {
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
+      "weight": 8
+    },
+    {
+      "type": "boss",
+      "weight": 2
+    }
+  ]
+}

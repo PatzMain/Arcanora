@@ -1,0 +1,20 @@
+{
+  "id": "pet_crystal_wisp",
+  "name": "Crystal Wisp",
+  "description": "A floating orb of crystal light that acts as a shield.",
+  "rarity": "uncommon",
+  "baseStats": {
+    "attack": 0,
+    "defense": 4,
+    "hpMax": 15,
+    "luck": 1
+  },
+  "ability": {
+    "name": "Shield Glow",
+    "description": "Gives a defensive shield, boosting defense by 4 for 2 turns.",
+    "effect": "buff:defense:4:2",
+    "cooldown": 4
+  },
+  "maxLevel": 10,
+  "expPerLevel": 120
+}

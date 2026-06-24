@@ -1,0 +1,15 @@
+{
+  "id": "weapon_novice_staff",
+  "name": "Novice Oak Staff",
+  "description": "A simple oak staff carved with basic runes.",
+  "type": "weapon",
+  "rarity": "common",
+  "stats": {
+    "attack": 10,
+    "manaMax": 10
+  },
+  "buyPrice": 55,
+  "sellPrice": 18,
+  "levelReq": 1,
+  "maxDurability": 40
+}

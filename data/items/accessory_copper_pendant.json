@@ -1,0 +1,13 @@
+{
+  "id": "accessory_copper_pendant",
+  "name": "Copper Pendant",
+  "description": "A shiny copper pendant that boosts health.",
+  "type": "accessory",
+  "rarity": "common",
+  "stats": {
+    "hpMax": 10
+  },
+  "buyPrice": 40,
+  "sellPrice": 12,
+  "levelReq": 2
+}

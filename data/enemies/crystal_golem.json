@@ -1,0 +1,38 @@
+{
+  "id": "crystal_golem",
+  "name": "Crystal Golem",
+  "description": "A stone construct powered by glowing quartz cores.",
+  "zone": "crystal_caverns",
+  "rarity": "normal",
+  "level": 6,
+  "stats": {
+    "hp": 160,
+    "attack": 20,
+    "defense": 30,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "shatter_fist",
+      "name": "Shatter Fist",
+      "damage": 30,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 60,
+      "minQty": 1,
+      "maxQty": 3
+    },
+    {
+      "itemId": "mat_crystal_shard",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 70,
+  "goldReward": 50
+}

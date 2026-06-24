@@ -1,0 +1,19 @@
+{
+  "id": "daily_exploration",
+  "name": "Daily Scout",
+  "description": "Explore the meadows or forest 3 times.",
+  "type": "daily",
+  "levelReq": 1,
+  "repeatable": true,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "any",
+      "required": 3
+    }
+  ],
+  "rewards": {
+    "gold": 150,
+    "exp": 75
+  }
+}

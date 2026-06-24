@@ -1,0 +1,20 @@
+{
+  "id": "recipe_iron_boots",
+  "name": "Iron Sabatons Smithing",
+  "description": "Forge Soldier's Iron Greaves from iron ore and leather.",
+  "resultItemId": "boots_iron",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_iron_ore",
+      "quantity": 4
+    },
+    {
+      "itemId": "mat_leather",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 90,
+  "craftingExpReward": 70
+}

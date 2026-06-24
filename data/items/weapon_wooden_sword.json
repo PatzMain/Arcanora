@@ -1,0 +1,14 @@
+{
+  "id": "weapon_wooden_sword",
+  "name": "Wooden Training Sword",
+  "description": "A basic wooden practice sword. Better than bare fists.",
+  "type": "weapon",
+  "rarity": "common",
+  "stats": {
+    "attack": 10
+  },
+  "buyPrice": 50,
+  "sellPrice": 15,
+  "levelReq": 1,
+  "maxDurability": 40
+}

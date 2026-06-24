@@ -4,6 +4,7 @@ import { addItem, removeItem } from '../database/queries/inventory.js';
 import { db } from '../database/client.js';
 import { players, inventory } from '../database/schema.js';
 import { eq, and } from 'drizzle-orm';
+import { shopRegistry } from './shopRegistry.js';
 
 
 // ─── TYPES ───────────────────────────────────────────────────────
@@ -42,12 +43,39 @@ export function getShopItems(
   playerLevel: number,
   page: number = 1,
   pageSize: number = 10,
+  playerId?: string,
 ): { items: ShopItem[]; totalPages: number } {
   const catalog = loadItemCatalog();
+  const listings = shopRegistry.getAll();
+  let available: ShopItem[] = [];
 
-  const available = catalog.filter(
-    (item) => item.buyPrice > 0 && item.levelReq <= playerLevel,
-  );
+  if (listings.length > 0) {
+    const filteredListings = listings.filter(
+      (listing) => !listing.condition || (playerId && listing.condition(playerId))
+    );
+
+    for (const listing of filteredListings) {
+      const item = catalog.find((i) => i.id === listing.itemId);
+      if (item) {
+        const buyPrice = listing.buyPrice !== undefined ? listing.buyPrice : (item.buyPrice ?? 0);
+        const sellPrice = listing.sellPrice !== undefined ? listing.sellPrice : (item.sellPrice ?? 0);
+        const levelReq = listing.levelReq !== undefined ? listing.levelReq : (item.levelReq ?? 0);
+
+        if (buyPrice > 0 && levelReq <= playerLevel) {
+          available.push({
+            ...item,
+            buyPrice,
+            sellPrice,
+            levelReq,
+          });
+        }
+      }
+    }
+  } else {
+    available = catalog
+      .filter((item) => item.buyPrice > 0 && item.levelReq <= playerLevel)
+      .map((item) => ({ ...item }));
+  }
 
   const totalPages = Math.max(1, Math.ceil(available.length / pageSize));
   const safePage = Math.max(1, Math.min(page, totalPages));
@@ -62,7 +90,13 @@ export function getShopItems(
 /**
  * Look up the buy price for an item ID. Returns 0 if the item is not buyable.
  */
-export function getItemBuyPrice(itemId: string): number {
+export function getItemBuyPrice(itemId: string, playerId?: string): number {
+  const listing = shopRegistry.get(itemId);
+  if (listing && (!listing.condition || (playerId && listing.condition(playerId)))) {
+    if (listing.buyPrice !== undefined) {
+      return listing.buyPrice;
+    }
+  }
   const catalog = loadItemCatalog();
   const item = catalog.find((i) => i.id === itemId);
   return item?.buyPrice ?? 0;
@@ -71,7 +105,13 @@ export function getItemBuyPrice(itemId: string): number {
 /**
  * Look up the sell price for an item ID. Returns 0 if the item cannot be sold.
  */
-export function getItemSellPrice(itemId: string): number {
+export function getItemSellPrice(itemId: string, playerId?: string): number {
+  const listing = shopRegistry.get(itemId);
+  if (listing && (!listing.condition || (playerId && listing.condition(playerId)))) {
+    if (listing.sellPrice !== undefined) {
+      return listing.sellPrice;
+    }
+  }
   const catalog = loadItemCatalog();
   const item = catalog.find((i) => i.id === itemId);
   return item?.sellPrice ?? 0;
@@ -101,7 +141,20 @@ export async function buyItem(
   const catalog = loadItemCatalog();
   const item = catalog.find((i) => i.id === itemId);
 
-  if (!item || item.buyPrice <= 0) {
+  if (!item) {
+    return { success: false, message: 'That item is not available for purchase.' };
+  }
+
+  // Resolve custom listing overrides if registered
+  const listing = shopRegistry.get(itemId);
+  if (listing && listing.condition && !listing.condition(playerId)) {
+    return { success: false, message: 'That item is not available for purchase.' };
+  }
+
+  const buyPrice = listing?.buyPrice !== undefined ? listing.buyPrice : item.buyPrice;
+  const levelReq = listing?.levelReq !== undefined ? listing.levelReq : item.levelReq;
+
+  if (buyPrice <= 0) {
     return { success: false, message: 'That item is not available for purchase.' };
   }
 
@@ -115,14 +168,14 @@ export async function buyItem(
     return { success: false, message: 'Player not found.' };
   }
 
-  if (player.level < item.levelReq) {
+  if (player.level < levelReq) {
     return {
       success: false,
-      message: `You need to be level ${item.levelReq} to buy **${item.name}**.`,
+      message: `You need to be level ${levelReq} to buy **${item.name}**.`,
     };
   }
 
-  const totalCost = item.buyPrice * quantity;
+  const totalCost = buyPrice * quantity;
 
   // Deduct gold
   const deduction = await deductGold(
@@ -188,7 +241,7 @@ export async function sellItem(
     };
   }
 
-  const sellPrice = getItemSellPrice(invRow.itemId);
+  const sellPrice = getItemSellPrice(invRow.itemId, playerId);
   if (sellPrice <= 0) {
     return { success: false, message: 'That item cannot be sold.' };
   }

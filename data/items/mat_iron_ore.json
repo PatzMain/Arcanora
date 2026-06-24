@@ -1,0 +1,10 @@
+{
+  "id": "mat_iron_ore",
+  "name": "Iron Ore",
+  "description": "Heavy ore needed to smelt iron bars for standard armors and weapons.",
+  "type": "material",
+  "rarity": "uncommon",
+  "buyPrice": 50,
+  "sellPrice": 20,
+  "levelReq": 5
+}

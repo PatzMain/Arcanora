@@ -1,0 +1,13 @@
+{
+  "id": "potion_health_large",
+  "name": "Large Health Potion",
+  "description": "Restores 200 HP instantly.",
+  "type": "consumable",
+  "rarity": "rare",
+  "stats": {
+    "hp": 200
+  },
+  "buyPrice": 120,
+  "sellPrice": 50,
+  "levelReq": 8
+}

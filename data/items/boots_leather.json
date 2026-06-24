@@ -1,0 +1,15 @@
+{
+  "id": "boots_leather",
+  "name": "Scout's Leather Boots",
+  "description": "Comfy boots meant for running around.",
+  "type": "boots",
+  "rarity": "common",
+  "stats": {
+    "defense": 10,
+    "speed": 10
+  },
+  "buyPrice": 35,
+  "sellPrice": 11,
+  "levelReq": 1,
+  "maxDurability": 40
+}

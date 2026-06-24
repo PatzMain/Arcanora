@@ -1,0 +1,19 @@
+{
+  "id": "story_08_troll_hunt",
+  "name": "Troll Threat",
+  "description": "Slay 4 Cave Trolls guarding the subterranean pathways.",
+  "type": "story",
+  "levelReq": 8,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "cave_troll",
+      "required": 4
+    }
+  ],
+  "rewards": {
+    "gold": 800,
+    "gems": 20
+  }
+}

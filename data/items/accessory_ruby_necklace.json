@@ -1,0 +1,14 @@
+{
+  "id": "accessory_ruby_necklace",
+  "name": "Ruby Amulet",
+  "description": "A deep red ruby that increases raw strength.",
+  "type": "accessory",
+  "rarity": "rare",
+  "stats": {
+    "attack": 10,
+    "critChance": 2
+  },
+  "buyPrice": 600,
+  "sellPrice": 220,
+  "levelReq": 10
+}

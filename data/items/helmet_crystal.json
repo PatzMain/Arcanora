@@ -1,0 +1,16 @@
+{
+  "id": "helmet_crystal",
+  "name": "Prismatic Crystal Crown",
+  "description": "A crown made of crystal shards that enhances intelligence.",
+  "type": "helmet",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "manaMax": 30,
+    "critChance": 3
+  },
+  "buyPrice": 550,
+  "sellPrice": 200,
+  "levelReq": 12,
+  "maxDurability": 90
+}

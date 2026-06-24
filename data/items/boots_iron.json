@@ -1,0 +1,15 @@
+{
+  "id": "boots_iron",
+  "name": "Soldier's Iron Greaves",
+  "description": "Stiff metal boots that make a lot of noise.",
+  "type": "boots",
+  "rarity": "uncommon",
+  "stats": {
+    "defense": 10,
+    "speed": 10
+  },
+  "buyPrice": 120,
+  "sellPrice": 40,
+  "levelReq": 5,
+  "maxDurability": 70
+}

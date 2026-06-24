@@ -1,0 +1,38 @@
+{
+  "id": "volcanic_wastes",
+  "name": "Brimstone Peak",
+  "description": "A treacherous, ash-choked volcanic peak sliced by rivers of molten lava. The air is thick with sulfur, and powerful elemental entities claim this burning domain.",
+  "minLevel": 10,
+  "maxLevel": 15,
+  "explorationCooldown": 150,
+  "enemies": [
+    "lava_hound",
+    "ash_wraith",
+    "obsidian_scorpion",
+    "fire_elemental",
+    "magma_wyrm",
+    "infernal_titan"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 40
+    },
+    {
+      "type": "empty",
+      "weight": 15
+    },
+    {
+      "type": "treasure",
+      "weight": 20
+    },
+    {
+      "type": "rare_mob",
+      "weight": 18
+    },
+    {
+      "type": "boss",
+      "weight": 7
+    }
+  ]
+}

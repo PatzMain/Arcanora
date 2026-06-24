@@ -1,0 +1,20 @@
+{
+  "id": "recipe_iron_gloves",
+  "name": "Iron Gauntlets Smithing",
+  "description": "Forge Soldier's Iron Gauntlets from iron ore and leather.",
+  "resultItemId": "gloves_iron",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_iron_ore",
+      "quantity": 4
+    },
+    {
+      "itemId": "mat_leather",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 90,
+  "craftingExpReward": 70
+}

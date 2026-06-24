@@ -1,0 +1,20 @@
+{
+  "id": "pet_ice_phoenix",
+  "name": "Ice Phoenix",
+  "description": "A beautiful bird made of eternal ice, freezing enemies with its aura.",
+  "rarity": "legendary",
+  "baseStats": {
+    "attack": 6,
+    "defense": 4,
+    "hpMax": 30,
+    "luck": 4
+  },
+  "ability": {
+    "name": "Glacial Aura",
+    "description": "Freezes the enemy, dealing 30 damage and reducing their speed by 5 for 2 turns.",
+    "effect": "damage:30:debuff:speed:5:2",
+    "cooldown": 4
+  },
+  "maxLevel": 20,
+  "expPerLevel": 200
+}

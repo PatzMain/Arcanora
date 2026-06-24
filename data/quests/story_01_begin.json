@@ -1,0 +1,19 @@
+{
+  "id": "story_01_begin",
+  "name": "The Journey Begins",
+  "description": "Explore the Verdant Outpost once to get your bearings.",
+  "type": "story",
+  "levelReq": 1,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "verdant_meadows",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "gold": 100,
+    "gems": 5
+  }
+}

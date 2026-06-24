@@ -102,8 +102,7 @@ export function profileEmbed(
     maxHp: number;
     currentMana: number;
     maxMana: number;
-    exp: number;
-    expToNext: number;
+    storyQuestName: string;
   },
   stats: {
     hpMax: number;
@@ -121,7 +120,6 @@ export function profileEmbed(
   const classIcon = classEmoji(player.className);
   const classDisplay = player.className ? capitalize(player.className) : 'None (unlock at Lv.5)';
   const stars = prestigeStars(player.prestige);
-  const expBar = progressBar(player.exp, player.expToNext, 12);
 
   const equipLines = equipment.length > 0
     ? equipment.map((e) => `${RARITY_EMOJIS[e.rarity] || '⚪'} **${e.slot}**: ${e.name}`).join('\n')
@@ -133,7 +131,7 @@ export function profileEmbed(
     .setDescription(
       `${DIVIDER}\n` +
       `**Level ${player.level}** ${classDisplay}\n` +
-      `${expBar} \`${player.exp}/${player.expToNext} EXP\`\n` +
+      `📜 Story: **${player.storyQuestName}**\n` +
       (player.prestige > 0 ? `🏅 Prestige: **${player.prestige}**\n` : '') +
       `${DIVIDER_SHORT}`,
     )

@@ -1,0 +1,14 @@
+{
+  "id": "potion_rejuvenation",
+  "name": "Rejuvenation Potion",
+  "description": "Fully restores HP and Mana.",
+  "type": "consumable",
+  "rarity": "epic",
+  "stats": {
+    "hp": 10000,
+    "mana": 10000
+  },
+  "buyPrice": 500,
+  "sellPrice": 200,
+  "levelReq": 12
+}

@@ -1,0 +1,10 @@
+{
+  "id": "mat_silver_ore",
+  "name": "Silver Ore",
+  "description": "Precious ore prized for its high magical conductivity and jewelry making.",
+  "type": "material",
+  "rarity": "rare",
+  "buyPrice": 100,
+  "sellPrice": 40,
+  "levelReq": 8
+}

@@ -1,0 +1,15 @@
+{
+  "id": "weapon_shadow_reaper",
+  "name": "Shadow Scythe Reaper",
+  "description": "A long scythe infused with shadow energy, dealing massive critical damage.",
+  "type": "weapon",
+  "rarity": "epic",
+  "stats": {
+    "attack": 50,
+    "critChance": 8
+  },
+  "buyPrice": 4800,
+  "sellPrice": 1800,
+  "levelReq": 16,
+  "maxDurability": 160
+}

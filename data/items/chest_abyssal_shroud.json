@@ -1,0 +1,15 @@
+{
+  "id": "chest_abyssal_shroud",
+  "name": "Abyssal Shroud Plate",
+  "description": "Chest armor forged in the deep sea abyss. Extremely silent.",
+  "type": "chest",
+  "rarity": "epic",
+  "stats": {
+    "defense": 30,
+    "speed": 10
+  },
+  "buyPrice": 5200,
+  "sellPrice": 2100,
+  "levelReq": 16,
+  "maxDurability": 150
+}

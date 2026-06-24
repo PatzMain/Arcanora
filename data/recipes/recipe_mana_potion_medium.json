@@ -1,0 +1,20 @@
+{
+  "id": "recipe_mana_potion_medium",
+  "name": "Medium Mana Potion Brewing",
+  "description": "Brew a Medium Mana Potion using herbs and a small mana potion.",
+  "resultItemId": "potion_mana_medium",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_herbs",
+      "quantity": 3
+    },
+    {
+      "itemId": "potion_mana_small",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 3,
+  "successRate": 95,
+  "craftingExpReward": 25
+}

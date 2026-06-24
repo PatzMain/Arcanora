@@ -1,0 +1,14 @@
+{
+  "id": "ach_quests_5",
+  "name": "Helpful Citizen",
+  "description": "Complete 5 quests.",
+  "condition": {
+    "type": "quests_completed",
+    "value": 5
+  },
+  "rewards": {
+    "gold": 200,
+    "gems": 2
+  },
+  "hidden": false
+}

@@ -1,0 +1,19 @@
+{
+  "id": "story_07_golem_slay",
+  "name": "Golem Cleansing",
+  "description": "Slay 6 Crystal Golems to clear path for miners.",
+  "type": "story",
+  "levelReq": 7,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "crystal_golem",
+      "required": 6
+    }
+  ],
+  "rewards": {
+    "gold": 700,
+    "gems": 20
+  }
+}

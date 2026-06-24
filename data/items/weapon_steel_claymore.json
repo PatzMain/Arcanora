@@ -1,0 +1,15 @@
+{
+  "id": "weapon_steel_claymore",
+  "name": "Steel Claymore",
+  "description": "A heavy two-handed sword that deals solid damage.",
+  "type": "weapon",
+  "rarity": "uncommon",
+  "stats": {
+    "attack": 10,
+    "defense": 10
+  },
+  "buyPrice": 300,
+  "sellPrice": 100,
+  "levelReq": 5,
+  "maxDurability": 80
+}

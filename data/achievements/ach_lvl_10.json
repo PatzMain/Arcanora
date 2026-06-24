@@ -1,0 +1,15 @@
+{
+  "id": "ach_lvl_10",
+  "name": "Vanguard of Arcanora",
+  "description": "Reach level 10.",
+  "condition": {
+    "type": "level",
+    "value": 10
+  },
+  "rewards": {
+    "gold": 1000,
+    "gems": 10,
+    "title": "Vanguard"
+  },
+  "hidden": false
+}

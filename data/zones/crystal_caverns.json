@@ -1,0 +1,38 @@
+{
+  "id": "crystal_caverns",
+  "name": "Glittering Depths",
+  "description": "A breathtaking underground labyrinth illuminated by clusters of glowing, resonant crystals. Watch your step, as lethal beasts hunt in the prismatic reflections.",
+  "minLevel": 6,
+  "maxLevel": 10,
+  "explorationCooldown": 120,
+  "enemies": [
+    "crystal_golem",
+    "gem_serpent",
+    "cave_troll",
+    "glowbat_swarm",
+    "prismatic_drake",
+    "crystal_colossus"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 45
+    },
+    {
+      "type": "empty",
+      "weight": 15
+    },
+    {
+      "type": "treasure",
+      "weight": 20
+    },
+    {
+      "type": "rare_mob",
+      "weight": 15
+    },
+    {
+      "type": "boss",
+      "weight": 5
+    }
+  ]
+}

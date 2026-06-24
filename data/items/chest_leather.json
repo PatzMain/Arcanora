@@ -1,0 +1,15 @@
+{
+  "id": "chest_leather",
+  "name": "Scout's Leather Vest",
+  "description": "Comfortable leather chest protection offering decent movement.",
+  "type": "chest",
+  "rarity": "common",
+  "stats": {
+    "defense": 10,
+    "hpMax": 20
+  },
+  "buyPrice": 80,
+  "sellPrice": 25,
+  "levelReq": 1,
+  "maxDurability": 50
+}

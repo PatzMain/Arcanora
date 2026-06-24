@@ -1,0 +1,10 @@
+{
+  "id": "mat_wood",
+  "name": "Oak Log",
+  "description": "Sturdy wood used for crafting staves, bows, and shields.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 15,
+  "sellPrice": 5,
+  "levelReq": 1
+}

@@ -16,12 +16,13 @@ import { computeStats } from '../../systems/progression/stats.js';
 import { resolveLoot, getItemData } from '../../systems/exploration/loot.js';
 import { awardGold, awardGems } from '../../economy/currency.js';
 import { getPlayerGuild } from '../../database/queries/guild.js';
-import { getXpForLevel, checkLevelUp } from '../../systems/progression/leveling.js';
-import { updatePlayerLevel, findOrCreatePlayer } from '../../database/queries/player.js';
+import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
 import { combatEmbed, lootEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
+import { advanceQuestProgress } from '../progression/questSystem.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { getNavButtons } from '../../utils/navigation.js';
+import { itemBehaviorRegistry } from '../items/itemBehavior.js';
 
 
 
@@ -194,21 +195,35 @@ export async function handleCombatInteraction(
         }
 
         // Apply item effects
-        if (itemDef.stats.hp) {
-          state.playerHp = Math.min(state.playerMaxHp, state.playerHp + itemDef.stats.hp);
-        }
-        if (itemDef.stats.mana) {
-          state.playerMana = Math.min(state.playerMaxMana, state.playerMana + itemDef.stats.mana);
-        }
-        if (itemDef.stats.attack) {
-          state.playerBuffs.push({
-            id: `${itemDef.id}_buff`,
-            name: `${itemDef.name} (Atk ↑)`,
-            type: 'buff',
-            stat: 'attack',
-            value: itemDef.stats.attack,
-            turnsRemaining: 3
+        const customBehavior = itemBehaviorRegistry.get(itemDef.id);
+        if (customBehavior) {
+          const result = await customBehavior.onUse({
+            playerId: player.id,
+            state: state,
+            itemDef,
+            dbItem
           });
+          if (!result.success) {
+            await interaction.followUp({ content: `❌ Failed to use item: ${result.log || 'Unknown error'}`, ephemeral: true });
+            return;
+          }
+        } else {
+          if (itemDef.stats?.hp) {
+            state.playerHp = Math.min(state.playerMaxHp, state.playerHp + itemDef.stats.hp);
+          }
+          if (itemDef.stats?.mana) {
+            state.playerMana = Math.min(state.playerMaxMana, state.playerMana + itemDef.stats.mana);
+          }
+          if (itemDef.stats?.attack) {
+            state.playerBuffs.push({
+              id: `${itemDef.id}_buff`,
+              name: `${itemDef.name} (Atk ↑)`,
+              type: 'buff',
+              stat: 'attack',
+              value: itemDef.stats.attack,
+              turnsRemaining: 3
+            });
+          }
         }
 
         // Consume 1 item
@@ -282,30 +297,21 @@ export async function handleCombatInteraction(
           }
         }
 
-        // Process experience and leveling
-        const check = checkLevelUp(player.level, player.exp + expGained);
-
+        // No combat EXP in quest-based progression
         await db
           .update(players)
           .set({
-            level: check.newLevel,
-            exp: check.remainingExp,
             hpCurrent: Math.max(10, state.playerHp), // ensure they don't stay dead
             manaCurrent: state.playerMana
           })
           .where(eq(players.id, player.id));
 
-        const embed = lootEmbed(acquiredItems, goldGained, expGained);
+        const embed = lootEmbed(acquiredItems, goldGained, 0);
         embed.setTitle(`🏆 Victory! Defeated ${enemyDef.name}`);
         embed.setDescription(`You successfully defeated the **Lv.${enemyDef.level} ${enemyDef.name}**.`);
 
-        if (check.levelsGained > 0) {
-          embed.addFields({
-            name: '🎉 LEVEL UP!',
-            value: `You reached **Level ${check.newLevel}**!`,
-            inline: false
-          });
-        }
+        // Advance quest progress for defeating the mob
+        await advanceQuestProgress(player.id, 'kill', enemyDef.id, 1, interaction);
 
         const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
         await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });

@@ -1,0 +1,14 @@
+{
+  "id": "ach_lvl_5",
+  "name": "Getting Stronger",
+  "description": "Reach level 5.",
+  "condition": {
+    "type": "level",
+    "value": 5
+  },
+  "rewards": {
+    "gold": 300,
+    "gems": 5
+  },
+  "hidden": false
+}

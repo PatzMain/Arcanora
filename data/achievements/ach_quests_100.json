@@ -1,0 +1,15 @@
+{
+  "id": "ach_quests_100",
+  "name": "Taskmaster",
+  "description": "Complete 100 quests.",
+  "condition": {
+    "type": "quests_completed",
+    "value": 100
+  },
+  "rewards": {
+    "gold": 5000,
+    "gems": 50,
+    "title": "Questmaster"
+  },
+  "hidden": false
+}

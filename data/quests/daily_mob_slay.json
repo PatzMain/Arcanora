@@ -1,0 +1,19 @@
+{
+  "id": "daily_mob_slay",
+  "name": "Meadow Ranger",
+  "description": "Slay 5 Forest Sprites to keep the roads safe.",
+  "type": "daily",
+  "levelReq": 1,
+  "repeatable": true,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "forest_sprite",
+      "required": 5
+    }
+  ],
+  "rewards": {
+    "gold": 150,
+    "exp": 80
+  }
+}

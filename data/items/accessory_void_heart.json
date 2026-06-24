@@ -1,0 +1,16 @@
+{
+  "id": "accessory_void_heart",
+  "name": "Core of the Void",
+  "description": "An accessory containing the pulsing heart of a void entity. Unstable power.",
+  "type": "accessory",
+  "rarity": "mythic",
+  "stats": {
+    "attack": 20,
+    "critChance": 8,
+    "critDmg": 25,
+    "luck": 10
+  },
+  "buyPrice": 8000,
+  "sellPrice": 3200,
+  "levelReq": 18
+}

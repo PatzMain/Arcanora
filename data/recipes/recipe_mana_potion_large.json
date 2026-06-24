@@ -1,0 +1,24 @@
+{
+  "id": "recipe_mana_potion_large",
+  "name": "Large Mana Potion Brewing",
+  "description": "Brew a Large Mana Potion using herbs, crystal shards, and a medium mana potion.",
+  "resultItemId": "potion_mana_large",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_herbs",
+      "quantity": 5
+    },
+    {
+      "itemId": "mat_crystal_shard",
+      "quantity": 1
+    },
+    {
+      "itemId": "potion_mana_medium",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 8,
+  "successRate": 90,
+  "craftingExpReward": 60
+}

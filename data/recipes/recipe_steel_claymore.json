@@ -1,0 +1,20 @@
+{
+  "id": "recipe_steel_claymore",
+  "name": "Steel Claymore Forging",
+  "description": "Forge a mighty Steel Claymore using iron ore and wood.",
+  "resultItemId": "weapon_steel_claymore",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_iron_ore",
+      "quantity": 8
+    },
+    {
+      "itemId": "mat_wood",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 5,
+  "successRate": 80,
+  "craftingExpReward": 120
+}

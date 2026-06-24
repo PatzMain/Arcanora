@@ -1,0 +1,20 @@
+{
+  "id": "pet_ancient_golem",
+  "name": "Ancient Golem",
+  "description": "A small rock construct made from ancient mossy ruins.",
+  "rarity": "rare",
+  "baseStats": {
+    "attack": 2,
+    "defense": 6,
+    "hpMax": 30,
+    "luck": 1
+  },
+  "ability": {
+    "name": "Granite Armor",
+    "description": "Hardens skin, increasing defense by 6 for 3 turns.",
+    "effect": "buff:defense:6:3",
+    "cooldown": 4
+  },
+  "maxLevel": 15,
+  "expPerLevel": 150
+}

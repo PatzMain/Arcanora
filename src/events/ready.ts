@@ -15,6 +15,7 @@ import * as craftCmd from '../commands/crafting/craft.js';
 import * as guildCmd from '../commands/guilds/guild.js';
 import * as petCmd from '../commands/pets/pet.js';
 import * as adminCmd from '../commands/admin/admin.js';
+import * as mapCmd from '../commands/player/map.js';
 
 export const commandsList = [
   playerCmd,
@@ -29,7 +30,8 @@ export const commandsList = [
   craftCmd,
   guildCmd,
   petCmd,
-  adminCmd
+  adminCmd,
+  mapCmd
 ];
 
 export async function execute(client: Client) {

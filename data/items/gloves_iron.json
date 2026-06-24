@@ -1,0 +1,15 @@
+{
+  "id": "gloves_iron",
+  "name": "Soldier's Iron Gauntlets",
+  "description": "Heavy gauntlets to protect your hands.",
+  "type": "gloves",
+  "rarity": "uncommon",
+  "stats": {
+    "defense": 10,
+    "attack": 10
+  },
+  "buyPrice": 110,
+  "sellPrice": 35,
+  "levelReq": 5,
+  "maxDurability": 70
+}

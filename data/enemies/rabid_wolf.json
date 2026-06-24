@@ -1,0 +1,46 @@
+{
+  "id": "rabid_wolf",
+  "name": "Rabid Wolf",
+  "description": "A savage, frothing wolf with relentless aggression.",
+  "zone": "verdant_meadows",
+  "rarity": "rare",
+  "level": 3,
+  "stats": {
+    "hp": 110,
+    "attack": 20,
+    "defense": 10,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "frenzy",
+      "name": "Frenzied Bite",
+      "damage": 22,
+      "effect": {
+        "id": "rabies",
+        "name": "Rabies",
+        "type": "debuff",
+        "damagePerTurn": 5,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 35
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 80,
+      "minQty": 2,
+      "maxQty": 4
+    },
+    {
+      "itemId": "weapon_hunting_bow",
+      "dropRate": 25,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 60,
+  "goldReward": 45
+}

@@ -1,0 +1,15 @@
+{
+  "id": "helmet_leather",
+  "name": "Scout's Leather Cap",
+  "description": "Simple leather protection for the head.",
+  "type": "helmet",
+  "rarity": "common",
+  "stats": {
+    "defense": 10,
+    "hpMax": 10
+  },
+  "buyPrice": 40,
+  "sellPrice": 12,
+  "levelReq": 1,
+  "maxDurability": 40
+}

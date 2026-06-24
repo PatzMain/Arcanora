@@ -1,0 +1,10 @@
+{
+  "id": "mat_leather",
+  "name": "Raw Leather",
+  "description": "Tough hide suitable for crafting lightweight armor.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 15,
+  "sellPrice": 5,
+  "levelReq": 1
+}

@@ -1,0 +1,15 @@
+{
+  "id": "chest_plated_mail",
+  "name": "Heavy Plated Mail",
+  "description": "Thick iron plates welded together over chainmail.",
+  "type": "chest",
+  "rarity": "uncommon",
+  "stats": {
+    "defense": 10,
+    "hpMax": 20
+  },
+  "buyPrice": 450,
+  "sellPrice": 180,
+  "levelReq": 7,
+  "maxDurability": 100
+}

@@ -1,0 +1,13 @@
+{
+  "id": "ach_kills_10",
+  "name": "Monster Hunter",
+  "description": "Defeat 10 monsters in combat.",
+  "condition": {
+    "type": "kills",
+    "value": 10
+  },
+  "rewards": {
+    "gold": 100
+  },
+  "hidden": false
+}

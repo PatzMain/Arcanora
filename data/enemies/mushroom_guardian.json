@@ -1,0 +1,58 @@
+{
+  "id": "mushroom_guardian",
+  "name": "Mushroom Guardian",
+  "description": "A giant, sentient fungus that commands the forest undergrowth.",
+  "zone": "verdant_meadows",
+  "rarity": "boss",
+  "level": 3,
+  "stats": {
+    "hp": 250,
+    "attack": 20,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "spore_cloud",
+      "name": "Spore Cloud",
+      "damage": 12,
+      "effect": {
+        "id": "poison",
+        "name": "Poisoned",
+        "type": "debuff",
+        "damagePerTurn": 6,
+        "duration": 4,
+        "target": "player"
+      },
+      "chance": 40
+    },
+    {
+      "id": "fungal_growth",
+      "name": "Fungal Growth",
+      "healing": 40,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_herbs",
+      "dropRate": 100,
+      "minQty": 3,
+      "maxQty": 6
+    },
+    {
+      "itemId": "accessory_wooden_ring",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 1
+    },
+    {
+      "itemId": "potion_health_medium",
+      "dropRate": 60,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 150,
+  "goldReward": 120
+}

@@ -1,0 +1,51 @@
+{
+  "id": "ancient_hollow",
+  "name": "Ancient Hollow",
+  "description": "The heart of the forest. A colossal, hollow oak animated by pure corruption.",
+  "zone": "shadow_forest",
+  "rarity": "boss",
+  "level": 6,
+  "stats": {
+    "hp": 550,
+    "attack": 30,
+    "defense": 20,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "crush",
+      "name": "Colossal Branch Slam",
+      "damage": 40,
+      "chance": 30
+    },
+    {
+      "id": "drain_life",
+      "name": "Drain Life",
+      "damage": 25,
+      "healing": 25,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_wood",
+      "dropRate": 100,
+      "minQty": 5,
+      "maxQty": 10
+    },
+    {
+      "itemId": "chest_leather",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    },
+    {
+      "itemId": "potion_health_medium",
+      "dropRate": 80,
+      "minQty": 1,
+      "maxQty": 3
+    }
+  ],
+  "expReward": 350,
+  "goldReward": 250
+}

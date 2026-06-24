@@ -1,0 +1,53 @@
+{
+  "id": "nightshade_witch",
+  "name": "Nightshade Witch",
+  "description": "A sinister practitioner of dark hexes who brews deadly poisons.",
+  "zone": "shadow_forest",
+  "rarity": "rare",
+  "level": 5,
+  "stats": {
+    "hp": 180,
+    "attack": 20,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "hex",
+      "name": "Hex of Weakness",
+      "damage": 20,
+      "effect": {
+        "id": "hexed",
+        "name": "Hexed",
+        "type": "debuff",
+        "stat": "defense",
+        "value": 6,
+        "duration": 3,
+        "target": "player"
+      },
+      "chance": 40
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_spider_silk",
+      "dropRate": 70,
+      "minQty": 2,
+      "maxQty": 4
+    },
+    {
+      "itemId": "weapon_novice_staff",
+      "dropRate": 25,
+      "minQty": 1,
+      "maxQty": 1
+    },
+    {
+      "itemId": "potion_mana_medium",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 120,
+  "goldReward": 90
+}

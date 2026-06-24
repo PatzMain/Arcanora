@@ -1,0 +1,17 @@
+{
+  "id": "weapon_infinity_blade",
+  "name": "Infinity Edge Blade",
+  "description": "The ultimate blade of legend, slicing space itself.",
+  "type": "weapon",
+  "rarity": "mythic",
+  "stats": {
+    "attack": 100,
+    "critChance": 15,
+    "critDmg": 60,
+    "speed": 10
+  },
+  "buyPrice": 25000,
+  "sellPrice": 10000,
+  "levelReq": 20,
+  "maxDurability": 250
+}

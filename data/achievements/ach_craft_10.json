@@ -1,0 +1,15 @@
+{
+  "id": "ach_craft_10",
+  "name": "Master Artisan",
+  "description": "Craft 10 items.",
+  "condition": {
+    "type": "items_crafted",
+    "value": 10
+  },
+  "rewards": {
+    "gold": 300,
+    "gems": 5,
+    "title": "Artisan"
+  },
+  "hidden": false
+}

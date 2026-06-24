@@ -8,6 +8,13 @@
       "when": 1782284954306,
       "tag": "0000_fancy_maria_hill",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782302676785,
+      "tag": "0001_long_manta",
+      "breakpoints": true
     }
   ]
 }

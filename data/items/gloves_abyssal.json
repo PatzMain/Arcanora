@@ -1,0 +1,17 @@
+{
+  "id": "gloves_abyssal",
+  "name": "Void Touch Gloves",
+  "description": "Gloves that let you grasp the void. Increases your critical chance.",
+  "type": "gloves",
+  "rarity": "mythic",
+  "stats": {
+    "defense": 20,
+    "attack": 20,
+    "critChance": 5,
+    "speed": 10
+  },
+  "buyPrice": 5000,
+  "sellPrice": 2000,
+  "levelReq": 18,
+  "maxDurability": 180
+}

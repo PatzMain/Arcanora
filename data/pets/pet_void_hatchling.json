@@ -1,0 +1,20 @@
+{
+  "id": "pet_void_hatchling",
+  "name": "Void Hatchling",
+  "description": "An infant dragon from the void, devouring magical spells.",
+  "rarity": "legendary",
+  "baseStats": {
+    "attack": 7,
+    "defense": 3,
+    "hpMax": 25,
+    "luck": 5
+  },
+  "ability": {
+    "name": "Void Devour",
+    "description": "Deals 35 damage and drains 10 mana from the enemy to heal your mana.",
+    "effect": "damage:35:drain_mana:10",
+    "cooldown": 4
+  },
+  "maxLevel": 20,
+  "expPerLevel": 200
+}

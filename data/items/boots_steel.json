@@ -1,0 +1,15 @@
+{
+  "id": "boots_steel",
+  "name": "Knight's Steel Sabatons",
+  "description": "Articulated steel boots protecting your feet.",
+  "type": "boots",
+  "rarity": "rare",
+  "stats": {
+    "defense": 10,
+    "speed": 10
+  },
+  "buyPrice": 450,
+  "sellPrice": 160,
+  "levelReq": 10,
+  "maxDurability": 100
+}

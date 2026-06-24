@@ -257,6 +257,7 @@ export async function runEquip(
         .where(eq(inventory.playerId, player.id));
 
       const targetItem = dbInventory.find((dbItem) => {
+        if (dbItem.id === itemInput) return true;
         const def = catalog.find((i) => i.id === dbItem.itemId);
         if (!def) return false;
         return (
@@ -379,6 +380,7 @@ export async function runSell(
 
       const targetItem = dbInventory.find((dbItem) => {
         if (dbItem.equipped) return false;
+        if (dbItem.id === itemInput) return true;
         const def = catalog.find((i) => i.id === dbItem.itemId);
         if (!def) return false;
         return (

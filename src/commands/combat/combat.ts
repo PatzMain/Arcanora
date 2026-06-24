@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { eq, and } from 'drizzle-orm';
-import { findOrCreatePlayer } from '../../database/queries/player.js';
+import { findOrCreatePlayer, getPlayerWithClampedStats } from '../../database/queries/player.js';
 import { getEquippedItems, addItem } from '../../database/queries/inventory.js';
 import { checkCooldown, setCooldown } from '../../utils/cooldown.js';
 import { getZoneById, generateEncounter, getZoneCooldownMs } from '../../systems/exploration/zones.js';
@@ -23,6 +23,7 @@ import { combatSessions, playerSkills, inventory } from '../../database/schema.j
 import { SKILLS } from '../../systems/combat/skills.js';
 import { awardGold } from '../../economy/currency.js';
 import { getNavButtons } from '../../utils/navigation.js';
+import { advanceQuestProgress } from '../../systems/progression/questSystem.js';
 import {
   successEmbed,
   errorEmbed,
@@ -37,20 +38,7 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName('explore')
-      .setDescription('Explore a zone to fight monsters or find treasure.')
-      .addStringOption((option) =>
-        option
-          .setName('zone')
-          .setDescription('The zone to explore.')
-          .setRequired(true)
-          .addChoices(
-            { name: 'Verdant Meadows (Lv. 1-3)', value: 'verdant_meadows' },
-            { name: 'Shadow Forest (Lv. 3-6)', value: 'shadow_forest' },
-            { name: 'Crystal Caverns (Lv. 6-10)', value: 'crystal_caverns' },
-            { name: 'Volcanic Wastes (Lv. 10-15)', value: 'volcanic_wastes' },
-            { name: 'Abyssal Depths (Lv. 15-20)', value: 'abyssal_depths' }
-          )
-      )
+      .setDescription('Explore your current zone to fight monsters or find treasure.')
   )
   .addSubcommand((subcommand) =>
     subcommand
@@ -81,8 +69,7 @@ async function replyOrUpdate(
 export async function execute(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
   if (subcommand === 'explore') {
-    const zoneId = interaction.options.getString('zone', true);
-    await runExplore(interaction, zoneId);
+    await runExplore(interaction);
   } else if (subcommand === 'fight') {
     await runFight(interaction);
   }
@@ -102,10 +89,17 @@ export async function runExplore(
     }
 
     const discordId = interaction.user.id;
-    const username = interaction.user.username;
 
-    // Load player
-    const player = await findOrCreatePlayer(discordId, username);
+    // Load player and clamp stats
+    const player = await getPlayerWithClampedStats(discordId);
+    if (!player) {
+      const embed = errorEmbed(
+        'Onboarding Required',
+        'Please run the `/tutorial` command to create your character profile first.'
+      );
+      await interaction.editReply({ embeds: [embed], components: [] });
+      return;
+    }
 
     // 1. Check if in active combat
     const activeSession = await db.query.combatSessions.findFirst({
@@ -135,8 +129,8 @@ export async function runExplore(
       return;
     }
 
-    // Default to 'verdant_meadows' if not specified
-    const selectedZoneId = zoneId || 'verdant_meadows';
+    // Default to player's currentZoneId if not specified
+    const selectedZoneId = zoneId || player.currentZoneId || 'verdant_meadows';
     const zone = getZoneById(selectedZoneId);
 
     if (!zone) {
@@ -158,6 +152,9 @@ export async function runExplore(
     // 4. Set general explore cooldown based on zone
     const cooldownMs = getZoneCooldownMs(zone);
     await setCooldown(player.id, 'explore', cooldownMs);
+
+    // Advance quest progress for exploring the zone
+    await advanceQuestProgress(player.id, 'explore', selectedZoneId, 1, interaction);
 
     // 5. Generate encounter
     const encounter = generateEncounter(zone);
@@ -332,10 +329,17 @@ export async function runFight(
     }
 
     const discordId = interaction.user.id;
-    const username = interaction.user.username;
 
-    // Load player
-    const player = await findOrCreatePlayer(discordId, username);
+    // Load player and clamp stats
+    const player = await getPlayerWithClampedStats(discordId);
+    if (!player) {
+      const embed = errorEmbed(
+        'Onboarding Required',
+        'Please run the `/tutorial` command to create your character profile first.'
+      );
+      await interaction.editReply({ embeds: [embed], components: [] });
+      return;
+    }
 
     // Fetch active session
     const activeSession = await db.query.combatSessions.findFirst({

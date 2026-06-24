@@ -1,0 +1,15 @@
+{
+  "id": "chest_obsidian",
+  "name": "Obsidian Plate Mail",
+  "description": "Heavy scale armor made of basalt and obsidian sheets.",
+  "type": "chest",
+  "rarity": "epic",
+  "stats": {
+    "defense": 30,
+    "hpMax": 150
+  },
+  "buyPrice": 3500,
+  "sellPrice": 1300,
+  "levelReq": 15,
+  "maxDurability": 160
+}
