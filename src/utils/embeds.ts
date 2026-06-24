@@ -526,6 +526,100 @@ export function helpOverviewEmbed(): EmbedBuilder {
 }
 
 /**
+ * World Boss status and info card.
+ */
+export function bossInfoEmbed(
+  boss: { name: string; level: number; description: string },
+  hpCurrent: number,
+  hpMax: number,
+  topContributors: { username: string; damageDealt: number }[],
+): EmbedBuilder {
+  const hpPercent = Math.max(0, Math.round((hpCurrent / hpMax) * 100));
+  const contributorsList = topContributors.length > 0
+    ? topContributors.map((c, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⚔️';
+        return `${medal} **${c.username}** — \`${c.damageDealt.toLocaleString()} DMG\``;
+      }).join('\n')
+    : '*No damage dealt yet. Be the first to strike!*';
+
+  return baseEmbed()
+    .setColor(COLORS.MYTHIC)
+    .setTitle(`🚨 World Boss: ${boss.name} (Lv.${boss.level})`)
+    .setDescription(
+      `*${boss.description}*\n\n` +
+      `**Health Pool:**\n` +
+      `${hpBar(hpCurrent, hpMax, 15)} \`${hpPercent}% (${hpCurrent.toLocaleString()} / ${hpMax.toLocaleString()})\`\n\n` +
+      `**Top Contributors:**\n` +
+      `${contributorsList}\n\n` +
+      `${DIVIDER_SHORT}\n` +
+      `*⚔️ Use \`/boss fight\` in this channel to join the raid!*`
+    );
+}
+
+/**
+ * Live skirmish card for a player battling the boss.
+ */
+export function bossSkirmishEmbed(
+  boss: { name: string; level: number },
+  bossHpCurrent: number,
+  bossHpMax: number,
+  player: { username: string; hpCurrent: number; hpMax: number; manaCurrent: number; manaMax: number },
+  combatLog: string[],
+): EmbedBuilder {
+  const logLines = combatLog.slice(-4).map((line) => `▸ ${line}`).join('\n') || '*Raid skirmish starting...*';
+
+  return baseEmbed()
+    .setColor(COLORS.MYTHIC)
+    .setTitle(`⚔️ Raid Skirmish — Lv.${boss.level} ${boss.name}`)
+    .setDescription(
+      `**Boss Health:**\n` +
+      `${hpBar(bossHpCurrent, bossHpMax, 15)} \`${bossHpCurrent.toLocaleString()} / ${bossHpMax.toLocaleString()} HP\`\n\n` +
+      `**Your Status:**\n` +
+      `❤️ HP:   ${hpBar(player.hpCurrent, player.hpMax, 10)} \`${player.hpCurrent}/${player.hpMax}\`\n` +
+      `💧 Mana: ${hpBar(player.manaCurrent, player.manaMax, 10)} \`${player.manaCurrent}/${player.manaMax}\`\n\n` +
+      `**Activity Log:**\n` +
+      `${logLines}`
+    );
+}
+
+/**
+ * Victory embed shown when a boss is defeated.
+ */
+export function bossVictoryEmbed(
+  boss: { name: string; level: number },
+  mvpUsername: string,
+  rankings: { username: string; damageDealt: number; rank: number; percent: number }[],
+  rewardsList: { username: string; gold: number; exp: number; bonusLoot: boolean }[],
+): EmbedBuilder {
+  const rankingLines = rankings.map((r) => {
+    const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : '⚔️';
+    return `${medal} **Rank ${r.rank}**: **${r.username}** — \`${r.damageDealt.toLocaleString()} DMG\` (${r.percent}%)`;
+  }).join('\n') || '*No participants recorded.*';
+
+  const rewardLines = rewardsList.map((w) => {
+    let line = `▸ **${w.username}**: \`+${w.gold.toLocaleString()} Gold\`, \`+${w.exp.toLocaleString()} EXP\``;
+    if (w.bonusLoot) {
+      line += ` ✨ *(Bonus Item!)*`;
+    }
+    return line;
+  }).join('\n') || '*No rewards distributed.*';
+
+  return baseEmbed()
+    .setColor(COLORS.GOLD)
+    .setTitle(`🏆 World Boss Slain: ${boss.name}! 🏆`)
+    .setDescription(
+      `🎉 **${boss.name} (Lv.${boss.level})** has been defeated!\n\n` +
+      `👑 **MVP**: **${mvpUsername}**\n\n` +
+      `**Final Damage Contribution:**\n` +
+      `${rankingLines}\n\n` +
+      `**Rewards Distributed:**\n` +
+      `${rewardLines}\n\n` +
+      `${DIVIDER_SHORT}\n` +
+      `*Congratulations to all adventurers!*`
+    );
+}
+
+/**
  * Error message embed with danger styling.
  */
 export function errorEmbed(title: string, description: string): EmbedBuilder {

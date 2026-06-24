@@ -10,6 +10,7 @@ import * as tutorialCmd from '../commands/player/tutorial.js';
 import * as helpCmd from '../commands/player/help.js';
 import * as exploreCmd from '../commands/combat/explore.js';
 import * as fightCmd from '../commands/combat/fight.js';
+import * as bossCmd from '../commands/combat/boss.js';
 import * as bagCmd from '../commands/inventory/bag.js';
 import * as equipCmd from '../commands/inventory/equip.js';
 import * as sellCmd from '../commands/inventory/sell.js';
@@ -33,6 +34,7 @@ export const commandsList = [
   helpCmd,
   exploreCmd,
   fightCmd,
+  bossCmd,
   bagCmd,
   equipCmd,
   sellCmd,

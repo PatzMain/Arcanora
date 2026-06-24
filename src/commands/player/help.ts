@@ -31,7 +31,9 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
     description: 'Fight monsters and explore zones',
     commands: [
       { name: 'explore', description: 'Explore a zone to fight enemies and find loot.', usage: '/explore [zone]' },
-      { name: 'fight', description: 'Fight a monster or continue an active combat encounter.', usage: '/fight' }
+      { name: 'fight', description: 'Fight a monster or continue an active combat encounter.', usage: '/fight' },
+      { name: 'boss info', description: 'View current active World Boss status and contribution leaderboard.', usage: '/boss info' },
+      { name: 'boss fight', description: 'Join the raid and fight the active World Boss.', usage: '/boss fight' }
     ]
   },
   inventory: {
