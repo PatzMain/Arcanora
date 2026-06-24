@@ -3,7 +3,8 @@ import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
   ComponentType,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
+  type ButtonInteraction
 } from 'discord.js';
 import { helpOverviewEmbed, helpEmbed, errorEmbed } from '../../utils/embeds.js';
 
@@ -30,8 +31,8 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
     title: 'Combat',
     description: 'Fight monsters and explore zones',
     commands: [
-      { name: 'explore', description: 'Explore a zone to fight enemies and find loot.', usage: '/explore [zone]' },
-      { name: 'fight', description: 'Fight a monster or continue an active combat encounter.', usage: '/fight' },
+      { name: 'combat explore', description: 'Explore a zone to fight enemies and find loot.', usage: '/combat explore zone: [zone]' },
+      { name: 'combat fight', description: 'Fight a monster or continue an active combat encounter.', usage: '/combat fight' },
       { name: 'boss info', description: 'View current active World Boss status and contribution leaderboard.', usage: '/boss info' },
       { name: 'boss fight', description: 'Join the raid and fight the active World Boss.', usage: '/boss fight' }
     ]
@@ -41,18 +42,19 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
     title: 'Inventory',
     description: 'Manage your items and gear',
     commands: [
-      { name: 'bag', description: 'View items in your bag.', usage: '/bag [page]' },
-      { name: 'equip', description: 'Equip an item from your bag.', usage: '/equip [item]' },
-      { name: 'sell', description: 'Sell items from your inventory for gold.', usage: '/sell item: [item] quantity: [qty]' }
+      { name: 'inventory bag', description: 'View items in your bag.', usage: '/inventory bag page: [page]' },
+      { name: 'inventory equip', description: 'Equip an item from your bag.', usage: '/inventory equip item: [item]' },
+      { name: 'inventory sell', description: 'Sell items from your inventory for gold.', usage: '/inventory sell item: [item] quantity: [qty]' }
     ]
   },
   economy: {
     emoji: '🏪',
     title: 'Economy',
-    description: 'Gold, shops, and transactions',
+    description: 'Gold, NPC shop, and balances',
     commands: [
-      { name: 'balance', description: 'Check your current gold and gems.', usage: '/balance' },
-      { name: 'shop', description: 'Browse the shop to buy items or sell loot.', usage: '/shop' }
+      { name: 'economy balance', description: 'Check your current gold and gems.', usage: '/economy balance' },
+      { name: 'economy shop', description: 'Browse the NPC shop to buy items.', usage: '/economy shop page: [page]' },
+      { name: 'economy buy', description: 'Buy an item from the NPC shop with custom quantity.', usage: '/economy buy item: [item] quantity: [qty]' }
     ]
   },
   crafting: {
@@ -60,7 +62,7 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
     title: 'Crafting',
     description: 'Forge powerful equipment',
     commands: [
-      { name: 'craft', description: 'Forge equipment using materials in your inventory.', usage: '/craft [recipe]' }
+      { name: 'craft', description: 'Forge equipment using materials in your inventory.', usage: '/craft recipe: [recipe]' }
     ]
   },
   quests: {
@@ -68,10 +70,10 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
     title: 'Quests',
     description: 'Take on challenges for rewards',
     commands: [
-      { name: 'quests active', description: 'View your currently active quests and progress.', usage: '/quests active' },
-      { name: 'quests board', description: 'Browse quests available to accept.', usage: '/quests board' },
-      { name: 'quests accept', description: 'Accept a quest from the board.', usage: '/quests accept quest_id: [quest_id]' },
-      { name: 'daily', description: 'Claim your daily rewards of gold, gems, and items.', usage: '/daily' }
+      { name: 'quest active', description: 'View your currently active quests and progress.', usage: '/quest active' },
+      { name: 'quest board', description: 'Browse quests available to accept.', usage: '/quest board' },
+      { name: 'quest accept', description: 'Accept a quest from the board.', usage: '/quest accept quest_id: [quest_id]' },
+      { name: 'quest daily', description: 'Claim your daily rewards of gold and gems.', usage: '/quest daily' }
     ]
   },
   pets: {
@@ -87,14 +89,14 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
   guilds: {
     emoji: '🏰',
     title: 'Guilds',
-    description: 'Join or create a guild',
+    description: 'Join, create, or view leaderboards',
     commands: [
-      { name: 'guild info', description: 'View information about a guild.', usage: '/guild info [name]' },
+      { name: 'guild info', description: 'View information about a guild.', usage: '/guild info name: [name]' },
       { name: 'guild create', description: 'Create a new guild.', usage: '/guild create name: [guild_name]' },
       { name: 'guild join', description: 'Join an existing guild.', usage: '/guild join name: [guild_name]' },
       { name: 'guild leave', description: 'Leave your current guild.', usage: '/guild leave' },
       { name: 'guild kick', description: 'Kick a member from your guild (Leader only).', usage: '/guild kick user: [user]' },
-      { name: 'leaderboard', description: 'View the top players and guilds.', usage: '/leaderboard' }
+      { name: 'guild leaderboard', description: 'View the top players and guilds.', usage: '/guild leaderboard category: [category]' }
     ]
   },
   player: {
@@ -102,9 +104,9 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
     title: 'Player',
     description: 'Profile, stats, and progression',
     commands: [
-      { name: 'profile', description: 'View your player character card, level, and stats.', usage: '/profile' },
-      { name: 'stats', description: 'Allocate attribute points to increase your stats.', usage: '/stats' },
-      { name: 'prestige', description: 'Reset your level for permanent stat bonuses.', usage: '/prestige' },
+      { name: 'player profile', description: 'View your player character card, level, and stats.', usage: '/player profile' },
+      { name: 'player stats', description: 'View your detailed attribute sheet.', usage: '/player stats' },
+      { name: 'player prestige', description: 'Reset your level for permanent stat bonuses.', usage: '/player prestige' },
       { name: 'tutorial', description: 'Start your adventure and learn the basics of Arcanora.', usage: '/tutorial' },
       { name: 'invite', description: 'Get the invite link to add Arcanora to other servers.', usage: '/invite' }
     ]
@@ -112,11 +114,23 @@ const HELP_CATEGORIES: Record<string, HelpCategory> = {
 };
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+  await runHelp(interaction);
+}
+
+export async function runHelp(interaction: ChatInputCommandInteraction | ButtonInteraction) {
   try {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
+
     const embed = helpOverviewEmbed();
 
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('help_select')
+      .setCustomId(`help_select_${interaction.user.id}`)
       .setPlaceholder('📖 Choose a help category')
       .addOptions([
         {
@@ -177,56 +191,50 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
-    const response = await interaction.reply({
+    const response = await interaction.editReply({
       embeds: [embed],
-      components: [row],
-      fetchReply: true
+      components: [row]
     });
 
-    while (true) {
-      try {
-        const selectInteraction = await response.awaitMessageComponent({
-          filter: (i) => i.user.id === interaction.user.id,
-          time: 60_000,
-          componentType: ComponentType.StringSelect
-        });
+    const collector = response.createMessageComponentCollector({
+      filter: (i) => i.user.id === interaction.user.id,
+      time: 120_000,
+      componentType: ComponentType.StringSelect
+    });
 
-        const selectedValue = selectInteraction.values[0]!;
-        let nextEmbed;
+    collector.on('collect', async (selectInteraction) => {
+      if (selectInteraction.customId !== `help_select_${interaction.user.id}`) return;
+      const selectedValue = selectInteraction.values[0]!;
+      let nextEmbed;
 
-        if (selectedValue === 'overview') {
-          nextEmbed = helpOverviewEmbed();
-        } else {
-          const category = HELP_CATEGORIES[selectedValue]!;
-          nextEmbed = helpEmbed(category.title, category.emoji, category.commands);
-        }
-
-        await selectInteraction.update({
-          embeds: [nextEmbed],
-          components: [row]
-        });
-      } catch (e) {
-        const disabledMenu = new StringSelectMenuBuilder()
-          .setCustomId('help_select')
-          .setPlaceholder('Help menu timed out')
-          .setDisabled(true)
-          .addOptions({ label: 'Timed out', value: 'timeout' });
-        const disabledRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(disabledMenu);
-        try {
-          await interaction.editReply({ components: [disabledRow] });
-        } catch {}
-        break;
+      if (selectedValue === 'overview') {
+        nextEmbed = helpOverviewEmbed();
+      } else {
+        const category = HELP_CATEGORIES[selectedValue]!;
+        nextEmbed = helpEmbed(category.title, category.emoji, category.commands);
       }
-    }
+
+      await selectInteraction.update({
+        embeds: [nextEmbed],
+        components: [row]
+      });
+    });
+
+    collector.on('end', async () => {
+      const disabledMenu = new StringSelectMenuBuilder()
+        .setCustomId('help_select_disabled')
+        .setPlaceholder('Help menu timed out')
+        .setDisabled(true)
+        .addOptions({ label: 'Timed out', value: 'timeout' });
+      const disabledRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(disabledMenu);
+      try {
+        await interaction.editReply({ components: [disabledRow] });
+      } catch {}
+    });
+
   } catch (error) {
     console.error('Help command error:', error);
     const errEmbed = errorEmbed('Help Error', 'An unexpected error occurred while showing the help menu.');
-    try {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ embeds: [errEmbed], ephemeral: true });
-      } else {
-        await interaction.reply({ embeds: [errEmbed], ephemeral: true });
-      }
-    } catch {}
+    await interaction.editReply({ embeds: [errEmbed], components: [] });
   }
 }

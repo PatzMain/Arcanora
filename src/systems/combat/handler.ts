@@ -21,6 +21,7 @@ import { updatePlayerLevel, findOrCreatePlayer } from '../../database/queries/pl
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
 import { combatEmbed, lootEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { itemsCatalog } from '../../utils/catalog.js';
+import { getNavButtons } from '../../utils/navigation.js';
 
 
 
@@ -231,7 +232,9 @@ export async function handleCombatInteraction(
 
       const embed = successEmbed('Fled Battle', `💨 You successfully fled from the **Lv.${enemyDef.level} ${enemyDef.name}**.`);
       embed.setColor(0xF59E0B); // Amber warnings
-      await interaction.editReply({ embeds: [embed], components: [] });
+      
+      const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+      await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       return;
     }
 
@@ -304,7 +307,8 @@ export async function handleCombatInteraction(
           });
         }
 
-        await interaction.editReply({ embeds: [embed], components: [] });
+        const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+        await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       } else {
         // Defeat!
         // Reset player current HP to 10% of max HP as a revival state
@@ -323,7 +327,8 @@ export async function handleCombatInteraction(
           `💀 You were defeated by the **Lv.${enemyDef.level} ${enemyDef.name}**!\n\n` +
           `*You woke up in town, feeling weak. You recovered **${recoveryHp}** HP.*`
         );
-        await interaction.editReply({ embeds: [embed], components: [] });
+        const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+        await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       }
       return;
     }

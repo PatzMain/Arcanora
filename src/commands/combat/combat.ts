@@ -1,25 +1,28 @@
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
+  ButtonInteraction,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  type InteractionReplyOptions
 } from 'discord.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { eq, and } from 'drizzle-orm';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, addItem } from '../../database/queries/inventory.js';
 import { checkCooldown, setCooldown } from '../../utils/cooldown.js';
-import { getZoneById, getAccessibleZones, generateEncounter, getZoneCooldownMs } from '../../systems/exploration/zones.js';
+import { getZoneById, generateEncounter, getZoneCooldownMs } from '../../systems/exploration/zones.js';
 import { scaleEnemyStats, getEnemyById } from '../../systems/combat/enemy.js';
 import { createCombatState } from '../../systems/combat/engine.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { generateTreasureLoot, getItemData } from '../../systems/exploration/loot.js';
 import { db } from '../../database/client.js';
-import { combatSessions, players, playerSkills, inventory } from '../../database/schema.js';
+import { combatSessions, playerSkills, inventory } from '../../database/schema.js';
 import { SKILLS } from '../../systems/combat/skills.js';
 import { awardGold } from '../../economy/currency.js';
+import { getNavButtons } from '../../utils/navigation.js';
 import {
   successEmbed,
   errorEmbed,
@@ -28,28 +31,75 @@ import {
   lootEmbed
 } from '../../utils/embeds.js';
 
-
-
 export const data = new SlashCommandBuilder()
-  .setName('explore')
-  .setDescription('Explore a zone to fight monsters or find treasure.')
-  .addStringOption((option) =>
-    option
-      .setName('zone')
-      .setDescription('The zone to explore.')
-      .setRequired(true)
-      .addChoices(
-        { name: 'Verdant Meadows (Lv. 1-3)', value: 'verdant_meadows' },
-        { name: 'Shadow Forest (Lv. 3-6)', value: 'shadow_forest' },
-        { name: 'Crystal Caverns (Lv. 6-10)', value: 'crystal_caverns' },
-        { name: 'Volcanic Wastes (Lv. 10-15)', value: 'volcanic_wastes' },
-        { name: 'Abyssal Depths (Lv. 15-20)', value: 'abyssal_depths' }
+  .setName('combat')
+  .setDescription('Combat commands: explore zones or resume a fight.')
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('explore')
+      .setDescription('Explore a zone to fight monsters or find treasure.')
+      .addStringOption((option) =>
+        option
+          .setName('zone')
+          .setDescription('The zone to explore.')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Verdant Meadows (Lv. 1-3)', value: 'verdant_meadows' },
+            { name: 'Shadow Forest (Lv. 3-6)', value: 'shadow_forest' },
+            { name: 'Crystal Caverns (Lv. 6-10)', value: 'crystal_caverns' },
+            { name: 'Volcanic Wastes (Lv. 10-15)', value: 'volcanic_wastes' },
+            { name: 'Abyssal Depths (Lv. 15-20)', value: 'abyssal_depths' }
+          )
       )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('fight')
+      .setDescription('Resume your active combat session.')
   );
 
+// Helper to reply or update interaction depending on type
+async function replyOrUpdate(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  options: any
+) {
+  if (interaction.isButton() || interaction.isStringSelectMenu()) {
+    if (interaction.deferred || interaction.replied) {
+      return await interaction.editReply(options);
+    } else {
+      return await interaction.update(options);
+    }
+  } else {
+    if (interaction.deferred || interaction.replied) {
+      return await interaction.editReply(options);
+    } else {
+      return await interaction.reply(options);
+    }
+  }
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
+  const subcommand = interaction.options.getSubcommand();
+  if (subcommand === 'explore') {
+    const zoneId = interaction.options.getString('zone', true);
+    await runExplore(interaction, zoneId);
+  } else if (subcommand === 'fight') {
+    await runFight(interaction);
+  }
+}
+
+export async function runExplore(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  zoneId?: string
+) {
   try {
-    await interaction.deferReply();
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
 
     const discordId = interaction.user.id;
     const username = interaction.user.username;
@@ -67,9 +117,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       if (expiresAt > Date.now()) {
         const embed = errorEmbed(
           'Already in Combat',
-          'You are currently in an active combat session! Use `/fight` to resume your battle.'
+          'You are currently in an active combat session! Use `/combat fight` to resume your battle.'
         );
-        await interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed], components: [] });
         return;
       } else {
         // Expired session: cleanup
@@ -81,16 +131,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const cooldownStatus = await checkCooldown(player.id, 'explore');
     if (cooldownStatus.onCooldown) {
       const embed = cooldownEmbed('explore', cooldownStatus.remainingMs / 1000);
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed], components: [] });
       return;
     }
 
-    const zoneId = interaction.options.getString('zone', true);
-    const zone = getZoneById(zoneId);
+    // Default to 'verdant_meadows' if not specified
+    const selectedZoneId = zoneId || 'verdant_meadows';
+    const zone = getZoneById(selectedZoneId);
 
     if (!zone) {
       const embed = errorEmbed('Invalid Zone', 'The specified zone does not exist.');
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed], components: [] });
       return;
     }
 
@@ -100,7 +151,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         'Zone Locked',
         `Your level (**Lv.${player.level}**) is too low. **${zone.name}** requires Level **${zone.minLevel}**.`
       );
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed], components: [] });
       return;
     }
 
@@ -116,7 +167,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         `Exploring ${zone.name}`,
         'You spend some time exploring the area, but it remains quiet. Nothing of note was found.'
       );
-      await interaction.editReply({ embeds: [embed] });
+      const navButtons = getNavButtons('combat_fight_victory', player.discordId, selectedZoneId);
+      await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       return;
     }
 
@@ -156,7 +208,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const embed = lootEmbed(acquiredItems, goldGained, 0);
       embed.setTitle(`🎁 Treasure Chest Found in ${zone.name}!`);
       embed.setDescription('You stumbled upon a hidden chest left behind by adventurers.');
-      await interaction.editReply({ embeds: [embed] });
+      
+      const navButtons = getNavButtons('combat_explore_loot', player.discordId, selectedZoneId);
+      await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       return;
     }
 
@@ -164,14 +218,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const enemyId = encounter.enemyId;
     if (!enemyId) {
       const embed = errorEmbed('Encounter Error', 'An error occurred during encounter generation.');
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed], components: [] });
       return;
     }
 
     const enemyDef = getEnemyById(enemyId);
     if (!enemyDef) {
       const embed = errorEmbed('Encounter Error', 'The encountered enemy definition is missing.');
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed], components: [] });
       return;
     }
 
@@ -261,15 +315,120 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   } catch (error: any) {
     console.error(error);
     const embed = errorEmbed('Exploration Error', 'Failed to complete exploration.');
-    if (interaction.deferred) {
-      await interaction.editReply({ embeds: [embed] });
-    } else {
-      await interaction.reply({ embeds: [embed], ephemeral: true });
-    }
+    await interaction.editReply({ embeds: [embed], components: [] });
   }
 }
 
+export async function runFight(
+  interaction: ChatInputCommandInteraction | ButtonInteraction
+) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
 
+    const discordId = interaction.user.id;
+    const username = interaction.user.username;
+
+    // Load player
+    const player = await findOrCreatePlayer(discordId, username);
+
+    // Fetch active session
+    const activeSession = await db.query.combatSessions.findFirst({
+      where: eq(combatSessions.playerId, player.id),
+    });
+
+    if (!activeSession) {
+      const embed = errorEmbed(
+        'Not in Combat',
+        'You do not have an active combat session. Use `/combat explore` to find an enemy!'
+      );
+      const navButtons = getNavButtons('combat_fight_victory', player.discordId);
+      await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
+      return;
+    }
+
+    const expiresAt = new Date(activeSession.expiresAt).getTime();
+    if (expiresAt <= Date.now()) {
+      // Expired: cleanup
+      await db.delete(combatSessions).where(eq(combatSessions.id, activeSession.id));
+      const embed = errorEmbed(
+        'Combat Expired',
+        'Your previous combat session has expired. Start a new one using `/combat explore`!'
+      );
+      const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+      await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
+      return;
+    }
+
+    const enemyDef = getEnemyById(activeSession.enemyId);
+    if (!enemyDef) {
+      const embed = errorEmbed('Combat Error', 'Encountered enemy definition is missing.');
+      await interaction.editReply({ embeds: [embed], components: [] });
+      return;
+    }
+
+    // Load player stats & equipment
+    const equippedDbItems = await getEquippedItems(player.id);
+
+    const equippedItemsList = equippedDbItems.map((dbItem) => {
+      const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+      return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
+    });
+    const playerStats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
+
+    const combatState = activeSession.state as any;
+
+    const embed = combatEmbed(
+      player.username,
+      combatState.playerHp,
+      playerStats.hpMax,
+      combatState.playerMana,
+      playerStats.manaMax,
+      { name: enemyDef.name, level: enemyDef.level },
+      combatState.enemyHp,
+      combatState.enemyMaxHp,
+      combatState.round,
+      combatState.combatLog
+    );
+
+    // Build components
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+    );
+
+    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
+    const itemsRow = await getCombatItemsRow(player.id);
+    const components: any[] = [row];
+    if (selectMenuRow) components.push(selectMenuRow);
+    if (itemsRow) components.push(itemsRow);
+
+    const message = await interaction.editReply({
+      embeds: [embed],
+      components: components as any[]
+    });
+
+    // Update message ID in session
+    await db
+      .update(combatSessions)
+      .set({
+        messageId: message.id,
+        channelId: interaction.channelId || ''
+      })
+      .where(eq(combatSessions.id, activeSession.id));
+
+  } catch (error: any) {
+    console.error(error);
+    const embed = errorEmbed('Combat Error', 'Failed to resume combat session.');
+    await interaction.editReply({ embeds: [embed], components: [] });
+  }
+}
 
 async function getCombatSkillsRow(playerId: string, playerClass: string) {
   try {
@@ -311,7 +470,7 @@ async function getCombatItemsRow(playerId: string) {
         return {
           label: `${def.name} (x${dbItem.quantity})`,
           description: def.description.slice(0, 50),
-          value: dbItem.id // inventoryId
+          value: dbItem.id
         };
       }
       return null;

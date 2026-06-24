@@ -2,52 +2,34 @@ import { type Client, REST, Routes } from 'discord.js';
 import { logger } from '../utils/logger.js';
 
 // Static command imports for absolute compilation safety in CJS/ESM
-import * as profileCmd from '../commands/player/profile.js';
-import * as statsCmd from '../commands/player/stats.js';
-import * as prestigeCmd from '../commands/player/prestige.js';
+import * as playerCmd from '../commands/player/player.js';
 import * as inviteCmd from '../commands/player/invite.js';
 import * as tutorialCmd from '../commands/player/tutorial.js';
 import * as helpCmd from '../commands/player/help.js';
-import * as exploreCmd from '../commands/combat/explore.js';
-import * as fightCmd from '../commands/combat/fight.js';
+import * as combatCmd from '../commands/combat/combat.js';
 import * as bossCmd from '../commands/combat/boss.js';
-import * as bagCmd from '../commands/inventory/bag.js';
-import * as equipCmd from '../commands/inventory/equip.js';
-import * as sellCmd from '../commands/inventory/sell.js';
-import * as shopCmd from '../commands/economy/shop.js';
-import * as balanceCmd from '../commands/economy/balance.js';
-import * as questsCmd from '../commands/quests/quests.js';
-import * as dailyCmd from '../commands/quests/daily.js';
+import * as inventoryCmd from '../commands/inventory/inventory.js';
+import * as economyCmd from '../commands/economy/economy.js';
+import * as questCmd from '../commands/quests/quest.js';
 import * as craftCmd from '../commands/crafting/craft.js';
 import * as guildCmd from '../commands/guilds/guild.js';
-import * as leaderboardCmd from '../commands/guilds/leaderboard.js';
 import * as petCmd from '../commands/pets/pet.js';
-import * as giveItemCmd from '../commands/admin/give-item.js';
-import * as spawnBossCmd from '../commands/admin/spawn-boss.js';
+import * as adminCmd from '../commands/admin/admin.js';
 
 export const commandsList = [
-  profileCmd,
-  statsCmd,
-  prestigeCmd,
+  playerCmd,
   inviteCmd,
   tutorialCmd,
   helpCmd,
-  exploreCmd,
-  fightCmd,
+  combatCmd,
   bossCmd,
-  bagCmd,
-  equipCmd,
-  sellCmd,
-  shopCmd,
-  balanceCmd,
-  questsCmd,
-  dailyCmd,
+  inventoryCmd,
+  economyCmd,
+  questCmd,
   craftCmd,
   guildCmd,
-  leaderboardCmd,
   petCmd,
-  giveItemCmd,
-  spawnBossCmd
+  adminCmd
 ];
 
 export async function execute(client: Client) {

@@ -17,14 +17,20 @@ import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { itemsCatalog } from '../../utils/catalog.js';
+import { getNavButtons } from '../../utils/navigation.js';
 
 export const data = new SlashCommandBuilder()
-  .setName('shop')
-  .setDescription('Browse the NPC shop or buy items.')
+  .setName('economy')
+  .setDescription('Manage your currency, view the shop, or buy items.')
   .addSubcommand((subcommand) =>
     subcommand
-      .setName('list')
-      .setDescription('Browse items available for purchase.')
+      .setName('balance')
+      .setDescription('View your gold and gem balances.')
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('shop')
+      .setDescription('Browse items available for NPC shop purchase.')
       .addIntegerOption((option) =>
         option
           .setName('page')
@@ -54,7 +60,7 @@ export const data = new SlashCommandBuilder()
 
 // Helper function to build the interactive shop message options
 export function getShopMessageOptions(player: any, page: number, statusMsg?: string) {
-  const pageSize = 8; // Use 8 items per page for cleaner Discord UI spacing
+  const pageSize = 8;
   const shopData = getShopItems(player.level, page, pageSize);
   const totalPages = Math.max(1, shopData.totalPages);
   const activePage = Math.max(1, Math.min(page, totalPages));
@@ -76,7 +82,7 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
     : '*No items available.*';
 
   const embed = new EmbedBuilder()
-    .setColor(0xFBBF24) // Gold color
+    .setColor(0xFBBF24)
     .setTitle('🏪 NPC Merchant Shop')
     .setDescription(
       `### 💰 Your Balance: 🪙 **${player.gold.toLocaleString()}** Gold\n\n` +
@@ -103,9 +109,9 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
 
   const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(prevBtn, nextBtn);
 
-  // 2. Select menu row for purchasing items
   const components: any[] = [btnRow];
 
+  // 2. Select menu row for purchasing items
   if (shopData.items.length > 0) {
     const selectOptions = shopData.items.map((i) => {
       const emoji = RARITY_EMOJIS[i.rarity] || '⚪';
@@ -126,87 +132,165 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
     components.push(selectRow);
   }
 
+  // 3. Contextual Navigation buttons
+  const navRow = getNavButtons('economy_shop', player.discordId);
+  if (navRow) {
+    components.push(navRow);
+  }
+
   return { embeds: [embed], components };
 }
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  try {
-    const discordId = interaction.user.id;
-    const username = interaction.user.username;
-
-    // Load player
-    const player = await findOrCreatePlayer(discordId, username);
-
-    const subcommand = interaction.options.getSubcommand();
-
-    if (subcommand === 'list') {
-      const page = interaction.options.getInteger('page') || 1;
-      const messageOptions = getShopMessageOptions(player, page);
-      await interaction.reply(messageOptions);
-      return;
-    }
-
-    if (subcommand === 'buy') {
-      await interaction.deferReply();
-      const inputName = interaction.options.getString('item', true).toLowerCase();
-      const quantity = interaction.options.getInteger('quantity') || 1;
-
-      const catalog = itemsCatalog;
-
-      // Find the item definition
-      const itemDef = catalog.find(
-        (i) =>
-          i.id.toLowerCase() === inputName ||
-          i.name.toLowerCase().includes(inputName)
-      );
-
-      if (!itemDef) {
-        const embed = errorEmbed('Item Not Found', `No shop item matching **"${inputName}"** was found.`);
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-
-      if (itemDef.buyPrice <= 0) {
-        const embed = errorEmbed('Not for Sale', `**${itemDef.name}** is not sold in this shop.`);
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-
-      // Execute purchase
-      const result = await buyItem(player.id, itemDef.id, quantity);
-
-      if (!result.success) {
-        const embed = errorEmbed('Purchase Failed', result.message);
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-
-      const embed = successEmbed(
-        'Item Purchased',
-        `You successfully purchased **x${quantity}** **${itemDef.name}** for 🪙 **${result.spent?.toLocaleString()}** Gold.\n\n` +
-        `*Items have been added to your bag.*`
-      );
-      await interaction.editReply({ embeds: [embed] });
-      return;
-    }
-
-  } catch (error: any) {
-    console.error(error);
-    const embed = errorEmbed('Shop Error', 'An unexpected error occurred in the shop.');
-    if (interaction.deferred || interaction.replied) {
-      await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
-    } else {
-      await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
-    }
+  const subcommand = interaction.options.getSubcommand();
+  if (subcommand === 'balance') {
+    await runBalance(interaction);
+  } else if (subcommand === 'shop') {
+    const page = interaction.options.getInteger('page') || 1;
+    await runShopList(interaction, page);
+  } else if (subcommand === 'buy') {
+    const item = interaction.options.getString('item', true);
+    const quantity = interaction.options.getInteger('quantity') || 1;
+    await runShopBuy(interaction, item, quantity);
   }
 }
+
+// ----------------------------------------------------
+// RUNNERS (exposures for slash commands and buttons)
+// ----------------------------------------------------
+
+export async function runBalance(
+  interaction: ChatInputCommandInteraction | ButtonInteraction
+) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
+
+    const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
+
+    const embed = successEmbed(
+      'Wallet Balance',
+      `💰 **${player.username}'s Pouch**\n\n` +
+      `🪙 Gold: **${player.gold.toLocaleString()}**\n` +
+      `💎 Gems: **${player.gems.toLocaleString()}**`
+    );
+    embed.setColor(0xFFD700);
+
+    const navButtons = getNavButtons('economy_shop', player.discordId);
+
+    await interaction.editReply({
+      embeds: [embed],
+      components: navButtons ? [navButtons] : []
+    });
+  } catch (error) {
+    console.error('Error running balance:', error);
+    const embed = errorEmbed('Balance Error', 'Failed to retrieve your currency balances.');
+    await interaction.editReply({ embeds: [embed], components: [] });
+  }
+}
+
+export async function runShopList(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  pageNum?: number
+) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
+
+    const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
+    const page = pageNum || 1;
+    const messageOptions = getShopMessageOptions(player, page);
+    await interaction.editReply(messageOptions);
+  } catch (error) {
+    console.error('Error running shop list:', error);
+    const embed = errorEmbed('Shop Error', 'Failed to load shop list.');
+    await interaction.editReply({ embeds: [embed], components: [] });
+  }
+}
+
+export async function runShopBuy(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  itemInput: string,
+  quantityInput?: number
+) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
+
+    const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
+    const quantity = quantityInput || 1;
+    const catalog = itemsCatalog;
+
+    const inputName = itemInput.toLowerCase();
+    const itemDef = catalog.find(
+      (i) =>
+        i.id.toLowerCase() === inputName ||
+        i.name.toLowerCase().includes(inputName)
+    );
+
+    if (!itemDef) {
+      const embed = errorEmbed('Item Not Found', `No shop item matching **"${itemInput}"** was found.`);
+      await interaction.editReply({ embeds: [embed], components: [] });
+      return;
+    }
+
+    if (itemDef.buyPrice <= 0) {
+      const embed = errorEmbed('Not for Sale', `**${itemDef.name}** is not sold in this shop.`);
+      await interaction.editReply({ embeds: [embed], components: [] });
+      return;
+    }
+
+    const result = await buyItem(player.id, itemDef.id, quantity);
+
+    if (!result.success) {
+      const embed = errorEmbed('Purchase Failed', result.message);
+      await interaction.editReply({ embeds: [embed], components: [] });
+      return;
+    }
+
+    const embed = successEmbed(
+      'Item Purchased',
+      `You successfully purchased **x${quantity}** **${itemDef.name}** for 🪙 **${result.spent?.toLocaleString()}** Gold.\n\n` +
+      `*Items have been added to your bag.*`
+    );
+
+    const navButtons = getNavButtons('economy_buy_result', player.discordId);
+
+    await interaction.editReply({
+      embeds: [embed],
+      components: navButtons ? [navButtons] : []
+    });
+  } catch (error) {
+    console.error('Error running shop buy:', error);
+    const embed = errorEmbed('Shop Error', 'An unexpected error occurred in the shop.');
+    await interaction.editReply({ embeds: [embed], components: [] });
+  }
+}
+
+// ----------------------------------------------------
+// INTERACTION HANDLERS (routed from interactionCreate)
+// ----------------------------------------------------
 
 export async function handleShopInteraction(interaction: ButtonInteraction | StringSelectMenuInteraction) {
   try {
     const discordId = interaction.user.id;
     const customId = interaction.customId;
 
-    // Load player
     const player = await db.query.players.findFirst({
       where: eq(players.discordId, discordId)
     });
@@ -219,7 +303,7 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
 
     if (interaction.isButton()) {
       const parts = customId.split('_');
-      const action = parts[1] || 'next'; // fallback
+      const action = parts[1] || 'next';
       const currentPage = parseInt(parts[2] || '1');
       const targetPage = action === 'prev' ? currentPage - 1 : currentPage + 1;
 
@@ -237,10 +321,8 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
         throw new Error('No item selected');
       }
 
-      // Execute purchase of 1 unit
       const result = await buyItem(player.id, itemId, 1);
 
-      // Fetch updated player details to reflect new gold balance
       const updatedPlayer = await db.query.players.findFirst({
         where: eq(players.id, player.id)
       });
@@ -259,5 +341,3 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
     await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
   }
 }
-
-

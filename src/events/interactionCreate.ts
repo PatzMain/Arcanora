@@ -2,7 +2,12 @@ import { type Interaction, MessageFlags } from 'discord.js';
 import { commandsList } from './ready.js';
 import { handleCombatInteraction } from '../systems/combat/handler.js';
 import { handleTutorialInteraction } from '../commands/player/tutorial.js';
-import { handleShopInteraction } from '../commands/economy/shop.js';
+import { handleShopInteraction } from '../commands/economy/economy.js';
+import { handleNavInteraction } from '../utils/navigation.js';
+import { handleBagInteraction, handleEquipInteraction, handleSellInteraction } from '../commands/inventory/inventory.js';
+import { handleQuestsInteraction, handleQuestsBoardSelect } from '../commands/quests/quest.js';
+import { handlePrestigeInteraction } from '../commands/player/player.js';
+import { handleGuildInteraction, handleLeaderboardInteraction } from '../commands/guilds/guild.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
 import { getPlayerByDiscordId } from '../database/queries/player.js';
@@ -82,6 +87,60 @@ export async function execute(interaction: Interaction) {
         await handleTutorialInteraction(interaction);
       } catch (error) {
         logger.error({ error, customId }, 'Error processing tutorial interaction');
+      }
+    } else if (customId.startsWith('nav_')) {
+      try {
+        await handleNavInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing navigation interaction');
+      }
+    } else if (customId.startsWith('bag_')) {
+      try {
+        await handleBagInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing bag interaction');
+      }
+    } else if (customId.startsWith('equip_select_')) {
+      try {
+        await handleEquipInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing equip interaction');
+      }
+    } else if (customId.startsWith('sell_select_')) {
+      try {
+        await handleSellInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing sell interaction');
+      }
+    } else if (customId.startsWith('quests_')) {
+      try {
+        await handleQuestsInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing quests active pagination interaction');
+      }
+    } else if (customId.startsWith('quests_board_select_')) {
+      try {
+        await handleQuestsBoardSelect(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing quests board select interaction');
+      }
+    } else if (customId.startsWith('prestige_')) {
+      try {
+        await handlePrestigeInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing prestige interaction');
+      }
+    } else if (customId.startsWith('guild_')) {
+      try {
+        await handleGuildInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing guild interaction');
+      }
+    } else if (customId.startsWith('leaderboard_')) {
+      try {
+        await handleLeaderboardInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing leaderboard interaction');
       }
     }
   }

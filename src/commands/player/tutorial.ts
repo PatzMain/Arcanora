@@ -13,6 +13,7 @@ import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { errorEmbed } from '../../utils/embeds.js';
+import { getNavButtons } from '../../utils/navigation.js';
 
 export const data = new SlashCommandBuilder()
   .setName('tutorial')
@@ -31,25 +32,25 @@ function getTutorialEmbed(username: string): EmbedBuilder {
       {
         name: '⚔️ Core Gameplay Commands',
         value:
-          '• `/explore` — Choose a zone, start an encounter, and battle enemies.\n' +
-          '• `/profile` — Check your level, class, gold, gems, and equipped gear.\n' +
-          '• `/stats` — Break down your effective stats (HP, Mana, Attack, Defense, Crit).\n' +
-          '• `/bag` — Browse your collected weapons, armor, accessories, and materials.'
+          '• `/combat explore` — Choose a zone, start an encounter, and battle enemies.\n' +
+          '• `/player profile` — Check your level, class, gold, gems, and equipped gear.\n' +
+          '• `/player stats` — Break down your effective stats (HP, Mana, Attack, Defense, Crit).\n' +
+          '• `/inventory bag` — Browse your collected weapons, armor, accessories, and materials.'
       },
       {
         name: '🏪 Economy & Progression',
         value:
-          '• `/shop list` — Browse items currently sold by the merchant.\n' +
-          '• `/shop buy [item]` — Purchase consumables, materials, or basic gear.\n' +
-          '• `/sell [item] [qty]` — Sell items in your bag to earn gold.\n' +
-          '• `/quests` — View your daily and main quests. Quests are great sources of XP and Gems!'
+          '• `/economy shop` — Browse items currently sold by the merchant.\n' +
+          '• `/economy buy` — Purchase consumables, materials, or basic gear.\n' +
+          '• `/inventory sell` — Sell items in your bag to earn gold.\n' +
+          '• `/quest` — View your daily and main quests. Quests are great sources of XP and Gems!'
       },
       {
         name: '🛠️ Dungeons & Crafting',
         value:
           '• `/craft` — Smelt ores, spin silk, and forge powerful weapons and armor.\n' +
           '• `/pet` — View or release your companion pets which grant passive bonuses.\n' +
-          '• `/guild` — Form a guild, donate gold, and cooperate with other players.'
+          '• `/guild` — Form a guild, donate gold, cooperate with others, or view leaderboards.'
       }
     )
     .setFooter({ text: 'Arcanora — Discord MMORPG' })
@@ -68,7 +69,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       // Replay mode: just show the guide
       const embed = getTutorialEmbed(username);
       embed.setTitle('🌌 Arcanora Adventure Guide (Replay)');
-      await interaction.reply({ embeds: [embed] });
+      const navButtons = getNavButtons('tutorial_complete', existingPlayer.discordId);
+      await interaction.reply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       return;
     }
 
@@ -147,7 +149,7 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
     if (existingPlayer) {
       const embed = errorEmbed(
         'Profile Already Initialized',
-        'You have already initialized your profile! Please use `/profile` to view your character.'
+        'You have already initialized your profile! Please use `/player profile` to view your character.'
       );
       await interaction.update({ embeds: [embed], components: [] });
       return;
@@ -214,15 +216,18 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
         {
           name: '🚀 What Next?',
           value:
-            'Use the **/explore** command to choose a zone, start battles, and level up!\n' +
-            'You can view your stats anytime with **/profile**.'
+            'Use the **/combat explore** command to choose a zone, start battles, and level up!\n' +
+            'You can view your stats anytime with **/player profile**.'
         }
       )
       .setFooter({ text: 'Arcanora — Discord MMORPG' })
       .setTimestamp();
 
-    // 6. Update the interaction to display the onboarding success message
-    await interaction.update({ embeds: [successEmbed], components: [] });
+    // 6. Add navigation buttons at the end
+    const navButtons = getNavButtons('tutorial_complete', player.discordId);
+
+    // 7. Update the interaction to display the onboarding success message
+    await interaction.update({ embeds: [successEmbed], components: navButtons ? [navButtons] : [] });
 
   } catch (error: any) {
     console.error('Tutorial select interaction error:', error);
