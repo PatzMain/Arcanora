@@ -94,7 +94,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         .limit(5);
 
       const embed = bossInfoEmbed(
-        { name: enemyDef.name, level: enemyDef.level, description: enemyDef.description },
+        { name: enemyDef.name, level: enemyDef.level, description: enemyDef.description, isGlobal: activeBoss.channelId === 'GLOBAL' },
         activeBoss.hpCurrent,
         activeBoss.hpMax,
         contributors
@@ -126,7 +126,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const playerStats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
 
       // Fresh combat log
-      const combatLog = ['You stepped forward to challenge the World Boss!'];
+      const isGlobal = activeBoss.channelId === 'GLOBAL';
+      const bossPrefix = isGlobal ? 'Global World Boss' : 'World Boss';
+      const combatLog = [`You stepped forward to challenge the ${bossPrefix}!`];
 
       // Build components
       const getActionRows = async () => {
@@ -159,7 +161,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       };
 
       const embed = bossSkirmishEmbed(
-        { name: enemyDef.name, level: enemyDef.level },
+        { name: enemyDef.name, level: enemyDef.level, isGlobal },
         activeBoss.hpCurrent,
         activeBoss.hpMax,
         {
@@ -388,7 +390,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               .map((p, idx) => ({ ...p, rank: idx + 1 }));
 
             const victoryEmbed = bossVictoryEmbed(
-              { name: enemyDef.name, level: enemyDef.level },
+              { name: enemyDef.name, level: enemyDef.level, isGlobal },
               mvp.username,
               sortedRankings,
               rewardsList
@@ -409,7 +411,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             const defeatEmbed = errorEmbed(
               'Defeat!',
-              `💀 You were defeated by the World Boss **${enemyDef.name}**!\n\n` +
+              `💀 You were defeated by the ${bossPrefix} **${enemyDef.name}**!\n\n` +
               `*You woke up in town, feeling weak. You recovered **${recoveryHp}** HP.*`
             );
 
@@ -419,7 +421,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
           // Update message for next turn
           const nextEmbed = bossSkirmishEmbed(
-            { name: enemyDef.name, level: enemyDef.level },
+            { name: enemyDef.name, level: enemyDef.level, isGlobal },
             nextBossHp,
             freshBoss.hpMax,
             {

@@ -527,7 +527,7 @@ export function helpOverviewEmbed(): EmbedBuilder {
  * World Boss status and info card.
  */
 export function bossInfoEmbed(
-  boss: { name: string; level: number; description: string },
+  boss: { name: string; level: number; description: string; isGlobal?: boolean },
   hpCurrent: number,
   hpMax: number,
   topContributors: { username: string; damageDealt: number }[],
@@ -540,9 +540,11 @@ export function bossInfoEmbed(
       }).join('\n')
     : '*No damage dealt yet. Be the first to strike!*';
 
+  const bossTitle = boss.isGlobal ? 'Global World Boss' : 'World Boss';
+
   return baseEmbed()
     .setColor(COLORS.MYTHIC)
-    .setTitle(`🚨 World Boss: ${boss.name} (Lv.${boss.level})`)
+    .setTitle(`🚨 ${bossTitle}: ${boss.name} (Lv.${boss.level})`)
     .setDescription(
       `*${boss.description}*\n\n` +
       `**Health Pool:**\n` +
@@ -558,7 +560,7 @@ export function bossInfoEmbed(
  * Live skirmish card for a player battling the boss.
  */
 export function bossSkirmishEmbed(
-  boss: { name: string; level: number },
+  boss: { name: string; level: number; isGlobal?: boolean },
   bossHpCurrent: number,
   bossHpMax: number,
   player: { username: string; hpCurrent: number; hpMax: number; manaCurrent: number; manaMax: number },
@@ -566,9 +568,11 @@ export function bossSkirmishEmbed(
 ): EmbedBuilder {
   const logLines = combatLog.slice(-4).map((line) => `▸ ${line}`).join('\n') || '*Raid skirmish starting...*';
 
+  const titlePrefix = boss.isGlobal ? 'Global Skirmish' : 'Raid Skirmish';
+
   return baseEmbed()
     .setColor(COLORS.MYTHIC)
-    .setTitle(`⚔️ Raid Skirmish — Lv.${boss.level} ${boss.name}`)
+    .setTitle(`⚔️ ${titlePrefix} — Lv.${boss.level} ${boss.name}`)
     .setDescription(
       `**Boss Health:**\n` +
       `${hpBar(bossHpCurrent, bossHpMax, 15)} \`${bossHpCurrent.toLocaleString()} / ${bossHpMax.toLocaleString()} HP\`\n\n` +
@@ -584,7 +588,7 @@ export function bossSkirmishEmbed(
  * Victory embed shown when a boss is defeated.
  */
 export function bossVictoryEmbed(
-  boss: { name: string; level: number },
+  boss: { name: string; level: number; isGlobal?: boolean },
   mvpUsername: string,
   rankings: { username: string; damageDealt: number; rank: number; percent: number }[],
   rewardsList: { username: string; gold: number; exp: number; bonusLoot: boolean }[],
@@ -602,9 +606,11 @@ export function bossVictoryEmbed(
     return line;
   }).join('\n') || '*No rewards distributed.*';
 
+  const titlePrefix = boss.isGlobal ? 'Global World Boss Slain' : 'World Boss Slain';
+
   return baseEmbed()
     .setColor(COLORS.GOLD)
-    .setTitle(`🏆 World Boss Slain: ${boss.name}! 🏆`)
+    .setTitle(`🏆 ${titlePrefix}: ${boss.name}! 🏆`)
     .setDescription(
       `🎉 **${boss.name} (Lv.${boss.level})** has been defeated!\n\n` +
       `👑 **MVP**: **${mvpUsername}**\n\n` +
