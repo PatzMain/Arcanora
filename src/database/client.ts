@@ -3,7 +3,7 @@ import pg from 'pg';
 import * as schema from './schema.js';
 import { logger } from '../utils/logger.js';
 
-if (!process.env.DATABASE_URL) {
+if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'test') {
   throw new Error('DATABASE_URL environment variable is missing. Please configure your database connection string.');
 }
 
