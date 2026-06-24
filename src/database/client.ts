@@ -3,6 +3,10 @@ import pg from 'pg';
 import * as schema from './schema.js';
 import { logger } from '../utils/logger.js';
 
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is missing. Please configure your database connection string.');
+}
+
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   min: parseInt(process.env.DB_POOL_MIN || '2'),
