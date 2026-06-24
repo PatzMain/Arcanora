@@ -275,6 +275,11 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
         await runMap(interaction);
         break;
       }
+      case 'tavern_rest': {
+        const { runTavernRest } = await import('../commands/player/map.js');
+        await runTavernRest(interaction);
+        break;
+      }
       case 'combat_explore': {
         const { runExplore } = await import('../commands/combat/combat.js');
         // If extra is provided, it's the zoneId. Otherwise, let explore prompt or pick a default/previous one

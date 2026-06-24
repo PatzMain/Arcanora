@@ -179,7 +179,7 @@ export function isFleeSuccessful(
 /**
  * Returns the total flat modifier for a given stat from active buffs/debuffs.
  */
-function getStatModifier(effects: StatusEffect[], stat: keyof CombatStats): number {
+export function getStatModifier(effects: StatusEffect[], stat: keyof CombatStats): number {
   let total = 0;
   for (const eff of effects) {
     if (eff.stat === stat && eff.value !== undefined) {

@@ -5,6 +5,10 @@ import {
   ButtonStyle,
   ComponentType,
   StringSelectMenuBuilder,
+  EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   type ChatInputCommandInteraction,
   type ButtonInteraction
 } from 'discord.js';
@@ -22,7 +26,8 @@ import { eq } from 'drizzle-orm';
 import { profileEmbed, statsEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { loadItems } from '../../systems/exploration/loot.js';
 import { getNavButtons } from '../../utils/navigation.js';
-import { SKILLS } from '../../systems/combat/skills.js';
+import { SKILLS, getSkillById } from '../../systems/combat/skills.js';
+import { parsePresets, getPresetActionSummary } from '../../systems/combat/presets.js';
 
 export const data = new SlashCommandBuilder()
   .setName('player')
@@ -368,12 +373,12 @@ export async function handlePrestigeInteraction(interaction: ButtonInteraction) 
 }
 
 export async function runPreset(
-  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  interaction: ChatInputCommandInteraction | ButtonInteraction | any,
   feedbackMsg?: string
 ) {
   try {
     if (!interaction.deferred && !interaction.replied) {
-      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+      if (interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) {
         await interaction.deferUpdate();
       } else {
         await interaction.deferReply();
@@ -381,14 +386,7 @@ export async function runPreset(
     }
 
     const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
-    const presets = (player.presets || ['attack', null, null]) as (string | null)[];
-
-    const getPresetName = (presetId: string | null) => {
-      if (!presetId) return '🔴 *Empty*';
-      if (presetId === 'attack') return '⚔️ Basic Attack';
-      const skillDef = SKILLS.find((s) => s.id === presetId);
-      return skillDef ? `🌀 ${skillDef.name}` : presetId;
-    };
+    const presets = parsePresets(player.presets);
 
     const embed = new EmbedBuilder()
       .setColor(0x7C3AED)
@@ -396,34 +394,65 @@ export async function runPreset(
       .setDescription(
         (feedbackMsg ? `✅ **${feedbackMsg}**\n\n` : '') +
         'Configure up to 3 quick-cast presets to use in combat or boss raids.\n' +
-        'Click a button below to set that preset slot.'
+        'Each preset can hold a combo of up to 3 actions. Click a button below to configure.'
       )
       .addFields(
-        { name: 'Button 1 Preset', value: getPresetName(presets[0]), inline: true },
-        { name: 'Button 2 Preset', value: getPresetName(presets[1]), inline: true },
-        { name: 'Button 3 Preset', value: getPresetName(presets[2]), inline: true }
+        { name: `🎯 ${presets[0].name}`, value: `**Combo:** ${getPresetActionSummary(presets[0])}` },
+        { name: `🎯 ${presets[1].name}`, value: `**Combo:** ${getPresetActionSummary(presets[1])}` },
+        { name: `🎯 ${presets[2].name}`, value: `**Combo:** ${getPresetActionSummary(presets[2])}` }
       )
       .setFooter({ text: 'Arcanora — Quick Presets' })
       .setTimestamp();
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    // Row 1: Edit buttons
+    const rowEdit = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(`player_preset_set_1_${player.discordId}`)
-        .setLabel('Set Preset 1')
-        .setStyle(ButtonStyle.Secondary),
+        .setCustomId(`player_preset_edit_1_${player.discordId}`)
+        .setLabel('Edit P1')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('⚙️'),
       new ButtonBuilder()
-        .setCustomId(`player_preset_set_2_${player.discordId}`)
-        .setLabel('Set Preset 2')
-        .setStyle(ButtonStyle.Secondary),
+        .setCustomId(`player_preset_edit_2_${player.discordId}`)
+        .setLabel('Edit P2')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('⚙️'),
       new ButtonBuilder()
-        .setCustomId(`player_preset_set_3_${player.discordId}`)
-        .setLabel('Set Preset 3')
-        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(`player_preset_edit_3_${player.discordId}`)
+        .setLabel('Edit P3')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('⚙️')
     );
+
+    // Row 2: Rename buttons
+    const rowRename = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`player_preset_rename_1_${player.discordId}`)
+        .setLabel('Rename P1')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('✏️'),
+      new ButtonBuilder()
+        .setCustomId(`player_preset_rename_2_${player.discordId}`)
+        .setLabel('Rename P2')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('✏️'),
+      new ButtonBuilder()
+        .setCustomId(`player_preset_rename_3_${player.discordId}`)
+        .setLabel('Rename P3')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('✏️')
+    );
+
+    // Row 3: Navigation buttons
+    const navButtons = getNavButtons('player_prestige_result', player.discordId);
+
+    const components = [rowEdit, rowRename];
+    if (navButtons) {
+      components.push(navButtons);
+    }
 
     await interaction.editReply({
       embeds: [embed],
-      components: [row]
+      components
     });
   } catch (err) {
     console.error('Error running preset command:', err);
@@ -433,10 +462,34 @@ export async function runPreset(
 }
 
 export async function handlePresetInteraction(interaction: ButtonInteraction | any) {
-  const parts = interaction.customId.split('_');
-  const actionType = parts[2];
-  const slotNum = parseInt(parts[3] || '1', 10);
-  const userId = parts[4] || '';
+  const customId = interaction.customId;
+  const parts = customId.split('_');
+
+  // Format:
+  // player_preset_menu_[userId]
+  // player_preset_edit_[slot]_[userId]
+  // player_preset_rename_[slot]_[userId]
+  // player_preset_select_[slot]_[step]_[action1]_[action2]_[userId]
+  // player_preset_modal_[slot]_[userId]
+
+  const actionType = parts[2]; // 'menu', 'edit', 'rename', 'select', 'modal'
+
+  let slotNum = 1;
+  let userId = '';
+
+  if (actionType === 'menu') {
+    userId = parts[3] || '';
+  } else {
+    slotNum = parseInt(parts[3] || '1', 10);
+  }
+
+  if (actionType === 'select') {
+    userId = parts[7] || '';
+  } else if (actionType === 'modal') {
+    userId = parts[4] || '';
+  } else if (actionType === 'edit' || actionType === 'rename') {
+    userId = parts[4] || '';
+  }
 
   if (interaction.user.id !== userId) {
     await interaction.reply({
@@ -446,68 +499,175 @@ export async function handlePresetInteraction(interaction: ButtonInteraction | a
     return;
   }
 
-  if (actionType === 'set') {
-    await interaction.deferUpdate();
+  if (actionType === 'menu') {
+    await runPreset(interaction);
+    return;
+  }
+
+  if (actionType === 'rename') {
     const player = await findOrCreatePlayer(userId, interaction.user.username);
-    const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
+    const presets = parsePresets(player.presets);
+    const currentPresetName = presets[slotNum - 1]?.name || `Preset ${slotNum}`;
 
-    const options = [
-      {
-        label: 'Basic Attack',
-        value: 'attack',
-        description: 'Perform a normal strike.',
-        emoji: '⚔️'
-      }
-    ];
+    const modal = new ModalBuilder()
+      .setCustomId(`player_preset_modal_${slotNum}_${userId}`)
+      .setTitle(`Rename Preset ${slotNum}`);
 
-    learned.forEach((l) => {
-      const skillDef = SKILLS.find((s) => s.id === l.skillId);
-      if (skillDef) {
-        options.push({
-          label: skillDef.name,
-          value: skillDef.id,
-          description: skillDef.description.slice(0, 50),
-          emoji: '🌀'
-        });
-      }
-    });
+    const nameInput = new TextInputBuilder()
+      .setCustomId('preset_name_input')
+      .setLabel('Preset Name')
+      .setStyle(TextInputStyle.Short)
+      .setPlaceholder('Enter custom preset name...')
+      .setMaxLength(20)
+      .setValue(currentPresetName)
+      .setRequired(true);
 
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId(`player_preset_select_${slotNum}_${userId}`)
-      .setPlaceholder(`Select action for Preset ${slotNum}...`)
-      .addOptions(options);
+    const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(nameInput);
+    modal.addComponents(firstActionRow);
 
-    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+    await interaction.showModal(modal);
+    return;
+  }
 
-    const embed = new EmbedBuilder()
-      .setColor(0x7C3AED)
-      .setTitle(`⚙️ Set Preset ${slotNum}`)
-      .setDescription(`Choose a combat action from your learned skills to map to Preset ${slotNum}.`);
-
-    await interaction.editReply({
-      embeds: [embed],
-      components: [row]
-    });
-  } else if (actionType === 'select') {
+  if (actionType === 'modal') {
     await interaction.deferUpdate();
-    const player = await findOrCreatePlayer(userId, interaction.user.username);
-    const selectedAction = interaction.values[0];
+    const newName = interaction.fields.getTextInputValue('preset_name_input').trim().slice(0, 20) || `Preset ${slotNum}`;
 
-    const presets = [...(player.presets as (string | null)[])];
-    presets[slotNum - 1] = selectedAction;
+    const player = await findOrCreatePlayer(userId, interaction.user.username);
+    const presets = parsePresets(player.presets);
+    const slot = presets[slotNum - 1];
+    if (slot) {
+      slot.name = newName;
+    }
 
     await db
       .update(players)
       .set({ presets })
       .where(eq(players.id, player.id));
 
-    const getPresetName = (presetId: string | null) => {
-      if (!presetId) return 'Empty';
-      if (presetId === 'attack') return 'Basic Attack';
-      const skillDef = SKILLS.find((s) => s.id === presetId);
-      return skillDef ? skillDef.name : presetId;
-    };
-
-    await runPreset(interaction, `Preset ${slotNum} successfully mapped to ${getPresetName(selectedAction)}!`);
+    await runPreset(interaction, `Preset ${slotNum} renamed to "${newName}"!`);
+    return;
   }
+
+  if (actionType === 'edit') {
+    await interaction.deferUpdate();
+    await showEditStep(interaction, slotNum, 1, [], userId);
+    return;
+  }
+
+  if (actionType === 'select') {
+    await interaction.deferUpdate();
+    const step = parseInt(parts[4] || '1', 10);
+    const action1 = parts[5] || 'none';
+    const action2 = parts[6] || 'none';
+    const selectedValue = interaction.values[0];
+
+    const player = await findOrCreatePlayer(userId, interaction.user.username);
+    const presets = parsePresets(player.presets);
+    const slot = presets[slotNum - 1];
+
+    if (slot) {
+      if (step === 1) {
+        await showEditStep(interaction, slotNum, 2, [selectedValue], userId);
+      } else if (step === 2) {
+        if (selectedValue === 'none') {
+          slot.actions = [action1];
+          await savePreset(player.id, presets);
+          await runPreset(interaction, `Preset ${slotNum} combo saved: ${getPresetActionSummary(slot)}`);
+        } else {
+          await showEditStep(interaction, slotNum, 3, [action1, selectedValue], userId);
+        }
+      } else if (step === 3) {
+        if (selectedValue === 'none') {
+          slot.actions = [action1, action2];
+        } else {
+          slot.actions = [action1, action2, selectedValue];
+        }
+        await savePreset(player.id, presets);
+        await runPreset(interaction, `Preset ${slotNum} combo saved: ${getPresetActionSummary(slot)}`);
+      }
+    }
+  }
+}
+
+async function savePreset(playerId: string, presets: any) {
+  await db
+    .update(players)
+    .set({ presets })
+    .where(eq(players.id, playerId));
+}
+
+async function showEditStep(
+  interaction: any,
+  slotNum: number,
+  step: number,
+  currentCombo: string[],
+  userId: string
+) {
+  const player = await findOrCreatePlayer(userId, interaction.user.username);
+  const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
+
+  const options = [];
+
+  if (step > 1) {
+    options.push({
+      label: '🏁 Save / End Combo Here',
+      value: 'none',
+      description: 'End the sequence and save current combo.'
+    });
+  }
+
+  options.push({
+    label: 'Basic Attack',
+    value: 'attack',
+    description: 'Perform a normal physical strike.',
+    emoji: '⚔️'
+  });
+
+  learned.forEach((l) => {
+    const skillDef = SKILLS.find((s) => s.id === l.skillId);
+    if (skillDef) {
+      options.push({
+        label: skillDef.name,
+        value: skillDef.id,
+        description: skillDef.description.slice(0, 50),
+        emoji: '🌀'
+      });
+    }
+  });
+
+  const action1 = currentCombo[0] || 'none';
+  const action2 = currentCombo[1] || 'none';
+  const customId = `player_preset_select_${slotNum}_${step}_${action1}_${action2}_${userId}`;
+
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId(customId)
+    .setPlaceholder(`Select action for Step ${step} in combo...`)
+    .addOptions(options);
+
+  const rowMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+  const rowCancel = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`player_preset_menu_${userId}`)
+      .setLabel('Cancel')
+      .setStyle(ButtonStyle.Danger)
+  );
+
+  const currentComboDesc = currentCombo.length > 0
+    ? currentCombo.map(a => a === 'attack' ? '⚔️ Basic Attack' : `🌀 ${SKILLS.find(s => s.id === a)?.name || a}`).join(' ➔ ')
+    : '*None*';
+
+  const embed = new EmbedBuilder()
+    .setColor(0x7C3AED)
+    .setTitle(`⚙️ Set Preset ${slotNum} — Step ${step} of 3`)
+    .setDescription(
+      `Select the action for step ${step} in your combo.\n\n` +
+      `**Current Sequence:** ${currentComboDesc}`
+    );
+
+  await interaction.editReply({
+    embeds: [embed],
+    components: [rowMenu, rowCancel]
+  });
 }

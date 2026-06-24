@@ -160,7 +160,7 @@ export async function runBag(
 }
 
 export async function runEquip(
-  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
   itemInput?: string
 ) {
   try {
@@ -337,7 +337,7 @@ export async function runEquip(
 }
 
 export async function runSell(
-  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
   itemInput?: string,
   quantityInput?: number
 ) {

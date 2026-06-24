@@ -73,4 +73,57 @@ describe('Stats and Scaling Alignment', () => {
       expect(scaled.defense % 10).toBe(0);
     });
   });
+
+  describe('Modular Stats Pipeline Helpers', () => {
+    it('should correctly add stats using addStats helper', async () => {
+      const stats = { hpMax: 100, manaMax: 50, attack: 10, defense: 5, critChance: 5, critDmg: 150, speed: 10, luck: 5 };
+      const source = { hpMax: 20, attack: 5, critChance: 2.5 };
+      const { addStats } = await import('../src/systems/progression/stats.js');
+
+      addStats(stats, source);
+
+      expect(stats.hpMax).toBe(120);
+      expect(stats.attack).toBe(15);
+      expect(stats.critChance).toBe(7.5);
+      expect(stats.manaMax).toBe(50); // unchanged
+    });
+
+    it('should correctly scale stats using scaleStats helper', async () => {
+      const stats = { hpMax: 100, manaMax: 50, attack: 10, defense: 5, critChance: 5, critDmg: 150, speed: 10, luck: 5 };
+      const { scaleStats } = await import('../src/systems/progression/stats.js');
+
+      scaleStats(stats, 1.10); // 10% prestige bonus
+
+      expect(stats.hpMax).toBeCloseTo(110);
+      expect(stats.attack).toBeCloseTo(11);
+      expect(stats.critChance).toBeCloseTo(5.5);
+    });
+
+    it('should correctly apply percentage bonuses using applyPercentBonus helper', async () => {
+      const stats = { hpMax: 100, manaMax: 50, attack: 10, defense: 5, critChance: 5, critDmg: 150, speed: 10, luck: 5 };
+      const bonuses = { attack: 20, defense: -10 }; // +20% attack, -10% defense
+      const { applyPercentBonus } = await import('../src/systems/progression/stats.js');
+
+      applyPercentBonus(stats, bonuses);
+
+      expect(stats.attack).toBeCloseTo(12);
+      expect(stats.defense).toBeCloseTo(4.5);
+    });
+
+    it('should correctly round stats using roundStats helper', async () => {
+      const stats = { hpMax: 104, manaMax: 48, attack: 15, defense: 3, critChance: 5.1234, critDmg: 150.9876, speed: 11, luck: 4 };
+      const { roundStats } = await import('../src/systems/progression/stats.js');
+
+      roundStats(stats);
+
+      expect(stats.hpMax).toBe(100);
+      expect(stats.manaMax).toBe(50);
+      expect(stats.attack).toBe(20);
+      expect(stats.defense).toBe(0);
+      expect(stats.critChance).toBe(5.12);
+      expect(stats.critDmg).toBe(150.99);
+      expect(stats.speed).toBe(10);
+      expect(stats.luck).toBe(0);
+    });
+  });
 });

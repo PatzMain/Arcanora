@@ -55,7 +55,7 @@ export async function advanceQuestProgress(
       if (!questDef) continue;
 
       const matchingCond = questDef.conditions?.find(
-        (c) => c.type === type && c.target === target
+        (c: { type: string; target: string; required: number }) => c.type === type && c.target === target
       );
 
       if (!matchingCond) continue;

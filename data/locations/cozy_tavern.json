@@ -1,0 +1,12 @@
+{
+  "id": "cozy_tavern",
+  "name": "Cozy Tavern",
+  "description": "A warm, bustling tavern with comfortable rooms, hot stews, and a crackling hearth. Sleep here to restore your stats and cure all ailments.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "The Whispering Wilds",
+  "isDungeon": false,
+  "enemies": [],
+  "encounters": []
+}

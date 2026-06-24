@@ -520,12 +520,13 @@ export async function handleGuildInteraction(
   const guildId = parts[3];
 
   if (interaction.user.id !== userId) return;
+  if (!guildId) return;
 
   const disabledRows = interaction.message.components.map((row) => {
     const newRow = ActionRowBuilder.from(row as any);
     newRow.components.forEach((c: any) => c.setDisabled(true));
     return newRow;
-  });
+  }) as any[];
 
   try {
     const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
@@ -539,8 +540,15 @@ export async function handleGuildInteraction(
       }
 
       const guildInfo = await db.query.guilds.findFirst({ where: eq(guilds.id, guildId) });
-      if (!guildInfo || guildInfo.memberCount >= 30) {
-        const errEmbed = errorEmbed('Guild Error', 'This guild is either full or no longer exists.');
+      if (!guildInfo) {
+        const errEmbed = errorEmbed('Guild Error', 'This guild no longer exists.');
+        await interaction.update({ embeds: [errEmbed], components: disabledRows });
+        return;
+      }
+
+      const members = await getGuildMembers(guildInfo.id);
+      if (members.length >= 30) {
+        const errEmbed = errorEmbed('Guild Error', 'This guild is full.');
         await interaction.update({ embeds: [errEmbed], components: disabledRows });
         return;
       }

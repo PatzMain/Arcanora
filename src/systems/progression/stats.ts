@@ -2,18 +2,67 @@ import { getStatGrowth } from './leveling.js';
 import { applyClassModifiers } from '../classes.js';
 import { getPrestigeBonus } from './prestige.js';
 
+export const STAT_KEYS = [
+  'hpMax',
+  'manaMax',
+  'attack',
+  'defense',
+  'critChance',
+  'critDmg',
+  'speed',
+  'luck'
+] as const;
+
+export type StatKey = typeof STAT_KEYS[number];
+export type StatBlock = Record<StatKey, number>;
+
 /**
  * Fully computed character stats after all modifiers are applied.
  */
-export interface ComputedStats {
-  hpMax: number;
-  manaMax: number;
-  attack: number;
-  defense: number;
-  critChance: number;
-  critDmg: number;
-  speed: number;
-  luck: number;
+export interface ComputedStats extends StatBlock {}
+
+/**
+ * Helper to add stats from a source block into a target block.
+ */
+export function addStats(target: StatBlock, source: Partial<Record<StatKey, number>>): void {
+  if (!source) return;
+  for (const key of STAT_KEYS) {
+    target[key] += source[key] ?? 0;
+  }
+}
+
+/**
+ * Helper to multiply all stats by a factor.
+ */
+export function scaleStats(target: StatBlock, factor: number): void {
+  for (const key of STAT_KEYS) {
+    target[key] *= factor;
+  }
+}
+
+/**
+ * Helper to apply percentage bonuses (e.g. from active buffs).
+ */
+export function applyPercentBonus(target: StatBlock, bonuses: Partial<Record<StatKey, number>>): void {
+  if (!bonuses) return;
+  for (const key of STAT_KEYS) {
+    target[key] *= 1 + (bonuses[key] ?? 0) / 100;
+  }
+}
+
+/**
+ * Helper to round all final values.
+ * HP, Mana, Attack, Defense, Speed, Luck are rounded to the nearest multiple of 10.
+ * Crit Chance and Crit Damage are rounded to 2 decimal places.
+ */
+export function roundStats(target: StatBlock): void {
+  for (const key of STAT_KEYS) {
+    if (key === 'critChance' || key === 'critDmg') {
+      target[key] = Math.round(target[key] * 100) / 100;
+    } else {
+      target[key] = Math.round(target[key] / 10) * 10;
+    }
+  }
 }
 
 /**
@@ -27,7 +76,7 @@ export interface ComputedStats {
  * 5. Prestige percentage multiplier (+5% per prestige level)
  * 6. Active buff modifiers
  *
- * All final values are rounded to integers.
+ * All final values are rounded appropriately.
  */
 export function computeStats(
   baseLevel: number,
@@ -53,51 +102,26 @@ export function computeStats(
   // Step 2: Apply class modifiers (percentage-based)
   if (playerClass) {
     const modified = applyClassModifiers(stats, playerClass);
-    stats.hpMax = modified.hpMax;
-    stats.manaMax = modified.manaMax;
-    stats.attack = modified.attack;
-    stats.defense = modified.defense;
-    stats.critChance = modified.critChance;
-    stats.critDmg = modified.critDmg;
-    stats.speed = modified.speed;
-    stats.luck = modified.luck;
+    for (const key of STAT_KEYS) {
+      stats[key] = modified[key];
+    }
   }
 
   // Step 3: Add equipment stats
   for (const item of equippedItems) {
-    if (!item?.stats) continue;
-    stats.hpMax += item.stats.hpMax ?? 0;
-    stats.manaMax += item.stats.manaMax ?? 0;
-    stats.attack += item.stats.attack ?? 0;
-    stats.defense += item.stats.defense ?? 0;
-    stats.critChance += item.stats.critChance ?? 0;
-    stats.critDmg += item.stats.critDmg ?? 0;
-    stats.speed += item.stats.speed ?? 0;
-    stats.luck += item.stats.luck ?? 0;
+    if (item?.stats) {
+      addStats(stats, item.stats);
+    }
   }
 
   // Step 4: Add pet passive stats
   if (petStats) {
-    stats.hpMax += petStats.hpMax ?? 0;
-    stats.manaMax += petStats.manaMax ?? 0;
-    stats.attack += petStats.attack ?? 0;
-    stats.defense += petStats.defense ?? 0;
-    stats.critChance += petStats.critChance ?? 0;
-    stats.critDmg += petStats.critDmg ?? 0;
-    stats.speed += petStats.speed ?? 0;
-    stats.luck += petStats.luck ?? 0;
+    addStats(stats, petStats);
   }
 
   // Step 5: Apply prestige multiplier
   const prestigeMultiplier = getPrestigeBonus(prestige);
-  stats.hpMax *= prestigeMultiplier;
-  stats.manaMax *= prestigeMultiplier;
-  stats.attack *= prestigeMultiplier;
-  stats.defense *= prestigeMultiplier;
-  stats.critChance *= prestigeMultiplier;
-  stats.critDmg *= prestigeMultiplier;
-  stats.speed *= prestigeMultiplier;
-  stats.luck *= prestigeMultiplier;
+  scaleStats(stats, prestigeMultiplier);
 
   // Step 6: Apply active buffs
   for (const buff of activeBuffs) {
@@ -105,38 +129,17 @@ export function computeStats(
 
     // Flat bonuses
     if (buff.flatBonus) {
-      stats.hpMax += buff.flatBonus.hpMax ?? 0;
-      stats.manaMax += buff.flatBonus.manaMax ?? 0;
-      stats.attack += buff.flatBonus.attack ?? 0;
-      stats.defense += buff.flatBonus.defense ?? 0;
-      stats.critChance += buff.flatBonus.critChance ?? 0;
-      stats.critDmg += buff.flatBonus.critDmg ?? 0;
-      stats.speed += buff.flatBonus.speed ?? 0;
-      stats.luck += buff.flatBonus.luck ?? 0;
+      addStats(stats, buff.flatBonus);
     }
 
     // Percentage bonuses
     if (buff.percentBonus) {
-      stats.hpMax *= 1 + (buff.percentBonus.hpMax ?? 0) / 100;
-      stats.manaMax *= 1 + (buff.percentBonus.manaMax ?? 0) / 100;
-      stats.attack *= 1 + (buff.percentBonus.attack ?? 0) / 100;
-      stats.defense *= 1 + (buff.percentBonus.defense ?? 0) / 100;
-      stats.critChance *= 1 + (buff.percentBonus.critChance ?? 0) / 100;
-      stats.critDmg *= 1 + (buff.percentBonus.critDmg ?? 0) / 100;
-      stats.speed *= 1 + (buff.percentBonus.speed ?? 0) / 100;
-      stats.luck *= 1 + (buff.percentBonus.luck ?? 0) / 100;
+      applyPercentBonus(stats, buff.percentBonus);
     }
   }
 
-  // Step 7: Round all final values (stats in multiples of 10, except crits)
-  stats.hpMax = Math.round(stats.hpMax / 10) * 10;
-  stats.manaMax = Math.round(stats.manaMax / 10) * 10;
-  stats.attack = Math.round(stats.attack / 10) * 10;
-  stats.defense = Math.round(stats.defense / 10) * 10;
-  stats.critChance = Math.round(stats.critChance * 100) / 100; // Keep 2 decimals for %
-  stats.critDmg = Math.round(stats.critDmg * 100) / 100; // Keep 2 decimals for %
-  stats.speed = Math.round(stats.speed / 10) * 10;
-  stats.luck = Math.round(stats.luck / 10) * 10;
+  // Step 7: Round final values
+  roundStats(stats);
 
   return stats;
 }

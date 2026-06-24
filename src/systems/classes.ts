@@ -26,6 +26,8 @@ export interface ClassDefinition {
 
 import { classesCatalog } from '../utils/catalog.js';
 
+import { STAT_KEYS } from './progression/stats.js';
+
 export const CLASSES: Record<string, ClassDefinition> = {};
 
 /**
@@ -48,16 +50,19 @@ export function applyClassModifiers(baseStats: any, className: string): any {
   if (!classDef) return { ...baseStats };
 
   const mods = classDef.statModifiers;
-  return {
-    hpMax: Math.round((baseStats.hpMax ?? 0) * (1 + mods.hpMax)),
-    manaMax: Math.round((baseStats.manaMax ?? 0) * (1 + mods.manaMax)),
-    attack: Math.round((baseStats.attack ?? 0) * (1 + mods.attack)),
-    defense: Math.round((baseStats.defense ?? 0) * (1 + mods.defense)),
-    critChance: Math.round(((baseStats.critChance ?? 0) * (1 + mods.critChance)) * 100) / 100,
-    critDmg: Math.round(((baseStats.critDmg ?? 0) * (1 + mods.critDmg)) * 100) / 100,
-    speed: Math.round((baseStats.speed ?? 0) * (1 + mods.speed)),
-    luck: Math.round((baseStats.luck ?? 0) * (1 + mods.luck)),
-  };
+  const result = { ...baseStats };
+
+  for (const key of STAT_KEYS) {
+    const baseValue = baseStats[key] ?? 0;
+    const modValue = mods[key] ?? 0;
+    if (key === 'critChance' || key === 'critDmg') {
+      result[key] = Math.round(baseValue * (1 + modValue) * 100) / 100;
+    } else {
+      result[key] = Math.round(baseValue * (1 + modValue));
+    }
+  }
+
+  return result;
 }
 
 /**

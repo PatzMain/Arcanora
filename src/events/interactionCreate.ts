@@ -157,4 +157,16 @@ export async function execute(interaction: Interaction) {
       }
     }
   }
+
+  // 3. Handle Modal Submissions
+  if (interaction.isModalSubmit()) {
+    const customId = interaction.customId;
+    if (customId.startsWith('player_preset_')) {
+      try {
+        await handlePresetInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing player preset modal interaction');
+      }
+    }
+  }
 }

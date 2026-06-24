@@ -23,6 +23,7 @@ import { combatSessions, playerSkills, inventory } from '../../database/schema.j
 import { SKILLS } from '../../systems/combat/skills.js';
 import { awardGold } from '../../economy/currency.js';
 import { getNavButtons } from '../../utils/navigation.js';
+import { parsePresets, buildPresetButtons } from '../../systems/combat/presets.js';
 import { advanceQuestProgress } from '../../systems/progression/questSystem.js';
 import {
   successEmbed,
@@ -294,7 +295,7 @@ export async function runExplore(
     // Fetch skills for select menu
     const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
     const itemsRow = await getCombatItemsRow(player.id);
-    const presetsRow = await getCombatPresetsRow(player.presets);
+    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat');
     const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);
@@ -410,7 +411,7 @@ export async function runFight(
 
     const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
     const itemsRow = await getCombatItemsRow(player.id);
-    const presetsRow = await getCombatPresetsRow(player.presets);
+    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat');
     const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);
@@ -496,30 +497,4 @@ async function getCombatItemsRow(playerId: string) {
   }
 }
 
-async function getCombatPresetsRow(playerPresets: any) {
-  const presets = (playerPresets || ['attack', null, null]) as (string | null)[];
-  const buttons = [];
 
-  for (let i = 0; i < 3; i++) {
-    const presetAction = presets[i];
-    const button = new ButtonBuilder()
-      .setCustomId(`combat_preset_${i + 1}`)
-      .setStyle(ButtonStyle.Success);
-
-    if (!presetAction) {
-      button.setLabel(`P${i + 1}: Empty`).setDisabled(true);
-    } else if (presetAction === 'attack') {
-      button.setLabel(`P${i + 1}: Basic Attack`).setEmoji('⚔️');
-    } else {
-      const skillDef = SKILLS.find((s) => s.id === presetAction);
-      if (skillDef) {
-        button.setLabel(`P${i + 1}: ${skillDef.name}`).setEmoji('🌀');
-      } else {
-        button.setLabel(`P${i + 1}: Unknown`).setDisabled(true);
-      }
-    }
-    buttons.push(button);
-  }
-
-  return new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
-}

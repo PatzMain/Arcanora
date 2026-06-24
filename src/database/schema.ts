@@ -20,7 +20,11 @@ export const players = pgTable('players', {
   currentZoneId: varchar('current_zone_id', { length: 32 }).default('verdant_meadows').notNull(),
   totalKills: integer('total_kills').default(0).notNull(),
   totalQuestsCompleted: integer('total_quests_completed').default(0).notNull(),
-  presets: jsonb('presets').default(["attack", null, null]).notNull(),
+  presets: jsonb('presets').default([
+    { name: 'Preset 1', actions: ['attack'] },
+    { name: 'Preset 2', actions: [] },
+    { name: 'Preset 3', actions: [] }
+  ]).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   lastSeen: timestamp('last_seen', { withTimezone: true }),
 }, (table) => ({

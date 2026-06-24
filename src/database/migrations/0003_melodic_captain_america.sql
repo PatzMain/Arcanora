@@ -1,0 +1,1 @@
+ALTER TABLE "players" ALTER COLUMN "presets" SET DEFAULT '[{"name":"Preset 1","actions":["attack"]},{"name":"Preset 2","actions":[]},{"name":"Preset 3","actions":[]}]'::jsonb;

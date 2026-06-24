@@ -70,8 +70,8 @@ describe('Locations & Regions Mapping', () => {
   // Using top-level import for zonesCatalog
 
   it('should load all locations and dungeons from data/locations/', () => {
-    // 5 normal locations + 4 dungeons = 9 locations in total
-    expect(zonesCatalog.length).toBe(9);
+    // 6 normal locations + 4 dungeons = 10 locations in total
+    expect(zonesCatalog.length).toBe(10);
   });
 
   it('should correctly mark dungeons and locations', () => {
@@ -79,7 +79,7 @@ describe('Locations & Regions Mapping', () => {
     const locations = zonesCatalog.filter(z => !z.isDungeon);
 
     expect(dungeons.length).toBe(4);
-    expect(locations.length).toBe(5);
+    expect(locations.length).toBe(6);
 
     const dungeonIds = dungeons.map(d => d.id).sort();
     expect(dungeonIds).toEqual(['ancient_mine', 'goblin_sanctuary', 'lava_keep', 'sunken_temple']);
@@ -97,6 +97,62 @@ describe('Locations & Regions Mapping', () => {
       expect(loc.region).toBeDefined();
       expect(validRegions).toContain(loc.region);
     }
+  });
+});
+
+describe('Preset Combos Migration & Validation', () => {
+  it('should correctly migrate old presets format (flat string array) to new combo format', async () => {
+    const { migrateOldPresets } = await import('../src/systems/combat/presets.js');
+    const oldPresets = ['attack', null, 'warrior_power_strike'];
+
+    const migrated = migrateOldPresets(oldPresets);
+
+    expect(migrated.length).toBe(3);
+    expect(migrated[0]).toEqual({ name: 'Preset 1', actions: ['attack'] });
+    expect(migrated[1]).toEqual({ name: 'Preset 2', actions: [] });
+    expect(migrated[2]).toEqual({ name: 'Preset 3', actions: ['warrior_power_strike'] });
+  });
+
+  it('should correctly parse new presets format and fallback on invalid formats', async () => {
+    const { parsePresets } = await import('../src/systems/combat/presets.js');
+
+    // Valid new format
+    const newFormat = [
+      { name: 'My Combo', actions: ['attack', 'mage_fireball'] },
+      { name: 'Preset 2', actions: [] },
+      { name: 'Preset 3', actions: [] }
+    ];
+    const parsed = parsePresets(newFormat);
+    expect(parsed[0].name).toBe('My Combo');
+    expect(parsed[0].actions).toEqual(['attack', 'mage_fireball']);
+
+    // Invalid format fallback
+    const fallback = parsePresets(null);
+    expect(fallback[0]).toEqual({ name: 'Preset 1', actions: ['attack'] });
+  });
+
+  it('should correctly validate combos based on player mana and learned skills', async () => {
+    const { validateCombo } = await import('../src/systems/combat/presets.js');
+
+    const slot = {
+      name: 'Combo A',
+      actions: ['attack', 'warrior_power_strike'] // warrior_power_strike costs 8 mana
+    };
+
+    // Valid case
+    const validResult = validateCombo(slot, 10, ['warrior_power_strike']);
+    expect(validResult.valid).toBe(true);
+    expect(validResult.totalManaCost).toBe(8);
+
+    // Insufficient mana case
+    const lowManaResult = validateCombo(slot, 5, ['warrior_power_strike']);
+    expect(lowManaResult.valid).toBe(false);
+    expect(lowManaResult.error).toContain('Not enough Mana');
+
+    // Unlearned skill case
+    const unlearnedResult = validateCombo(slot, 20, []);
+    expect(unlearnedResult.valid).toBe(false);
+    expect(unlearnedResult.error).toContain('have not learned');
   });
 });
 

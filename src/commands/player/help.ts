@@ -25,7 +25,11 @@ interface HelpCategory {
   commands: HelpCommandDef[];
 }
 
-const HELP_CATEGORIES: Record<string, HelpCategory> = {
+const HELP_CATEGORIES: Record<string, HelpCategory> & {
+  combat: HelpCategory; inventory: HelpCategory; economy: HelpCategory;
+  crafting: HelpCategory; quests: HelpCategory; pets: HelpCategory;
+  guilds: HelpCategory; player: HelpCategory;
+} = {
   combat: {
     emoji: '⚔️',
     title: 'Combat',

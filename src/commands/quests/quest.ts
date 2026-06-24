@@ -232,7 +232,7 @@ export async function runQuestsBoard(
 }
 
 export async function runQuestsAccept(
-  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
   questId: string
 ) {
   try {

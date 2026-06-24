@@ -11,10 +11,12 @@ import {
   type StringSelectMenuInteraction
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { players } from '../../database/schema.js';
+import { players, combatSessions } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { getPlayerWithClampedStats } from '../../database/queries/player.js';
-import { zonesCatalog } from '../../utils/catalog.js';
+import { getEquippedItems } from '../../database/queries/inventory.js';
+import { computeStats } from '../../systems/progression/stats.js';
+import { zonesCatalog, itemsCatalog } from '../../utils/catalog.js';
 import { errorEmbed } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
 
@@ -64,6 +66,7 @@ export async function runMap(
 
     // Emojis for each location
     const zoneEmojis: Record<string, string> = {
+      cozy_tavern: '🛌',
       verdant_meadows: '🌿',
       shadow_forest: '🌲',
       goblin_sanctuary: '🏰',
@@ -126,25 +129,36 @@ export async function runMap(
 
     const components: any[] = [];
 
-    // 1. Explore/Raid button for current location
+    // 1. Explore/Raid/Rest button for current location
     if (currentZone) {
-      const exploreBtn = new ButtonBuilder()
-        .setCustomId(buildNavId('combat_explore', player.discordId, currentZone.id));
+      const actionRow = new ActionRowBuilder<ButtonBuilder>();
       
-      if (currentZone.isDungeon) {
-        exploreBtn
-          .setLabel(`Raid ${currentZone.name}`)
-          .setStyle(ButtonStyle.Danger)
-          .setEmoji('🏰');
+      if (currentZone.id === 'cozy_tavern') {
+        const restBtn = new ButtonBuilder()
+          .setCustomId(buildNavId('tavern_rest', player.discordId))
+          .setLabel('Rest & Sleep')
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji('🛌');
+        actionRow.addComponents(restBtn);
       } else {
-        exploreBtn
-          .setLabel(`Explore ${currentZone.name}`)
-          .setStyle(ButtonStyle.Success)
-          .setEmoji('⚔️');
+        const exploreBtn = new ButtonBuilder()
+          .setCustomId(buildNavId('combat_explore', player.discordId, currentZone.id));
+        
+        if (currentZone.isDungeon) {
+          exploreBtn
+            .setLabel(`Raid ${currentZone.name}`)
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji('🏰');
+        } else {
+          exploreBtn
+            .setLabel(`Explore ${currentZone.name}`)
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('⚔️');
+        }
+        actionRow.addComponents(exploreBtn);
       }
       
-      const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(exploreBtn);
-      components.push(btnRow);
+      components.push(actionRow);
     }
 
     // 2. Navigation Hub Buttons row
@@ -281,5 +295,71 @@ export async function handleMapTravelInteraction(interaction: ButtonInteraction 
       content: '❌ An error occurred during travel.',
       flags: [MessageFlags.Ephemeral]
     });
+  }
+}
+
+export async function runTavernRest(
+  interaction: ButtonInteraction | StringSelectMenuInteraction
+) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+    }
+
+    const player = await getPlayerWithClampedStats(interaction.user.id);
+    if (!player) {
+      const err = errorEmbed('Rest Error', 'Player profile not found. Please complete the /tutorial first.');
+      await interaction.editReply({ embeds: [err] });
+      return;
+    }
+
+    // 1. Fetch equipped items and compute player's max stats
+    const equippedDbItems = await getEquippedItems(player.id);
+    const equippedItemsList = equippedDbItems.map((dbItem) => {
+      const def = itemsCatalog.find((i: any) => i.id === dbItem.itemId);
+      return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
+    });
+
+    const stats = computeStats(
+      player.level,
+      player.prestige,
+      player.playerClass,
+      equippedItemsList,
+      null,
+      []
+    );
+
+    // 2. Replenish stats in database
+    await db
+      .update(players)
+      .set({
+        hpCurrent: stats.hpMax,
+        manaCurrent: stats.manaMax
+      })
+      .where(eq(players.id, player.id));
+
+    // 3. Clear active combat session (this removes any status ailments or active battles)
+    await db
+      .delete(combatSessions)
+      .where(eq(combatSessions.playerId, player.id));
+
+    // 4. Send a success embed
+    const embed = new EmbedBuilder()
+      .setColor(0x10B981) // Emerald green
+      .setTitle('🛌 Cozy Tavern Rest')
+      .setDescription(
+        `You rent a comfortable room at the **Cozy Tavern** and get a peaceful night of sleep.\n\n` +
+        `💖 **HP fully restored**: \`${stats.hpMax}/${stats.hpMax}\`\n` +
+        `🧪 **Mana fully restored**: \`${stats.manaMax}/${stats.manaMax}\`\n` +
+        `✨ **All status ailments and active combat sessions cleared!**`
+      )
+      .setFooter({ text: 'Arcanora — Rest & Recovery' })
+      .setTimestamp();
+
+    await interaction.editReply({ embeds: [embed] });
+  } catch (error) {
+    console.error('Error resting at tavern:', error);
+    const err = errorEmbed('Rest Error', 'Failed to rest at the tavern.');
+    await interaction.editReply({ embeds: [err] });
   }
 }

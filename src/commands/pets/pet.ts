@@ -27,7 +27,7 @@ export const data = new SlashCommandBuilder()
       .setDescription('Release your equipped pet back into the wild (Deletes the pet).')
   );
 
-export async function execute(interaction: ChatInputCommandInteraction) {
+export async function execute(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     await interaction.deferReply();
 
@@ -46,7 +46,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     if (!equip || !equip.pet) {
       const embed = errorEmbed('No Pet Equipped', 'You do not have a pet equipped. Equipping a pet can be done via `/equip`.');
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
+      return;
     }
 
     // Fetch the pet inventory row
@@ -56,7 +57,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     if (!petInventoryRow) {
       const embed = errorEmbed('Pet Error', 'Equipped pet data is missing.');
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
+      return;
     }
 
     const petsCatalog = loadPets();
@@ -64,7 +66,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     if (!petDef) {
       const embed = errorEmbed('Pet Error', 'Pet definition not found in catalog.');
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
+      return;
     }
 
     const currentPetLevel = Math.max(1, petInventoryRow.enhancement); // use enhancement as level
@@ -83,13 +86,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         },
         passive,
       );
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
+      return;
     }
 
     if (subcommand === 'level') {
       if (currentPetLevel >= petDef.maxLevel) {
         const embed = errorEmbed('Max Level', `Your pet **${petDef.name}** is already at its maximum level (**Lv.${petDef.maxLevel}**).`);
-        return interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
+      return;
       }
 
       // Calculate cost
@@ -102,7 +107,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
           'Insufficient Funds',
           `Training **${petDef.name}** to Lv.${currentPetLevel + 1} costs 🪙 **${goldCost}** Gold. You do not have enough.`
         );
-        return interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
+      return;
       }
 
       const nextLevel = currentPetLevel + 1;
@@ -125,7 +131,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         `❤️ Max HP: +${oldPassive.hpMax} -> +**${newPassive.hpMax}**\n` +
         `🍀 Luck: +${oldPassive.luck} -> +**${newPassive.luck}**`
       );
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
+      return;
     }
 
     if (subcommand === 'release') {

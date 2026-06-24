@@ -5,7 +5,8 @@ import {
   ButtonStyle,
   StringSelectMenuBuilder,
   ComponentType,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
+  type ButtonInteraction
 } from 'discord.js';
 import { db } from '../../database/client.js';
 import { worldBosses, bossParticipants, players, playerSkills } from '../../database/schema.js';
@@ -17,9 +18,11 @@ import { computeStats } from '../../systems/progression/stats.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { resolveLoot } from '../../systems/exploration/loot.js';
 import { executeSkill, getSkillById, SKILLS } from '../../systems/combat/skills.js';
-import { calculateDamage } from '../../systems/combat/engine.js';
+import { calculateDamage, getStatModifier, calculateDodgeChance } from '../../systems/combat/engine.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { bossInfoEmbed, bossSkirmishEmbed, bossVictoryEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
+import { parsePresets, validateCombo, buildPresetButtons } from '../../systems/combat/presets.js';
+import { rollChance } from '../../utils/random.js';
 
 export const data = new SlashCommandBuilder()
   .setName('boss')
@@ -137,7 +140,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
           new ButtonBuilder().setCustomId('boss_leave').setLabel('🏃 Leave').setStyle(ButtonStyle.Danger)
         );
 
-        const presetsRow = getBossPresetsRow(playerPresets);
+        const presetsRow = buildPresetButtons(parsePresets(playerPresets), 'boss');
 
         // Fetch learned skills
         const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
@@ -232,50 +235,109 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 : `⚔️ You hit for **${playerDmg}** damage.`;
             } else if (compInteraction.customId.startsWith('boss_preset_')) {
               const slotNum = parseInt(compInteraction.customId.split('_')[2] || '1', 10);
-              const presets = (freshPlayer.presets || ['attack', null, null]) as (string | null)[];
-              const presetAction = presets[slotNum - 1];
+              const parsedPresets = parsePresets(freshPlayer.presets);
+              const slot = parsedPresets[slotNum - 1];
+              if (!slot) {
+                await compInteraction.reply({ content: '❌ Preset slot is empty or invalid.', ephemeral: true });
+                continue;
+              }
 
-              if (!presetAction || presetAction === 'attack') {
-                // Basic attack
-                const result = calculateDamage(playerStats.attack, enemyDef.stats.defense, playerStats.critChance, playerStats.critDmg);
-                playerDmg = result.damage;
-                logMsg = result.isCrit
-                  ? `💥 **CRITICAL HIT!** You dealt **${playerDmg}** damage!`
-                  : `⚔️ You hit for **${playerDmg}** damage.`;
-              } else {
-                // It's a skill!
-                const skillDef = getSkillById(presetAction);
+              // Fetch learned skills
+              const learnedSkillsDb = await db.select().from(playerSkills).where(eq(playerSkills.playerId, freshPlayer.id));
+              const learnedSkillIds = learnedSkillsDb.map((s) => s.skillId);
 
-                if (!skillDef) {
-                  await compInteraction.reply({ content: '❌ Skill not found.', ephemeral: true });
-                  continue;
+              // Validate combo
+              const validation = validateCombo(slot, freshPlayer.manaCurrent, learnedSkillIds);
+              if (!validation.valid) {
+                await compInteraction.reply({ content: `❌ Combo validation failed: ${validation.error}`, ephemeral: true });
+                continue;
+              }
+
+              // Loop and execute actions in sequence
+              const comboLogs: string[] = [];
+              const tempPlayerBuffs: any[] = [];
+              let totalDmg = 0;
+              let totalHeal = 0;
+
+              for (const actionId of slot.actions) {
+                // Check if boss or player is already dead
+                if (freshBoss.hpCurrent - totalDmg <= 0 || freshPlayer.hpCurrent + totalHeal <= 0) {
+                  break;
                 }
 
-                if (freshPlayer.manaCurrent < skillDef.manaCost) {
-                  await compInteraction.reply({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}`, ephemeral: true });
-                  continue;
-                }
+                // Calculate effective stats for this action
+                const atkMod = getStatModifier(tempPlayerBuffs, 'attack');
+                const defMod = getStatModifier(tempPlayerBuffs, 'defense');
+                const spdMod = getStatModifier(tempPlayerBuffs, 'speed');
+                const critMod = getStatModifier(tempPlayerBuffs, 'critChance');
 
-                manaCost = skillDef.manaCost;
-
-                const dummyEnemyStats = {
-                  hp: freshBoss.hpCurrent,
-                  maxHp: freshBoss.hpMax,
-                  mana: 0,
-                  maxMana: 0,
-                  attack: enemyDef.stats.attack,
-                  defense: enemyDef.stats.defense,
-                  speed: enemyDef.stats.speed,
-                  critChance: 5,
-                  critDmg: 150,
-                  luck: 0
+                const currentStats: import('../../systems/combat/engine.js').CombatStats = {
+                  hp: Math.max(0, freshPlayer.hpCurrent + totalHeal),
+                  maxHp: playerStats.hpMax,
+                  mana: Math.max(0, freshPlayer.manaCurrent - manaCost),
+                  maxMana: playerStats.manaMax,
+                  attack: Math.max(1, playerStats.attack + atkMod),
+                  defense: Math.max(1, playerStats.defense + defMod),
+                  speed: Math.max(0, playerStats.speed + spdMod),
+                  critChance: Math.max(0, playerStats.critChance + critMod),
+                  critDmg: playerStats.critDmg,
+                  luck: playerStats.luck,
                 };
 
-                const skillResult = executeSkill(skillDef, playerStats, dummyEnemyStats);
-                playerDmg = skillResult.damage;
-                playerHeal = skillResult.healing;
-                logMsg = `🌀 You cast **${skillDef.name}**! ${skillResult.description}`;
+                if (actionId === 'attack') {
+                  const { damage, isCrit } = calculateDamage(
+                    currentStats.attack,
+                    enemyDef.stats.defense,
+                    currentStats.critChance,
+                    currentStats.critDmg
+                  );
+                  totalDmg += damage;
+                  comboLogs.push(isCrit
+                    ? `💥 **CRITICAL HIT!** You dealt **${damage}** damage!`
+                    : `⚔️ You hit for **${damage}** damage.`
+                  );
+                } else {
+                  // Skill!
+                  const skillDef = getSkillById(actionId);
+                  if (!skillDef) continue;
+
+                  // Deduct mana cost
+                  manaCost += skillDef.manaCost;
+
+                  const dummyEnemyStats = {
+                    hp: Math.max(0, freshBoss.hpCurrent - totalDmg),
+                    maxHp: freshBoss.hpMax,
+                    mana: 0,
+                    maxMana: 0,
+                    attack: enemyDef.stats.attack,
+                    defense: enemyDef.stats.defense,
+                    speed: enemyDef.stats.speed,
+                    critChance: 5,
+                    critDmg: 150,
+                    luck: 0
+                  };
+
+                  const skillResult = executeSkill(skillDef, currentStats, dummyEnemyStats);
+                  totalDmg += skillResult.damage;
+                  totalHeal += skillResult.healing;
+
+                  // Add buffs/debuffs
+                  for (const eff of skillResult.effects) {
+                    if (eff.stat) {
+                      const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
+                      if (effectTarget === 'self') {
+                        tempPlayerBuffs.push(eff);
+                      }
+                    }
+                  }
+
+                  comboLogs.push(`🌀 You cast **${skillDef.name}**! ${skillResult.description}`);
+                }
               }
+
+              playerDmg = totalDmg;
+              playerHeal = totalHeal;
+              logMsg = `⚡ **Preset Combo: ${slot.name}**\n` + comboLogs.join('\n');
             }
           } else if (compInteraction.isStringSelectMenu()) {
             if (compInteraction.customId === 'boss_use_skill') {
@@ -307,7 +369,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 luck: 0
               };
 
-              const skillResult = executeSkill(skillDef, playerStats, dummyEnemyStats);
+              const singleCastStats: import('../../systems/combat/engine.js').CombatStats = {
+                hp: freshPlayer.hpCurrent,
+                maxHp: playerStats.hpMax,
+                mana: freshPlayer.manaCurrent,
+                maxMana: playerStats.manaMax,
+                attack: playerStats.attack,
+                defense: playerStats.defense,
+                speed: playerStats.speed,
+                critChance: playerStats.critChance,
+                critDmg: playerStats.critDmg,
+                luck: playerStats.luck,
+              };
+              const skillResult = executeSkill(skillDef, singleCastStats, dummyEnemyStats);
               playerDmg = skillResult.damage;
               playerHeal = skillResult.healing;
               logMsg = `🌀 You cast **${skillDef.name}**! ${skillResult.description}`;
@@ -378,7 +452,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               .where(eq(bossParticipants.bossInstanceId, freshBoss.id));
 
             const totalDamage = participants.reduce((sum, p) => sum + p.damageDealt, 0);
-            const mvp = participants.reduce((max, p) => p.damageDealt > max.damageDealt ? p : max, participants[0]);
+            const mvp = participants.length > 0 ? participants.reduce((max, p) => p.damageDealt > max.damageDealt ? p : max, participants[0]!) : undefined;
 
             const sortedRankings = [...participants]
               .sort((a, b) => b.damageDealt - a.damageDealt)
@@ -397,7 +471,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               });
               if (!pl) continue;
 
-              const isMvp = p.playerId === mvp.playerId;
+              const isMvp = mvp ? p.playerId === mvp.playerId : false;
               const rewards = calculateBossRewards(
                 isMvp ? p.damageDealt : totalDamage,
                 p.damageDealt,
@@ -455,12 +529,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             const victoryEmbed = bossVictoryEmbed(
               { name: enemyDef.name, level: enemyDef.level, isGlobal },
-              mvp.username,
+              mvp?.username ?? 'Unknown',
               sortedRankings,
               rewardsList
             );
 
-            await interaction.channel?.send({ embeds: [victoryEmbed] });
+            if (interaction.channel && 'send' in interaction.channel) {
+              await interaction.channel.send({ embeds: [victoryEmbed] });
+            }
             await compInteraction.update({ embeds: [victoryEmbed], components: [] });
             break;
           }
@@ -532,30 +608,79 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 }
 
-function getBossPresetsRow(playerPresets: any) {
-  const presets = (playerPresets || ['attack', null, null]) as (string | null)[];
-  const buttons = [];
-
-  for (let i = 0; i < 3; i++) {
-    const presetAction = presets[i];
-    const button = new ButtonBuilder()
-      .setCustomId(`boss_preset_${i + 1}`)
-      .setStyle(ButtonStyle.Success);
-
-    if (!presetAction) {
-      button.setLabel(`P${i + 1}: Empty`).setDisabled(true);
-    } else if (presetAction === 'attack') {
-      button.setLabel(`P${i + 1}: Basic Attack`).setEmoji('⚔️');
-    } else {
-      const skillDef = SKILLS.find((s) => s.id === presetAction);
-      if (skillDef) {
-        button.setLabel(`P${i + 1}: ${skillDef.name}`).setEmoji('🌀');
+/**
+ * Standalone boss info display, callable from the navigation system.
+ */
+export async function runBossInfo(interaction: ChatInputCommandInteraction | ButtonInteraction): Promise<void> {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      if ('update' in interaction && typeof (interaction as any).update === 'function') {
+        await (interaction as ButtonInteraction).deferUpdate();
       } else {
-        button.setLabel(`P${i + 1}: Unknown`).setDisabled(true);
+        await interaction.deferReply();
       }
     }
-    buttons.push(button);
-  }
 
-  return new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
+    const channelId = interaction.channelId || '';
+
+    let activeBoss = await db.query.worldBosses.findFirst({
+      where: and(
+        eq(worldBosses.channelId, channelId),
+        isNull(worldBosses.defeatedAt)
+      )
+    });
+
+    if (!activeBoss) {
+      activeBoss = await db.query.worldBosses.findFirst({
+        where: and(
+          eq(worldBosses.channelId, 'GLOBAL'),
+          isNull(worldBosses.defeatedAt)
+        )
+      });
+    }
+
+    if (!activeBoss) {
+      const embed = errorEmbed('No Active Boss', 'There is no active World Boss. Ask an administrator to spawn one!');
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    const enemyDef = getEnemyById(activeBoss.bossId);
+    if (!enemyDef) {
+      const embed = errorEmbed('Boss Error', 'The active boss definition is missing.');
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    const contributors = await db
+      .select({
+        playerId: bossParticipants.playerId,
+        damageDealt: bossParticipants.damageDealt,
+        username: players.username
+      })
+      .from(bossParticipants)
+      .innerJoin(players, eq(bossParticipants.playerId, players.id))
+      .where(eq(bossParticipants.bossInstanceId, activeBoss.id))
+      .orderBy(desc(bossParticipants.damageDealt))
+      .limit(5);
+
+    const embed = bossInfoEmbed(
+      { name: enemyDef.name, level: enemyDef.level, description: enemyDef.description, isGlobal: activeBoss.channelId === 'GLOBAL' },
+      activeBoss.hpCurrent,
+      activeBoss.hpMax,
+      contributors
+    );
+
+    await interaction.editReply({ embeds: [embed] });
+  } catch (error) {
+    console.error('runBossInfo error:', error);
+    const errEmbed = errorEmbed('Boss Error', 'Failed to retrieve boss information.');
+    try {
+      if (interaction.replied || interaction.deferred) {
+        await interaction.editReply({ embeds: [errEmbed] });
+      } else {
+        await interaction.reply({ embeds: [errEmbed], ephemeral: true });
+      }
+    } catch {}
+  }
 }
