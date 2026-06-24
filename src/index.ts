@@ -1,10 +1,10 @@
+import 'dotenv/config';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { logger } from './utils/logger.js';
 import { pool } from './database/client.js';
 import * as readyEvent from './events/ready.js';
 import * as interactionCreateEvent from './events/interactionCreate.js';
 import * as errorEvent from './events/error.js';
-import 'dotenv/config';
 
 // Initialize Discord Client
 const client = new Client({
@@ -33,11 +33,11 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error({ reason, promise }, 'Unhandled Rejection at Promise');
+  logger.error({ err: reason as Error, promise }, 'Unhandled Rejection at Promise');
 });
 
 process.on('uncaughtException', (error) => {
-  logger.error({ error }, 'Uncaught Exception thrown');
+  logger.error({ err: error }, 'Uncaught Exception thrown');
 });
 
 // Start application
@@ -46,9 +46,12 @@ async function start() {
     if (!process.env.DISCORD_TOKEN) {
       throw new Error('DISCORD_TOKEN environment variable is missing.');
     }
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is missing. Please configure a PostgreSQL database link.');
+    }
     await client.login(process.env.DISCORD_TOKEN);
   } catch (error) {
-    logger.error({ error }, 'Fatal error during client startup');
+    logger.error({ err: error as Error }, 'Fatal error during client startup');
     process.exit(1);
   }
 }
