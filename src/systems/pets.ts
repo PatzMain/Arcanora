@@ -38,7 +38,7 @@ export function loadPets(): PetData[] {
   const cached = cacheGet<PetData[]>(PETS_CACHE_KEY);
   if (cached) return cached;
 
-  const filePath = join(__dirname, '..', '..', 'data', 'pets.json');
+  const filePath = join(process.cwd(), 'data', 'pets.json');
   const raw = readFileSync(filePath, 'utf-8');
   const pets: PetData[] = JSON.parse(raw);
 

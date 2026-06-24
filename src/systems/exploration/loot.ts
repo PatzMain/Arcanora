@@ -33,7 +33,7 @@ export function loadItems(): any[] {
   const cached = cacheGet<any[]>(ITEMS_CACHE_KEY);
   if (cached) return cached;
 
-  const filePath = join(__dirname, '..', '..', '..', 'data', 'items.json');
+  const filePath = join(process.cwd(), 'data', 'items.json');
   const raw = readFileSync(filePath, 'utf-8');
   const items: any[] = JSON.parse(raw);
 

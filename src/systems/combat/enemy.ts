@@ -58,7 +58,7 @@ export function loadEnemies(): EnemyData[] {
   const cached = cacheGet<EnemyData[]>(ENEMIES_CACHE_KEY);
   if (cached) return cached;
 
-  const filePath = join(__dirname, '..', '..', '..', 'data', 'enemies.json');
+  const filePath = join(process.cwd(), 'data', 'enemies.json');
   const raw = readFileSync(filePath, 'utf-8');
   const enemies: EnemyData[] = JSON.parse(raw);
 

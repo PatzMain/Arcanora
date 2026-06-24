@@ -30,7 +30,7 @@ export function loadRecipes(): Recipe[] {
   const cached = cacheGet<Recipe[]>(RECIPES_CACHE_KEY);
   if (cached) return cached;
 
-  const filePath = join(__dirname, '..', '..', 'data', 'recipes.json');
+  const filePath = join(process.cwd(), 'data', 'recipes.json');
   const raw = readFileSync(filePath, 'utf-8');
   const recipes: Recipe[] = JSON.parse(raw);
 

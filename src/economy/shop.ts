@@ -35,7 +35,7 @@ function loadItemCatalog(): ShopItem[] {
   if (cached) return cached;
 
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  const filePath = join(__dirname, '..', '..', 'data', 'items.json');
+  const filePath = join(process.cwd(), 'data', 'items.json');
   const raw = readFileSync(filePath, 'utf-8');
   const items: ShopItem[] = JSON.parse(raw);
 

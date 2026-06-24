@@ -37,7 +37,7 @@ export function loadZones(): ZoneData[] {
   const cached = cacheGet<ZoneData[]>(CACHE_KEY);
   if (cached) return cached;
 
-  const filePath = join(__dirname, '..', '..', '..', 'data', 'zones.json');
+  const filePath = join(process.cwd(), 'data', 'zones.json');
   const raw = readFileSync(filePath, 'utf-8');
   const zones: ZoneData[] = JSON.parse(raw);
 

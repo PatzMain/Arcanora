@@ -46,7 +46,7 @@ export function loadAchievements(): AchievementData[] {
   const cached = cacheGet<AchievementData[]>(ACHIEVEMENTS_CACHE_KEY);
   if (cached) return cached;
 
-  const filePath = join(__dirname, '..', '..', 'data', 'achievements.json');
+  const filePath = join(process.cwd(), 'data', 'achievements.json');
   const raw = readFileSync(filePath, 'utf-8');
   const achievements: AchievementData[] = JSON.parse(raw);
 

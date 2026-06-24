@@ -84,6 +84,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 }
 
 function loadItemsCatalog(): any[] {
-  const filePath = join(__dirname, '..', '..', '..', 'data', 'items.json');
+  const filePath = join(process.cwd(), 'data', 'items.json');
   return JSON.parse(readFileSync(filePath, 'utf-8'));
 }
