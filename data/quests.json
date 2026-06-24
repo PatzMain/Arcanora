@@ -1,0 +1,261 @@
+[
+  {
+    "id": "story_begin",
+    "name": "The Journey Begins",
+    "description": "Embark on your journey in Arcanora by reaching level 2.",
+    "type": "story",
+    "levelReq": 1,
+    "repeatable": false,
+    "conditions": [
+      { "type": "reach_level", "target": "level", "required": 2 }
+    ],
+    "rewards": {
+      "gold": 100,
+      "exp": 50,
+      "gems": 5
+    }
+  },
+  {
+    "id": "story_meadows_clear",
+    "name": "Boar Menace",
+    "description": "Help the farmers by cullying 5 Wild Boars in the Meadows.",
+    "type": "story",
+    "levelReq": 1,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "wild_boar", "required": 5 }
+    ],
+    "rewards": {
+      "gold": 200,
+      "exp": 100,
+      "itemId": "potion_health_small",
+      "itemQty": 2
+    }
+  },
+  {
+    "id": "story_mushroom_hunt",
+    "name": "Fungal Infestation",
+    "description": "Slay the Mushroom Guardian to secure the Verdant Meadows.",
+    "type": "story",
+    "levelReq": 3,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "mushroom_guardian", "required": 1 }
+    ],
+    "rewards": {
+      "gold": 500,
+      "exp": 300,
+      "gems": 10,
+      "itemId": "accessory_wooden_ring",
+      "itemQty": 1
+    }
+  },
+  {
+    "id": "story_forest_enter",
+    "name": "Into the Dark",
+    "description": "Explore the mysterious Shadow Forest 3 times.",
+    "type": "story",
+    "levelReq": 3,
+    "repeatable": false,
+    "conditions": [
+      { "type": "explore", "target": "shadow_forest", "required": 3 }
+    ],
+    "rewards": {
+      "gold": 300,
+      "exp": 200
+    }
+  },
+  {
+    "id": "story_treant_threat",
+    "name": "Corrupted Bark",
+    "description": "Slay 8 Dark Treants to thin out the corrupted wood forces.",
+    "type": "story",
+    "levelReq": 3,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "dark_treant", "required": 8 }
+    ],
+    "rewards": {
+      "gold": 400,
+      "exp": 250,
+      "itemId": "potion_mana_small",
+      "itemQty": 3
+    }
+  },
+  {
+    "id": "story_witch_hex",
+    "name": "Hex Breaker",
+    "description": "Defeat the Nightshade Witch in the Shadow Forest.",
+    "type": "story",
+    "levelReq": 5,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "nightshade_witch", "required": 1 }
+    ],
+    "rewards": {
+      "gold": 800,
+      "exp": 500,
+      "gems": 15,
+      "itemId": "potion_rejuvenation",
+      "itemQty": 1
+    }
+  },
+  {
+    "id": "story_forest_clear",
+    "name": "Heart of the Forest",
+    "description": "Defeat the Ancient Hollow and rid the Shadow Forest of its deep corruption.",
+    "type": "story",
+    "levelReq": 5,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "ancient_hollow", "required": 1 }
+    ],
+    "rewards": {
+      "gold": 1200,
+      "exp": 800,
+      "gems": 20,
+      "itemId": "mat_spider_silk",
+      "itemQty": 3
+    }
+  },
+  {
+    "id": "story_caverns_depths",
+    "name": "Glimmering Depths",
+    "description": "Explore the Crystal Caverns 5 times to map the underground tunnels.",
+    "type": "story",
+    "levelReq": 6,
+    "repeatable": false,
+    "conditions": [
+      { "type": "explore", "target": "crystal_caverns", "required": 5 }
+    ],
+    "rewards": {
+      "gold": 800,
+      "exp": 500
+    }
+  },
+  {
+    "id": "story_colossus_defeat",
+    "name": "Crystalline Colossus",
+    "description": "Slay the Crystal Colossus to unlock access to the deeper volcanic zones.",
+    "type": "story",
+    "levelReq": 9,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "crystal_colossus", "required": 1 }
+    ],
+    "rewards": {
+      "gold": 2500,
+      "exp": 1800,
+      "gems": 30
+    }
+  },
+  {
+    "id": "story_wastes_conquer",
+    "name": "Infernal Titan",
+    "description": "Defeat the Infernal Titan in the Volcanic Wastes.",
+    "type": "story",
+    "levelReq": 14,
+    "repeatable": false,
+    "conditions": [
+      { "type": "kill", "target": "infernal_titan", "required": 1 }
+    ],
+    "rewards": {
+      "gold": 6000,
+      "exp": 4500,
+      "gems": 50
+    }
+  },
+  {
+    "id": "daily_herb_gather",
+    "name": "Daily Herbalist",
+    "description": "Gather 3 Wild Herbs to supply the local healers.",
+    "type": "daily",
+    "levelReq": 1,
+    "repeatable": true,
+    "conditions": [
+      { "type": "gather", "target": "mat_herbs", "required": 3 }
+    ],
+    "rewards": {
+      "gold": 120,
+      "exp": 60
+    }
+  },
+  {
+    "id": "daily_mob_slay",
+    "name": "Meadow Ranger",
+    "description": "Slay 5 Forest Sprites to keep the roads safe.",
+    "type": "daily",
+    "levelReq": 1,
+    "repeatable": true,
+    "conditions": [
+      { "type": "kill", "target": "forest_sprite", "required": 5 }
+    ],
+    "rewards": {
+      "gold": 150,
+      "exp": 80
+    }
+  },
+  {
+    "id": "daily_exploration",
+    "name": "Daily Scout",
+    "description": "Explore the meadows or forest 3 times.",
+    "type": "daily",
+    "levelReq": 1,
+    "repeatable": true,
+    "conditions": [
+      { "type": "explore", "target": "any", "required": 3 }
+    ],
+    "rewards": {
+      "gold": 150,
+      "exp": 75
+    }
+  },
+  {
+    "id": "weekly_boss_slayer",
+    "name": "Weekly Executioner",
+    "description": "Defeat any 3 Dungeon or Zone Bosses.",
+    "type": "weekly",
+    "levelReq": 3,
+    "repeatable": true,
+    "conditions": [
+      { "type": "kill", "target": "boss", "required": 3 }
+    ],
+    "rewards": {
+      "gold": 1500,
+      "exp": 1000,
+      "gems": 20
+    }
+  },
+  {
+    "id": "weekly_iron_miner",
+    "name": "Weekly Supplier",
+    "description": "Gather 10 Iron Ore chunks.",
+    "type": "weekly",
+    "levelReq": 5,
+    "repeatable": true,
+    "conditions": [
+      { "type": "gather", "target": "mat_iron_ore", "required": 10 }
+    ],
+    "rewards": {
+      "gold": 1000,
+      "exp": 800,
+      "gems": 10
+    }
+  },
+  {
+    "id": "weekly_cavern_crawler",
+    "name": "Weekly Cavern Crawler",
+    "description": "Defeat 12 Crystal Golems in the Caverns.",
+    "type": "weekly",
+    "levelReq": 6,
+    "repeatable": true,
+    "conditions": [
+      { "type": "kill", "target": "crystal_golem", "required": 12 }
+    ],
+    "rewards": {
+      "gold": 1500,
+      "exp": 1200,
+      "gems": 15
+    }
+  }
+]

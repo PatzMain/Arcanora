@@ -1,0 +1,116 @@
+[
+  {
+    "id": "verdant_meadows",
+    "name": "Verdant Meadows",
+    "description": "A peaceful green meadow filled with wild flowers and low-level creatures. Ideal for beginners.",
+    "minLevel": 1,
+    "maxLevel": 3,
+    "explorationCooldown": 60,
+    "enemies": [
+      "forest_sprite",
+      "wild_boar",
+      "thornback_beetle",
+      "rabid_wolf",
+      "mushroom_guardian"
+    ],
+    "encounters": [
+      { "type": "normal_mob", "weight": 55 },
+      { "type": "empty", "weight": 20 },
+      { "type": "treasure", "weight": 15 },
+      { "type": "rare_mob", "weight": 8 },
+      { "type": "boss", "weight": 2 }
+    ]
+  },
+  {
+    "id": "shadow_forest",
+    "name": "Shadow Forest",
+    "description": "A dense, dark woodland where sun rays rarely penetrate. The trees seem to watch you.",
+    "minLevel": 3,
+    "maxLevel": 6,
+    "explorationCooldown": 90,
+    "enemies": [
+      "shadow_stalker",
+      "dark_treant",
+      "venom_spider",
+      "cursed_owl",
+      "nightshade_witch",
+      "ancient_hollow"
+    ],
+    "encounters": [
+      { "type": "normal_mob", "weight": 50 },
+      { "type": "empty", "weight": 20 },
+      { "type": "treasure", "weight": 15 },
+      { "type": "rare_mob", "weight": 12 },
+      { "type": "boss", "weight": 3 }
+    ]
+  },
+  {
+    "id": "crystal_caverns",
+    "name": "Crystal Caverns",
+    "description": "Breathtaking subterranean caves glowing with magical crystals. Dangerous beasts lurk in the reflections.",
+    "minLevel": 6,
+    "maxLevel": 10,
+    "explorationCooldown": 120,
+    "enemies": [
+      "crystal_golem",
+      "gem_serpent",
+      "cave_troll",
+      "glowbat_swarm",
+      "prismatic_drake",
+      "crystal_colossus"
+    ],
+    "encounters": [
+      { "type": "normal_mob", "weight": 45 },
+      { "type": "empty", "weight": 15 },
+      { "type": "treasure", "weight": 20 },
+      { "type": "rare_mob", "weight": 15 },
+      { "type": "boss", "weight": 5 }
+    ]
+  },
+  {
+    "id": "volcanic_wastes",
+    "name": "Volcanic Wastes",
+    "description": "A scorched wasteland of basalt and flowing rivers of lava. Extreme heat and fiery monsters await.",
+    "minLevel": 10,
+    "maxLevel": 15,
+    "explorationCooldown": 150,
+    "enemies": [
+      "lava_hound",
+      "ash_wraith",
+      "obsidian_scorpion",
+      "fire_elemental",
+      "magma_wyrm",
+      "infernal_titan"
+    ],
+    "encounters": [
+      { "type": "normal_mob", "weight": 40 },
+      { "type": "empty", "weight": 15 },
+      { "type": "treasure", "weight": 20 },
+      { "type": "rare_mob", "weight": 18 },
+      { "type": "boss", "weight": 7 }
+    ]
+  },
+  {
+    "id": "abyssal_depths",
+    "name": "Abyssal Depths",
+    "description": "The deepest, coldest trench of the ocean floor, home to ancient unspeakable horrors and forgotten relics.",
+    "minLevel": 15,
+    "maxLevel": 20,
+    "explorationCooldown": 180,
+    "enemies": [
+      "void_walker",
+      "deep_lurker",
+      "abyssal_kraken",
+      "soul_eater",
+      "eldritch_horror",
+      "the_nameless_one"
+    ],
+    "encounters": [
+      { "type": "normal_mob", "weight": 35 },
+      { "type": "empty", "weight": 15 },
+      { "type": "treasure", "weight": 22 },
+      { "type": "rare_mob", "weight": 20 },
+      { "type": "boss", "weight": 8 }
+    ]
+  }
+]

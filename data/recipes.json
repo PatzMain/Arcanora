@@ -1,0 +1,202 @@
+[
+  {
+    "id": "recipe_health_potion_medium",
+    "name": "Medium Health Potion Brewing",
+    "description": "Brew a Medium Health Potion using wild herbs and a small health potion.",
+    "resultItemId": "potion_health_medium",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_herbs", "quantity": 3 },
+      { "itemId": "potion_health_small", "quantity": 1 }
+    ],
+    "levelReq": 3,
+    "successRate": 95,
+    "craftingExpReward": 25
+  },
+  {
+    "id": "recipe_health_potion_large",
+    "name": "Large Health Potion Brewing",
+    "description": "Brew a Large Health Potion using herbs, crystal shards, and a medium health potion.",
+    "resultItemId": "potion_health_large",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_herbs", "quantity": 5 },
+      { "itemId": "mat_crystal_shard", "quantity": 1 },
+      { "itemId": "potion_health_medium", "quantity": 1 }
+    ],
+    "levelReq": 8,
+    "successRate": 90,
+    "craftingExpReward": 60
+  },
+  {
+    "id": "recipe_mana_potion_medium",
+    "name": "Medium Mana Potion Brewing",
+    "description": "Brew a Medium Mana Potion using herbs and a small mana potion.",
+    "resultItemId": "potion_mana_medium",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_herbs", "quantity": 3 },
+      { "itemId": "potion_mana_small", "quantity": 1 }
+    ],
+    "levelReq": 3,
+    "successRate": 95,
+    "craftingExpReward": 25
+  },
+  {
+    "id": "recipe_mana_potion_large",
+    "name": "Large Mana Potion Brewing",
+    "description": "Brew a Large Mana Potion using herbs, crystal shards, and a medium mana potion.",
+    "resultItemId": "potion_mana_large",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_herbs", "quantity": 5 },
+      { "itemId": "mat_crystal_shard", "quantity": 1 },
+      { "itemId": "potion_mana_medium", "quantity": 1 }
+    ],
+    "levelReq": 8,
+    "successRate": 90,
+    "craftingExpReward": 60
+  },
+  {
+    "id": "recipe_rejuvenation",
+    "name": "Rejuvenation Potion Alchemy",
+    "description": "Brew a legendary Rejuvenation Potion that fully restores health and mana.",
+    "resultItemId": "potion_rejuvenation",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "potion_health_large", "quantity": 1 },
+      { "itemId": "potion_mana_large", "quantity": 1 },
+      { "itemId": "mat_crystal_shard", "quantity": 2 }
+    ],
+    "levelReq": 12,
+    "successRate": 80,
+    "craftingExpReward": 150
+  },
+  {
+    "id": "recipe_iron_helmet",
+    "name": "Iron Helmet Smithing",
+    "description": "Forge a Soldier's Iron Helm from iron ore and raw leather.",
+    "resultItemId": "helmet_iron",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_iron_ore", "quantity": 5 },
+      { "itemId": "mat_leather", "quantity": 2 }
+    ],
+    "levelReq": 5,
+    "successRate": 85,
+    "craftingExpReward": 80
+  },
+  {
+    "id": "recipe_iron_chest",
+    "name": "Iron Chestplate Smithing",
+    "description": "Forge a Soldier's Iron Plate from iron ore and raw leather.",
+    "resultItemId": "chest_iron",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_iron_ore", "quantity": 10 },
+      { "itemId": "mat_leather", "quantity": 4 }
+    ],
+    "levelReq": 5,
+    "successRate": 80,
+    "craftingExpReward": 150
+  },
+  {
+    "id": "recipe_iron_gloves",
+    "name": "Iron Gauntlets Smithing",
+    "description": "Forge Soldier's Iron Gauntlets from iron ore and leather.",
+    "resultItemId": "gloves_iron",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_iron_ore", "quantity": 4 },
+      { "itemId": "mat_leather", "quantity": 2 }
+    ],
+    "levelReq": 5,
+    "successRate": 90,
+    "craftingExpReward": 70
+  },
+  {
+    "id": "recipe_iron_boots",
+    "name": "Iron Sabatons Smithing",
+    "description": "Forge Soldier's Iron Greaves from iron ore and leather.",
+    "resultItemId": "boots_iron",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_iron_ore", "quantity": 4 },
+      { "itemId": "mat_leather", "quantity": 2 }
+    ],
+    "levelReq": 5,
+    "successRate": 90,
+    "craftingExpReward": 70
+  },
+  {
+    "id": "recipe_steel_claymore",
+    "name": "Steel Claymore Forging",
+    "description": "Forge a mighty Steel Claymore using iron ore and wood.",
+    "resultItemId": "weapon_steel_claymore",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_iron_ore", "quantity": 8 },
+      { "itemId": "mat_wood", "quantity": 2 }
+    ],
+    "levelReq": 5,
+    "successRate": 80,
+    "craftingExpReward": 120
+  },
+  {
+    "id": "recipe_recurve_bow",
+    "name": "Recurve Bow Crafting",
+    "description": "Craft a Recurve Bow from hardwood and strong spider silk.",
+    "resultItemId": "weapon_recurve_bow",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_wood", "quantity": 6 },
+      { "itemId": "mat_spider_silk", "quantity": 2 }
+    ],
+    "levelReq": 5,
+    "successRate": 85,
+    "craftingExpReward": 110
+  },
+  {
+    "id": "recipe_apprentice_wand",
+    "name": "Apprentice Wand Crafting",
+    "description": "Craft an Apprentice Wand from wood and crystal shards.",
+    "resultItemId": "weapon_apprentice_wand",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_wood", "quantity": 4 },
+      { "itemId": "mat_crystal_shard", "quantity": 2 }
+    ],
+    "levelReq": 5,
+    "successRate": 85,
+    "craftingExpReward": 110
+  },
+  {
+    "id": "recipe_obsidian_greathelm",
+    "name": "Obsidian Greathelm Forging",
+    "description": "Forge an Obsidian Greathelm from obsidian chunks and gold ore.",
+    "resultItemId": "helmet_obsidian",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_obsidian_chunk", "quantity": 8 },
+      { "itemId": "mat_gold_ore", "quantity": 2 }
+    ],
+    "levelReq": 15,
+    "successRate": 70,
+    "craftingExpReward": 350
+  },
+  {
+    "id": "recipe_void_slayer",
+    "name": "Void Slayer Greatsword Crafting",
+    "description": "Assemble the mythic Void Slayer Greatsword from void essence, obsidian chunks, and gold ore.",
+    "resultItemId": "weapon_void_slayer",
+    "resultQuantity": 1,
+    "materials": [
+      { "itemId": "mat_void_essence", "quantity": 10 },
+      { "itemId": "mat_obsidian_chunk", "quantity": 5 },
+      { "itemId": "mat_gold_ore", "quantity": 5 }
+    ],
+    "levelReq": 18,
+    "successRate": 60,
+    "craftingExpReward": 1000
+  }
+]
