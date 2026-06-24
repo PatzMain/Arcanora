@@ -3,6 +3,7 @@ import { commandsList } from './ready.js';
 import { handleCombatInteraction } from '../systems/combat/handler.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
+import { getPlayerByDiscordId } from '../database/queries/player.js';
 
 export async function execute(interaction: Interaction) {
   // 1. Handle Slash Commands
@@ -16,6 +17,21 @@ export async function execute(interaction: Interaction) {
     }
 
     try {
+      // Access Control: check if player profile exists
+      if (cmdName !== 'tutorial' && cmdName !== 'invite') {
+        const player = await getPlayerByDiscordId(interaction.user.id);
+        if (!player) {
+          const embed = errorEmbed(
+            '🌌 Welcome to Arcanora!',
+            'Before you can start your adventure, you need to create a profile and learn the basics.\n\n' +
+            'Please run the **/tutorial** command to begin!'
+          );
+          embed.setColor(0x7C3AED); // Premium purple onboarding theme
+          await interaction.reply({ embeds: [embed], ephemeral: true });
+          return;
+        }
+      }
+
       await command.execute(interaction);
     } catch (error) {
       logger.error({ error, commandName: cmdName }, 'Error executing slash command');
