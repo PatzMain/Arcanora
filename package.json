@@ -22,17 +22,17 @@
     "pino": "^8.21.0",
     "node-cache": "^5.1.2",
     "node-cron": "^3.0.3",
-    "dotenv": "^16.4.7"
-  },
-  "devDependencies": {
+    "dotenv": "^16.4.7",
     "typescript": "^5.7.2",
-    "tsx": "^4.19.2",
     "tsup": "^8.3.5",
     "drizzle-kit": "^0.30.1",
-    "vitest": "^1.6.0",
-    "eslint": "^8.57.1",
-    "@types/pg": "^8.11.10",
     "@types/node": "^20.17.10",
+    "@types/pg": "^8.11.10",
     "@types/node-cron": "^3.0.11"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "vitest": "^1.6.0",
+    "eslint": "^8.57.1"
   }
 }
