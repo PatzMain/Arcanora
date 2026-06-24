@@ -20,7 +20,7 @@ import { buildNavId } from '../../utils/navigation.js';
 
 export const data = new SlashCommandBuilder()
   .setName('map')
-  .setDescription('View the world map, travel between zones, and explore.');
+  .setDescription('View the world map, travel between regions and locations, and explore.');
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await runMap(interaction);
@@ -57,66 +57,134 @@ export async function runMap(
       .setTitle('🗺️ Arcanora World Map')
       .setDescription(
         (travelMsg ? `✅ **${travelMsg}**\n\n` : '') +
-        'Select an unlocked destination from the dropdown to travel, or click **Explore** to start an encounter in your current location.'
+        'Select an unlocked destination to travel, or select an interaction under your current location.'
       )
       .setFooter({ text: 'Arcanora — Travel and Exploration' })
       .setTimestamp();
 
-    // Emojis for each zone
+    // Emojis for each location
     const zoneEmojis: Record<string, string> = {
       verdant_meadows: '🌿',
       shadow_forest: '🌲',
+      goblin_sanctuary: '🏰',
       crystal_caverns: '💎',
+      ancient_mine: '🏰',
       volcanic_wastes: '🌋',
-      abyssal_depths: '🌊'
+      lava_keep: '🏰',
+      abyssal_depths: '🌊',
+      sunken_temple: '🏰'
     };
 
+    // Group locations by region
+    const regions: Record<string, typeof zonesCatalog> = {};
     zonesCatalog.forEach((zone) => {
-      const isCurrent = zone.id === currentZoneId;
-      const isUnlocked = player.level >= zone.minLevel;
-      const emoji = zoneEmojis[zone.id] || '📍';
+      const reg = zone.region || 'The Whispering Wilds';
+      if (!regions[reg]) {
+        regions[reg] = [];
+      }
+      regions[reg].push(zone);
+    });
 
-      // Add field details for each zone
-      let statusText = '';
-      if (isCurrent) {
-        statusText = '📍 **You are currently here**';
-      } else if (!isUnlocked) {
-        statusText = `🔒 *Locked (Requires Lv. ${zone.minLevel})*`;
-      } else {
-        statusText = `🚗 *Available to Travel (Lv. ${zone.minLevel}-${zone.maxLevel})*`;
+    const regionOrder = [
+      'The Whispering Wilds',
+      'The Subterranean Core',
+      'The Infernal Peaks',
+      'The Sunken Abysses'
+    ];
+
+    for (const rName of regionOrder) {
+      const locs = regions[rName];
+      if (!locs || locs.length === 0) continue;
+
+      let locsText = '';
+      for (const loc of locs) {
+        const isCurrent = loc.id === currentZoneId;
+        const isUnlocked = player.level >= loc.minLevel;
+        const emoji = loc.isDungeon ? '🏰' : (zoneEmojis[loc.id] || '📍');
+        const typeLabel = loc.isDungeon ? 'Dungeon' : 'Location';
+
+        let status = '';
+        if (isCurrent) {
+          status = '📍 **You are currently here**';
+        } else if (!isUnlocked) {
+          status = `🔒 *Locked (Requires Lv. ${loc.minLevel})*`;
+        } else {
+          status = `🚗 *Available to Travel (Lv. ${loc.minLevel}-${loc.maxLevel})*`;
+        }
+
+        locsText += `${emoji} **${loc.name}** (Lv. ${loc.minLevel}-${loc.maxLevel}) [${typeLabel}]\n` +
+                    `*${loc.description}*\n` +
+                    `⤷ ${status}\n\n`;
       }
 
       embed.addFields({
-        name: `${emoji} ${zone.name} (Lv. ${zone.minLevel}-${zone.maxLevel})`,
-        value: `${zone.description}\n${statusText}`,
+        name: `✨ ${rName}`,
+        value: locsText.trim(),
         inline: false
       });
-    });
+    }
 
     const components: any[] = [];
 
-    // 1. Explore button for current zone
+    // 1. Explore/Raid button for current location
     if (currentZone) {
       const exploreBtn = new ButtonBuilder()
-        .setCustomId(buildNavId('combat_explore', player.discordId, currentZone.id))
-        .setLabel(`Explore ${currentZone.name}`)
-        .setStyle(ButtonStyle.Success)
-        .setEmoji('⚔️');
+        .setCustomId(buildNavId('combat_explore', player.discordId, currentZone.id));
+      
+      if (currentZone.isDungeon) {
+        exploreBtn
+          .setLabel(`Raid ${currentZone.name}`)
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('🏰');
+      } else {
+        exploreBtn
+          .setLabel(`Explore ${currentZone.name}`)
+          .setStyle(ButtonStyle.Success)
+          .setEmoji('⚔️');
+      }
       
       const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(exploreBtn);
       components.push(btnRow);
     }
 
-    // 2. Select menu for travel options
+    // 2. Navigation Hub Buttons row
+    const navHubRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(buildNavId('player_profile', player.discordId))
+        .setLabel('Profile')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('👤'),
+      new ButtonBuilder()
+        .setCustomId(buildNavId('inventory_bag', player.discordId))
+        .setLabel('Bag')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('🎒'),
+      new ButtonBuilder()
+        .setCustomId(buildNavId('economy_shop', player.discordId))
+        .setLabel('Shop')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('🏪'),
+      new ButtonBuilder()
+        .setCustomId(buildNavId('quest_board', player.discordId))
+        .setLabel('Quests')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('📜')
+    );
+    components.push(navHubRow);
+
+    // 3. Select menu for travel options
     const travelOptions = zonesCatalog
       .filter((zone) => zone.id !== currentZoneId)
       .map((zone) => {
         const isUnlocked = player.level >= zone.minLevel;
-        const emoji = zoneEmojis[zone.id] || '📍';
+        const emoji = zone.isDungeon ? '🏰' : (zoneEmojis[zone.id] || '📍');
+        const typeLabel = zone.isDungeon ? 'Dungeon' : 'Location';
         return {
           label: zone.name,
           value: zone.id,
-          description: isUnlocked ? `Travel to ${zone.name} (Lv. ${zone.minLevel})` : `Locked - Requires Level ${zone.minLevel}`,
+          description: isUnlocked 
+            ? `Travel to ${zone.name} (${typeLabel} - Lv. ${zone.minLevel})` 
+            : `Locked - Requires Level ${zone.minLevel}`,
           emoji: isUnlocked ? emoji : '🔒',
         };
       });
@@ -179,7 +247,7 @@ export async function handleMapTravelInteraction(interaction: ButtonInteraction 
     const targetZone = zonesCatalog.find((z) => z.id === targetZoneId);
     if (!targetZone) {
       await interaction.reply({
-        content: '❌ Destination zone does not exist.',
+        content: '❌ Destination location does not exist.',
         flags: [MessageFlags.Ephemeral]
       });
       return;

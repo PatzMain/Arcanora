@@ -5,6 +5,8 @@
   "minLevel": 3,
   "maxLevel": 6,
   "explorationCooldown": 90,
+  "region": "The Whispering Wilds",
+  "isDungeon": false,
   "enemies": [
     "shadow_stalker",
     "dark_treant",

@@ -1,0 +1,39 @@
+{
+  "id": "goblin_sanctuary",
+  "name": "Goblin Sanctuary",
+  "description": "A hidden underground sanctuary ruled by a cunning goblin chieftain. Rich in lost treasures, but heavily guarded by territorial defenders.",
+  "minLevel": 5,
+  "maxLevel": 7,
+  "explorationCooldown": 120,
+  "region": "The Whispering Wilds",
+  "isDungeon": true,
+  "enemies": [
+    "forest_sprite",
+    "wild_boar",
+    "rabid_wolf",
+    "mushroom_guardian",
+    "shadow_stalker"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 30
+    },
+    {
+      "type": "empty",
+      "weight": 10
+    },
+    {
+      "type": "treasure",
+      "weight": 35
+    },
+    {
+      "type": "rare_mob",
+      "weight": 15
+    },
+    {
+      "type": "boss",
+      "weight": 10
+    }
+  ]
+}

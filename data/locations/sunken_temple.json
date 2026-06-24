@@ -1,0 +1,40 @@
+{
+  "id": "sunken_temple",
+  "name": "Sunken Temple",
+  "description": "An ancient underwater structure submerged deep within the Abyssal Trench, preserving powerful relics of a bygone era, guarded by marine terrors.",
+  "minLevel": 18,
+  "maxLevel": 20,
+  "explorationCooldown": 240,
+  "region": "The Sunken Abysses",
+  "isDungeon": true,
+  "enemies": [
+    "void_walker",
+    "deep_lurker",
+    "abyssal_kraken",
+    "soul_eater",
+    "eldritch_horror",
+    "the_nameless_one"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 30
+    },
+    {
+      "type": "empty",
+      "weight": 10
+    },
+    {
+      "type": "treasure",
+      "weight": 35
+    },
+    {
+      "type": "rare_mob",
+      "weight": 15
+    },
+    {
+      "type": "boss",
+      "weight": 10
+    }
+  ]
+}

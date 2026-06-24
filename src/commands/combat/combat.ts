@@ -34,11 +34,11 @@ import {
 
 export const data = new SlashCommandBuilder()
   .setName('combat')
-  .setDescription('Combat commands: explore zones or resume a fight.')
+  .setDescription('Combat commands: explore locations or resume a fight.')
   .addSubcommand((subcommand) =>
     subcommand
       .setName('explore')
-      .setDescription('Explore your current zone to fight monsters or find treasure.')
+      .setDescription('Explore your current location to fight monsters or find treasure.')
   )
   .addSubcommand((subcommand) =>
     subcommand

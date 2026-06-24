@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classesCatalog, getClassById } from '../src/utils/catalog.js';
+import { classesCatalog, getClassById, zonesCatalog } from '../src/utils/catalog.js';
 import { applyClassModifiers, getClassModifiers } from '../src/systems/classes.js';
 import { SKILLS } from '../src/systems/combat/skills.js';
 
@@ -65,3 +65,38 @@ describe('Starter Skills Selection', () => {
     }
   });
 });
+
+describe('Locations & Regions Mapping', () => {
+  // Using top-level import for zonesCatalog
+
+  it('should load all locations and dungeons from data/locations/', () => {
+    // 5 normal locations + 4 dungeons = 9 locations in total
+    expect(zonesCatalog.length).toBe(9);
+  });
+
+  it('should correctly mark dungeons and locations', () => {
+    const dungeons = zonesCatalog.filter(z => z.isDungeon === true);
+    const locations = zonesCatalog.filter(z => !z.isDungeon);
+
+    expect(dungeons.length).toBe(4);
+    expect(locations.length).toBe(5);
+
+    const dungeonIds = dungeons.map(d => d.id).sort();
+    expect(dungeonIds).toEqual(['ancient_mine', 'goblin_sanctuary', 'lava_keep', 'sunken_temple']);
+  });
+
+  it('should assign a valid region to every location', () => {
+    const validRegions = [
+      'The Whispering Wilds',
+      'The Subterranean Core',
+      'The Infernal Peaks',
+      'The Sunken Abysses'
+    ];
+
+    for (const loc of zonesCatalog) {
+      expect(loc.region).toBeDefined();
+      expect(validRegions).toContain(loc.region);
+    }
+  });
+});
+

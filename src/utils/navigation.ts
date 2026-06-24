@@ -87,18 +87,23 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'inventory_bag':
       row.addComponents(
         new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Map')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('🗺️'),
+        new ButtonBuilder()
           .setCustomId(buildNavId('inventory_equip', userId))
-          .setLabel('Equip Item')
+          .setLabel('Equip')
           .setStyle(ButtonStyle.Primary)
           .setEmoji('⚒️'),
         new ButtonBuilder()
           .setCustomId(buildNavId('inventory_sell', userId))
-          .setLabel('Sell Item')
+          .setLabel('Sell')
           .setStyle(ButtonStyle.Danger)
           .setEmoji('💰'),
         new ButtonBuilder()
           .setCustomId(buildNavId('economy_shop', userId))
-          .setLabel('Go to Shop')
+          .setLabel('Shop')
           .setStyle(ButtonStyle.Secondary)
           .setEmoji('🏪')
       );
@@ -108,13 +113,18 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'economy_shop':
       row.addComponents(
         new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Map')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('🗺️'),
+        new ButtonBuilder()
           .setCustomId(buildNavId('inventory_bag', userId))
-          .setLabel('View Bag')
+          .setLabel('Bag')
           .setStyle(ButtonStyle.Primary)
           .setEmoji('🎒'),
         new ButtonBuilder()
           .setCustomId(buildNavId('inventory_equip', userId))
-          .setLabel('Equip Item')
+          .setLabel('Equip')
           .setStyle(ButtonStyle.Secondary)
           .setEmoji('⚒️')
       );
@@ -124,18 +134,23 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'economy_buy_result':
       row.addComponents(
         new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Map')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('🗺️'),
+        new ButtonBuilder()
           .setCustomId(buildNavId('inventory_bag', userId))
-          .setLabel('View Bag')
+          .setLabel('Bag')
           .setStyle(ButtonStyle.Primary)
           .setEmoji('🎒'),
         new ButtonBuilder()
           .setCustomId(buildNavId('inventory_equip', userId))
-          .setLabel('Equip Item')
+          .setLabel('Equip')
           .setStyle(ButtonStyle.Secondary)
           .setEmoji('⚒️'),
         new ButtonBuilder()
           .setCustomId(buildNavId('economy_shop', userId))
-          .setLabel('Back to Shop')
+          .setLabel('Shop')
           .setStyle(ButtonStyle.Secondary)
           .setEmoji('🏪')
       );
@@ -209,13 +224,18 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
     case 'player_prestige_result':
       row.addComponents(
         new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Map')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('🗺️'),
+        new ButtonBuilder()
           .setCustomId(buildNavId('player_profile', userId))
-          .setLabel('View Profile')
+          .setLabel('Profile')
           .setStyle(ButtonStyle.Primary)
           .setEmoji('👤'),
         new ButtonBuilder()
           .setCustomId(buildNavId('player_stats', userId))
-          .setLabel('Detailed Stats')
+          .setLabel('Stats')
           .setStyle(ButtonStyle.Secondary)
           .setEmoji('📊')
       );

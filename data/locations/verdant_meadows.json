@@ -5,6 +5,8 @@
   "minLevel": 1,
   "maxLevel": 3,
   "explorationCooldown": 60,
+  "region": "The Whispering Wilds",
+  "isDungeon": false,
   "enemies": [
     "forest_sprite",
     "wild_boar",

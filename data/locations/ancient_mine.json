@@ -1,0 +1,38 @@
+{
+  "id": "ancient_mine",
+  "name": "Ancient Mine",
+  "description": "An abandoned mine shaft where glittering crystals hide dark shadows. Highly volatile elemental creatures dwell in its deepest reaches.",
+  "minLevel": 9,
+  "maxLevel": 11,
+  "explorationCooldown": 150,
+  "region": "The Subterranean Core",
+  "isDungeon": true,
+  "enemies": [
+    "crystal_golem",
+    "gem_serpent",
+    "cave_troll",
+    "crystal_colossus"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 30
+    },
+    {
+      "type": "empty",
+      "weight": 10
+    },
+    {
+      "type": "treasure",
+      "weight": 35
+    },
+    {
+      "type": "rare_mob",
+      "weight": 15
+    },
+    {
+      "type": "boss",
+      "weight": 10
+    }
+  ]
+}

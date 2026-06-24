@@ -5,6 +5,8 @@
   "minLevel": 10,
   "maxLevel": 15,
   "explorationCooldown": 150,
+  "region": "The Infernal Peaks",
+  "isDungeon": false,
   "enemies": [
     "lava_hound",
     "ash_wraith",

@@ -27,14 +27,14 @@ function getTutorialEmbed(username: string): EmbedBuilder {
     .setTitle('🌌 Arcanora Adventure Guide')
     .setDescription(
       `Welcome, **${username}**! Arcanora is an immersive text-based Discord MMORPG.\n\n` +
-      `Your goal is to explore mysterious zones, defeat monsters, collect rare equipment, level up your class, and conquer dungeons.`
+      `Your goal is to travel between regions, explore mysterious locations, defeat monsters, collect rare equipment, level up your class, and conquer dungeons.`
     )
     .addFields(
       {
         name: '⚔️ Core Gameplay Commands',
         value:
           '• `/map` — View the world map, travel to unlocked locations, and explore.\n' +
-          '• `/combat explore` — Explore your current zone to start battles or find treasures.\n' +
+          '• `/combat explore` — Explore your current location to start battles or find treasures.\n' +
           '• `/player profile` — Check your level, class, active story quest, and equipment.\n' +
           '• `/inventory bag` — Browse your bag, equip gear, and manage items.'
       },

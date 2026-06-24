@@ -1,0 +1,39 @@
+{
+  "id": "lava_keep",
+  "name": "Lava Keep",
+  "description": "A dark volcanic keep constructed over active magma streams. Demonic and elemental forces guard the fiery chambers within.",
+  "minLevel": 14,
+  "maxLevel": 16,
+  "explorationCooldown": 180,
+  "region": "The Infernal Peaks",
+  "isDungeon": true,
+  "enemies": [
+    "lava_hound",
+    "ash_wraith",
+    "obsidian_scorpion",
+    "fire_elemental",
+    "infernal_titan"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 30
+    },
+    {
+      "type": "empty",
+      "weight": 10
+    },
+    {
+      "type": "treasure",
+      "weight": 35
+    },
+    {
+      "type": "rare_mob",
+      "weight": 15
+    },
+    {
+      "type": "boss",
+      "weight": 10
+    }
+  ]
+}

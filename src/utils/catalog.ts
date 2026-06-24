@@ -44,7 +44,7 @@ function populateRegistryFromDir<T>(registry: Registry<T>, dirName: string): voi
 // Perform initial loading from subdirectories
 populateRegistryFromDir(itemsRegistry, 'items');
 populateRegistryFromDir(enemiesRegistry, 'enemies');
-populateRegistryFromDir(zonesRegistry, 'zones');
+populateRegistryFromDir(zonesRegistry, 'locations');
 populateRegistryFromDir(recipesRegistry, 'recipes');
 populateRegistryFromDir(questsRegistry, 'quests');
 populateRegistryFromDir(petsRegistry, 'pets');

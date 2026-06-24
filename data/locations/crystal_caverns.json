@@ -5,6 +5,8 @@
   "minLevel": 6,
   "maxLevel": 10,
   "explorationCooldown": 120,
+  "region": "The Subterranean Core",
+  "isDungeon": false,
   "enemies": [
     "crystal_golem",
     "gem_serpent",

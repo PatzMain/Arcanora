@@ -13,6 +13,8 @@ export interface ZoneData {
   encounters: { type: string; weight: number }[];
   enemies: string[];
   explorationCooldown: number;
+  region: string;
+  isDungeon?: boolean;
 }
 
 /**

@@ -5,6 +5,8 @@
   "minLevel": 15,
   "maxLevel": 20,
   "explorationCooldown": 180,
+  "region": "The Sunken Abysses",
+  "isDungeon": false,
   "enemies": [
     "void_walker",
     "deep_lurker",
