@@ -129,7 +129,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       }
 
       const memberCount = interaction.guild?.memberCount || 10;
-      const computedMaxHp = calculateWorldBossHp(enemyDef.stats.hp, memberCount);
+      const computedMaxHp = calculateWorldBossHp(enemyDef.stats.hp, memberCount, false);
 
       await db
         .insert(worldBosses)
@@ -164,7 +164,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
       }
 
-      const computedMaxHp = calculateWorldBossHp(enemyDef.stats.hp, 10);
+      const computedMaxHp = calculateWorldBossHp(enemyDef.stats.hp, 10, true);
 
       await db
         .insert(worldBosses)

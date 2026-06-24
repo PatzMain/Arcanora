@@ -332,6 +332,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             const totalDamage = participants.reduce((sum, p) => sum + p.damageDealt, 0);
             const mvp = participants.reduce((max, p) => p.damageDealt > max.damageDealt ? p : max, participants[0]);
 
+            const sortedRankings = [...participants]
+              .sort((a, b) => b.damageDealt - a.damageDealt)
+              .map((p, idx) => ({
+                playerId: p.playerId,
+                username: p.username,
+                damageDealt: p.damageDealt,
+                rank: idx + 1,
+                percent: Math.round((p.damageDealt / Math.max(1, totalDamage)) * 100)
+              }));
+
             const rewardsList = [];
             for (const p of participants) {
               const pl = await db.query.players.findFirst({
@@ -353,8 +363,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 })
                 .where(eq(players.id, pl.id));
 
+              // Determine loot roll chance based on rank on the leaderboard
+              const rankInfo = sortedRankings.find((sr) => sr.playerId === p.playerId);
+              const rank = rankInfo ? rankInfo.rank : 99;
+
+              let lootChance = 0;
+              if (rank === 1) lootChance = 100;
+              else if (rank === 2) lootChance = 80;
+              else if (rank === 3) lootChance = 65;
+              else if (rank === 4) lootChance = 50;
+              else if (rank === 5) lootChance = 35;
+              else {
+                const dmgPct = (p.damageDealt / Math.max(1, totalDamage)) * 100;
+                lootChance = Math.max(5, Math.min(20, Math.round(dmgPct)));
+              }
+
               let gotBonusLoot = false;
-              if (rewards.bonusLoot) {
+              const rolledValue = Math.random() * 100;
+              if (rolledValue <= lootChance) {
                 const eqItems = await getEquippedItems(pl.id);
                 const eqList = eqItems.map((dbItem) => {
                   const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
@@ -378,16 +404,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 bonusLoot: gotBonusLoot
               });
             }
-
-            const sortedRankings = participants
-              .map((p, idx) => ({
-                username: p.username,
-                damageDealt: p.damageDealt,
-                rank: idx + 1,
-                percent: Math.round((p.damageDealt / Math.max(1, totalDamage)) * 100)
-              }))
-              .sort((a, b) => b.damageDealt - a.damageDealt)
-              .map((p, idx) => ({ ...p, rank: idx + 1 }));
 
             const victoryEmbed = bossVictoryEmbed(
               { name: enemyDef.name, level: enemyDef.level, isGlobal },

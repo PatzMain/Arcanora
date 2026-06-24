@@ -7,9 +7,16 @@
 export function calculateWorldBossHp(
   bossBaseHp: number,
   serverMemberCount: number,
+  isGlobal = false
 ): number {
+  if (isGlobal) {
+    // Global bosses are server-agnostic and fought by many servers.
+    // Scale HP as if there were 150 participants.
+    const scaledHp = bossBaseHp * (1 + 150 * 0.1); // 16x baseHP
+    return Math.max(scaledHp, 80000); // Minimum 80,000 HP for global bosses
+  }
   const scaledHp = bossBaseHp * (1 + serverMemberCount * 0.1);
-  return Math.max(scaledHp, 10000);
+  return Math.max(scaledHp, 10000); // Minimum 10,000 HP for local world bosses
 }
 
 /**
