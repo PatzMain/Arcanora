@@ -36,14 +36,16 @@ const FOOTER_TEXT = 'Arcanora — Discord MMORPG';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function hpBar(current: number, max: number, length = 10): string {
-  const filled = Math.round((current / max) * length);
+export function hpBar(current: number, max: number, length = 10): string {
+  const ratio = max <= 0 ? 0 : Math.max(0, Math.min(1, current / max));
+  const filled = Math.round(ratio * length);
   const empty = length - filled;
   return '█'.repeat(filled) + '░'.repeat(empty);
 }
 
-function progressBar(current: number, total: number, length = 10): string {
-  const filled = Math.round((current / total) * length);
+export function progressBar(current: number, total: number, length = 10): string {
+  const ratio = total <= 0 ? 0 : Math.max(0, Math.min(1, current / total));
+  const filled = Math.round(ratio * length);
   const empty = length - filled;
   return '▓'.repeat(filled) + '░'.repeat(empty);
 }
