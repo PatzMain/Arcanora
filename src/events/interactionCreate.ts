@@ -1,4 +1,4 @@
-import { type Interaction } from 'discord.js';
+import { type Interaction, MessageFlags } from 'discord.js';
 import { commandsList } from './ready.js';
 import { handleCombatInteraction } from '../systems/combat/handler.js';
 import { errorEmbed } from '../utils/embeds.js';
@@ -27,7 +27,7 @@ export async function execute(interaction: Interaction) {
             'Please run the **/tutorial** command to begin!'
           );
           embed.setColor(0x7C3AED); // Premium purple onboarding theme
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
           return;
         }
       }
@@ -37,9 +37,9 @@ export async function execute(interaction: Interaction) {
       logger.error({ error, commandName: cmdName }, 'Error executing slash command');
       const embed = errorEmbed('Command Error', 'An unexpected error occurred while executing this command.');
       if (interaction.deferred || interaction.replied) {
-        await interaction.followUp({ embeds: [embed], ephemeral: true });
+        await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
       } else {
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
       }
     }
     return;

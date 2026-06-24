@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, type ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, MessageFlags, type ChatInputCommandInteraction } from 'discord.js';
 import { findOrCreatePlayer, getPlayerByDiscordId } from '../../database/queries/player.js';
 import { errorEmbed } from '../../utils/embeds.js';
 
@@ -19,7 +19,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         'Tutorial Already Completed',
         'You have already completed the onboarding tutorial! Use `/profile` to view your character or `/explore` to begin your adventure.'
       );
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
       return;
     }
 
@@ -62,9 +62,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     console.error('Tutorial command error:', error);
     const embed = errorEmbed('Tutorial Error', 'Failed to initialize your player profile. Please try again.');
     if (interaction.deferred || interaction.replied) {
-      await interaction.followUp({ embeds: [embed], ephemeral: true });
+      await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
     } else {
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
     }
   }
 }
