@@ -16,6 +16,9 @@ import * as guildCmd from '../commands/guilds/guild.js';
 import * as petCmd from '../commands/pets/pet.js';
 import * as adminCmd from '../commands/admin/admin.js';
 import * as mapCmd from '../commands/player/map.js';
+import * as resetCmd from '../commands/player/reset.js';
+
+export const data = {}; // keep index metadata or dummy placeholder if index references it
 
 export const commandsList = [
   playerCmd,
@@ -31,7 +34,8 @@ export const commandsList = [
   guildCmd,
   petCmd,
   adminCmd,
-  mapCmd
+  mapCmd,
+  resetCmd
 ];
 
 export async function execute(client: Client) {
