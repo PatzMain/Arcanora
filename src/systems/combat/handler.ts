@@ -108,6 +108,81 @@ export async function handleCombatInteraction(
         action = { type: 'defend' };
       } else if (interaction.customId === 'combat_flee') {
         action = { type: 'flee' };
+      } else if (interaction.customId.startsWith('combat_preset_')) {
+        const slotNum = parseInt(interaction.customId.split('_')[2] || '1', 10);
+        const presets = (player.presets || ['attack', null, null]) as (string | null)[];
+        const presetAction = presets[slotNum - 1];
+
+        if (!presetAction || presetAction === 'attack') {
+          action = { type: 'attack' };
+        } else {
+          // It's a skill!
+          const skillId = presetAction;
+          const skillDef = getSkillById(skillId);
+
+          if (!skillDef) {
+            await interaction.followUp({ content: '❌ Skill not found in database.', ephemeral: true });
+            return;
+          }
+
+          if (state.playerMana < skillDef.manaCost) {
+            await interaction.followUp({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}`, ephemeral: true });
+            return;
+          }
+
+          // Deduct Mana
+          state.playerMana -= skillDef.manaCost;
+
+          const enemyCombatStats: CombatStats = {
+            hp: state.enemyHp,
+            maxHp: state.enemyMaxHp,
+            mana: 0,
+            maxMana: 0,
+            attack: scaledEnemyStats.attack,
+            defense: scaledEnemyStats.defense,
+            speed: scaledEnemyStats.speed,
+            critChance: 0,
+            critDmg: 150,
+            luck: 0,
+          };
+
+          // Execute skill effects
+          const result = executeSkill(skillDef, combatStats, enemyCombatStats);
+
+          // Apply skill damage / healing / buffs
+          if (skillDef.id === 'healer_purify') {
+            state.playerBuffs = state.playerBuffs.filter((b: any) => b.type !== 'debuff');
+          }
+
+          if (skillDef.id === 'mage_mana_surge') {
+            state.playerMana = Math.min(state.playerMaxMana, state.playerMana + result.healing);
+          } else {
+            state.playerHp = Math.min(state.playerMaxHp, state.playerHp + result.healing);
+          }
+
+          state.enemyHp = Math.max(0, state.enemyHp - result.damage);
+
+          for (const eff of result.effects) {
+            if (eff.stat) {
+              const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
+              if (effectTarget === 'self') {
+                state.playerBuffs.push(eff);
+              } else {
+                state.enemyBuffs.push(eff);
+              }
+            } else {
+              const effectType = skillDef.effects.find((e) => e.type === 'dot' || e.type === 'hot')?.type;
+              if (effectType === 'hot') {
+                state.playerBuffs.push(eff);
+              } else {
+                state.enemyBuffs.push(eff);
+              }
+            }
+          }
+
+          action = { type: 'skill', skillId };
+          state.combatLog.push(result.description);
+        }
       }
     } else if (interaction.isStringSelectMenu()) {
       if (interaction.customId === 'combat_use_skill') {
@@ -363,7 +438,8 @@ export async function handleCombatInteraction(
 
     const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
     const itemsRow = await getCombatItemsRow(player.id);
-    const components: any[] = [row];
+    const presetsRow = await getCombatPresetsRow(player.presets);
+    const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);
 
@@ -456,4 +532,32 @@ async function getCombatItemsRow(playerId: string) {
     console.error('Failed to get combat items:', error);
     return null;
   }
+}
+
+async function getCombatPresetsRow(playerPresets: any) {
+  const presets = (playerPresets || ['attack', null, null]) as (string | null)[];
+  const buttons = [];
+
+  for (let i = 0; i < 3; i++) {
+    const presetAction = presets[i];
+    const button = new ButtonBuilder()
+      .setCustomId(`combat_preset_${i + 1}`)
+      .setStyle(ButtonStyle.Success);
+
+    if (!presetAction) {
+      button.setLabel(`P${i + 1}: Empty`).setDisabled(true);
+    } else if (presetAction === 'attack') {
+      button.setLabel(`P${i + 1}: Basic Attack`).setEmoji('⚔️');
+    } else {
+      const skillDef = SKILLS.find((s) => s.id === presetAction);
+      if (skillDef) {
+        button.setLabel(`P${i + 1}: ${skillDef.name}`).setEmoji('🌀');
+      } else {
+        button.setLabel(`P${i + 1}: Unknown`).setDisabled(true);
+      }
+    }
+    buttons.push(button);
+  }
+
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
 }

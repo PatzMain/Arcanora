@@ -1,0 +1,15 @@
+{
+  "id": "ranger",
+  "name": "Ranger",
+  "description": "A versatile outdoorsman balanced between offense and evasion. Keen eyes grant improved critical strikes and fortune.",
+  "statModifiers": {
+    "hpMax": 0,
+    "manaMax": 0,
+    "attack": 0.10,
+    "defense": -0.10,
+    "critChance": 0.15,
+    "critDmg": 0,
+    "speed": 0.15,
+    "luck": 0.10
+  }
+}

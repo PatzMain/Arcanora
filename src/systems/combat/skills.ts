@@ -41,6 +41,18 @@ export const skillBehaviorRegistry = new Registry<SkillBehavior>();
 // ─── Initial Skill Definitions ──────────────────────────────────────────────
 
 const INITIAL_SKILLS: SkillDefinition[] = [
+  {
+    id: 'skill_basic_attack',
+    name: 'Basic Attack',
+    description: 'Perform a standard physical strike.',
+    class: 'all',
+    manaCost: 0,
+    cooldown: 0,
+    levelReq: 1,
+    effects: [
+      { type: 'damage', target: 'enemy', value: 0, scaling: 1.0 },
+    ],
+  },
   // ── Warrior Skills ──
   {
     id: 'warrior_power_strike',

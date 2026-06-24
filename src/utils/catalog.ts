@@ -10,6 +10,7 @@ export const questsRegistry = new Registry<any>();
 export const petsRegistry = new Registry<any>();
 export const zonesRegistry = new Registry<any>();
 export const achievementsRegistry = new Registry<any>();
+export const classesRegistry = new Registry<any>();
 
 // Helper to load and parse all JSON files in a subdirectory
 function loadJsonDirectory<T>(dirName: string): T[] {
@@ -48,6 +49,7 @@ populateRegistryFromDir(recipesRegistry, 'recipes');
 populateRegistryFromDir(questsRegistry, 'quests');
 populateRegistryFromDir(petsRegistry, 'pets');
 populateRegistryFromDir(achievementsRegistry, 'achievements');
+populateRegistryFromDir(classesRegistry, 'classes');
 
 // Helper to create a backward-compatible Array Proxy for the registries
 function createRegistryProxy<T>(registry: Registry<T>): T[] {
@@ -83,10 +85,16 @@ export const questsCatalog = createRegistryProxy(questsRegistry);
 export const petsCatalog = createRegistryProxy(petsRegistry);
 export const zonesCatalog = createRegistryProxy(zonesRegistry);
 export const achievementsCatalog = createRegistryProxy(achievementsRegistry);
+export const classesCatalog = createRegistryProxy(classesRegistry);
 
 // Registry-backed helper functions
 export function getItemById(id: string): any | undefined {
   return itemsRegistry.get(id);
+}
+
+// Custom alias for classes
+export function getClassById(id: string): any | undefined {
+  return classesRegistry.get(id);
 }
 
 export function getEnemyById(id: string): any | undefined {

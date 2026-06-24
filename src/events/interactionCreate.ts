@@ -6,7 +6,7 @@ import { handleShopInteraction } from '../commands/economy/economy.js';
 import { handleNavInteraction } from '../utils/navigation.js';
 import { handleBagInteraction, handleEquipInteraction, handleSellInteraction } from '../commands/inventory/inventory.js';
 import { handleQuestsInteraction, handleQuestsBoardSelect } from '../commands/quests/quest.js';
-import { handlePrestigeInteraction } from '../commands/player/player.js';
+import { handlePrestigeInteraction, handlePresetInteraction } from '../commands/player/player.js';
 import { handleMapTravelInteraction } from '../commands/player/map.js';
 import { handleGuildInteraction, handleLeaderboardInteraction } from '../commands/guilds/guild.js';
 import { errorEmbed } from '../utils/embeds.js';
@@ -148,6 +148,12 @@ export async function execute(interaction: Interaction) {
         await handleMapTravelInteraction(interaction as any);
       } catch (error) {
         logger.error({ error, customId }, 'Error processing map travel interaction');
+      }
+    } else if (customId.startsWith('player_preset_')) {
+      try {
+        await handlePresetInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing player preset interaction');
       }
     }
   }

@@ -1,0 +1,15 @@
+{
+  "id": "rogue",
+  "name": "Rogue",
+  "description": "A swift shadow striker who excels at critical hits and finding rare loot. Glass cannon with unmatched speed.",
+  "statModifiers": {
+    "hpMax": -0.15,
+    "manaMax": 0,
+    "attack": 0,
+    "defense": -0.10,
+    "critChance": 0.25,
+    "critDmg": 0,
+    "speed": 0.20,
+    "luck": 0.15
+  }
+}

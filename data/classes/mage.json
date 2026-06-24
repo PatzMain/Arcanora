@@ -1,0 +1,15 @@
+{
+  "id": "mage",
+  "name": "Mage",
+  "description": "A master of arcane arts with devastating critical strikes and deep mana reserves. Fragile, but rewards skillful play.",
+  "statModifiers": {
+    "hpMax": -0.10,
+    "manaMax": 0.30,
+    "attack": 0,
+    "defense": -0.05,
+    "critChance": 0,
+    "critDmg": 0.20,
+    "speed": 0.10,
+    "luck": 0
+  }
+}

@@ -8,10 +8,6 @@ export const CLASS_UNLOCK_LEVEL = 5;
  */
 export const CLASS_REROLL_COST = 50;
 
-/**
- * Defines a character class with percentage-based stat modifiers.
- * Modifiers are expressed as decimal multipliers (e.g., 0.20 = +20%, -0.10 = -10%).
- */
 export interface ClassDefinition {
   id: string;
   name: string;
@@ -28,92 +24,15 @@ export interface ClassDefinition {
   };
 }
 
-/**
- * All available character classes with their stat modifiers.
- */
-export const CLASSES: Record<string, ClassDefinition> = {
-  warrior: {
-    id: 'warrior',
-    name: 'Warrior',
-    description: 'A stalwart frontline fighter with superior HP and attack power. Sacrifices magical ability and agility for raw resilience.',
-    statModifiers: {
-      hpMax: 0.20,
-      manaMax: -0.10,
-      attack: 0.15,
-      defense: 0.10,
-      critChance: 0,
-      critDmg: 0,
-      speed: -0.05,
-      luck: 0,
-    },
-  },
-  mage: {
-    id: 'mage',
-    name: 'Mage',
-    description: 'A master of arcane arts with devastating critical strikes and deep mana reserves. Fragile, but rewards skillful play.',
-    statModifiers: {
-      hpMax: -0.10,
-      manaMax: 0.30,
-      attack: 0,
-      defense: -0.05,
-      critChance: 0,
-      critDmg: 0.20,
-      speed: 0.10,
-      luck: 0,
-    },
-  },
-  rogue: {
-    id: 'rogue',
-    name: 'Rogue',
-    description: 'A swift shadow striker who excels at critical hits and finding rare loot. Glass cannon with unmatched speed.',
-    statModifiers: {
-      hpMax: -0.15,
-      manaMax: 0,
-      attack: 0,
-      defense: -0.10,
-      critChance: 0.25,
-      critDmg: 0,
-      speed: 0.20,
-      luck: 0.15,
-    },
-  },
-  ranger: {
-    id: 'ranger',
-    name: 'Ranger',
-    description: 'A versatile outdoorsman balanced between offense and evasion. Keen eyes grant improved critical strikes and fortune.',
-    statModifiers: {
-      hpMax: 0,
-      manaMax: 0,
-      attack: 0.10,
-      defense: -0.10,
-      critChance: 0.15,
-      critDmg: 0,
-      speed: 0.15,
-      luck: 0.10,
-    },
-  },
-  healer: {
-    id: 'healer',
-    name: 'Healer',
-    description: 'A devoted support specialist with deep mana and high survivability. Sacrifices offensive power for team sustain.',
-    statModifiers: {
-      hpMax: 0.20,
-      manaMax: 0.25,
-      attack: -0.15,
-      defense: 0.10,
-      critChance: 0,
-      critDmg: -0.10,
-      speed: 0,
-      luck: 0,
-    },
-  },
-};
+import { classesCatalog } from '../utils/catalog.js';
+
+export const CLASSES: Record<string, ClassDefinition> = {};
 
 /**
  * Retrieves a class definition by its name/ID.
  */
 export function getClassModifiers(className: string): ClassDefinition | undefined {
-  return CLASSES[className.toLowerCase()];
+  return classesCatalog.find((c) => c.id.toLowerCase() === className.toLowerCase());
 }
 
 /**
@@ -148,9 +67,6 @@ export function canSelectClass(level: number): boolean {
   return level >= CLASS_UNLOCK_LEVEL;
 }
 
-/**
- * Returns all available character classes as an array.
- */
 export function getAvailableClasses(): ClassDefinition[] {
-  return Object.values(CLASSES);
+  return classesCatalog;
 }

@@ -1,0 +1,15 @@
+{
+  "id": "warrior",
+  "name": "Warrior",
+  "description": "A stalwart frontline fighter with superior HP and attack power. Sacrifices magical ability and agility for raw resilience.",
+  "statModifiers": {
+    "hpMax": 0.20,
+    "manaMax": -0.10,
+    "attack": 0.15,
+    "defense": 0.10,
+    "critChance": 0,
+    "critDmg": 0,
+    "speed": -0.05,
+    "luck": 0
+  }
+}

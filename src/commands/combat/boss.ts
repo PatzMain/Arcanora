@@ -131,11 +131,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const combatLog = [`You stepped forward to challenge the ${bossPrefix}!`];
 
       // Build components
-      const getActionRows = async () => {
+      const getActionRows = async (playerPresets: any) => {
         const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder().setCustomId('boss_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
           new ButtonBuilder().setCustomId('boss_leave').setLabel('🏃 Leave').setStyle(ButtonStyle.Danger)
         );
+
+        const presetsRow = getBossPresetsRow(playerPresets);
 
         // Fetch learned skills
         const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
@@ -154,10 +156,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setCustomId('boss_use_skill')
             .setPlaceholder('🌀 Cast a combat skill...')
             .addOptions(options);
-          return [buttons, new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu)];
+          return [buttons, presetsRow, new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu)];
         }
 
-        return [buttons];
+        return [buttons, presetsRow];
       };
 
       const embed = bossSkirmishEmbed(
@@ -174,7 +176,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         combatLog
       );
 
-      const actionRows = await getActionRows();
+      const actionRows = await getActionRows(player.presets);
       const response = await interaction.editReply({
         embeds: [embed],
         components: actionRows
@@ -228,6 +230,52 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               logMsg = result.isCrit
                 ? `💥 **CRITICAL HIT!** You dealt **${playerDmg}** damage!`
                 : `⚔️ You hit for **${playerDmg}** damage.`;
+            } else if (compInteraction.customId.startsWith('boss_preset_')) {
+              const slotNum = parseInt(compInteraction.customId.split('_')[2] || '1', 10);
+              const presets = (freshPlayer.presets || ['attack', null, null]) as (string | null)[];
+              const presetAction = presets[slotNum - 1];
+
+              if (!presetAction || presetAction === 'attack') {
+                // Basic attack
+                const result = calculateDamage(playerStats.attack, enemyDef.stats.defense, playerStats.critChance, playerStats.critDmg);
+                playerDmg = result.damage;
+                logMsg = result.isCrit
+                  ? `💥 **CRITICAL HIT!** You dealt **${playerDmg}** damage!`
+                  : `⚔️ You hit for **${playerDmg}** damage.`;
+              } else {
+                // It's a skill!
+                const skillDef = getSkillById(presetAction);
+
+                if (!skillDef) {
+                  await compInteraction.reply({ content: '❌ Skill not found.', ephemeral: true });
+                  continue;
+                }
+
+                if (freshPlayer.manaCurrent < skillDef.manaCost) {
+                  await compInteraction.reply({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}`, ephemeral: true });
+                  continue;
+                }
+
+                manaCost = skillDef.manaCost;
+
+                const dummyEnemyStats = {
+                  hp: freshBoss.hpCurrent,
+                  maxHp: freshBoss.hpMax,
+                  mana: 0,
+                  maxMana: 0,
+                  attack: enemyDef.stats.attack,
+                  defense: enemyDef.stats.defense,
+                  speed: enemyDef.stats.speed,
+                  critChance: 5,
+                  critDmg: 150,
+                  luck: 0
+                };
+
+                const skillResult = executeSkill(skillDef, playerStats, dummyEnemyStats);
+                playerDmg = skillResult.damage;
+                playerHeal = skillResult.healing;
+                logMsg = `🌀 You cast **${skillDef.name}**! ${skillResult.description}`;
+              }
             }
           } else if (compInteraction.isStringSelectMenu()) {
             if (compInteraction.customId === 'boss_use_skill') {
@@ -482,4 +530,32 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       }
     } catch {}
   }
+}
+
+function getBossPresetsRow(playerPresets: any) {
+  const presets = (playerPresets || ['attack', null, null]) as (string | null)[];
+  const buttons = [];
+
+  for (let i = 0; i < 3; i++) {
+    const presetAction = presets[i];
+    const button = new ButtonBuilder()
+      .setCustomId(`boss_preset_${i + 1}`)
+      .setStyle(ButtonStyle.Success);
+
+    if (!presetAction) {
+      button.setLabel(`P${i + 1}: Empty`).setDisabled(true);
+    } else if (presetAction === 'attack') {
+      button.setLabel(`P${i + 1}: Basic Attack`).setEmoji('⚔️');
+    } else {
+      const skillDef = SKILLS.find((s) => s.id === presetAction);
+      if (skillDef) {
+        button.setLabel(`P${i + 1}: ${skillDef.name}`).setEmoji('🌀');
+      } else {
+        button.setLabel(`P${i + 1}: Unknown`).setDisabled(true);
+      }
+    }
+    buttons.push(button);
+  }
+
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
 }

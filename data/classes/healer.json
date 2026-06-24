@@ -1,0 +1,15 @@
+{
+  "id": "healer",
+  "name": "Healer",
+  "description": "A devoted support specialist with deep mana and high survivability. Sacrifices offensive power for team sustain.",
+  "statModifiers": {
+    "hpMax": 0.20,
+    "manaMax": 0.25,
+    "attack": -0.15,
+    "defense": 0.10,
+    "critChance": 0,
+    "critDmg": -0.10,
+    "speed": 0,
+    "luck": 0
+  }
+}

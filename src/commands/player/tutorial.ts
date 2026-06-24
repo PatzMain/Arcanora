@@ -11,7 +11,7 @@ import { findOrCreatePlayer, getPlayerByDiscordId } from '../../database/queries
 import { addItem, equipItem } from '../../database/queries/inventory.js';
 import { startQuest } from '../../database/queries/quest.js';
 import { db } from '../../database/client.js';
-import { players } from '../../database/schema.js';
+import { players, playerSkills } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { errorEmbed } from '../../utils/embeds.js';
 import { getNavButtons } from '../../utils/navigation.js';
@@ -188,6 +188,33 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
 
     // Auto-accept the first story quest
     await startQuest(player.id, 'story_01_begin');
+
+    // Grant 2 skills at level 1: Basic Attack + Class starter skill
+    const classStarterSkills: Record<string, string> = {
+      warrior: 'warrior_power_strike',
+      mage: 'mage_fireball',
+      rogue: 'rogue_backstab',
+      ranger: 'ranger_quick_shot',
+      healer: 'healer_holy_light'
+    };
+
+    const starterSkillId = classStarterSkills[selectedClass];
+
+    // Add Basic Attack skill
+    await db.insert(playerSkills).values({
+      playerId: player.id,
+      skillId: 'skill_basic_attack',
+      level: 1
+    });
+
+    // Add Class starter skill
+    if (starterSkillId) {
+      await db.insert(playerSkills).values({
+        playerId: player.id,
+        skillId: starterSkillId,
+        level: 1
+      });
+    }
 
     // 5. Build success embed
     const classNames: Record<string, string> = {

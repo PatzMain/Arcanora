@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  StringSelectMenuBuilder,
   type ChatInputCommandInteraction,
   type ButtonInteraction
 } from 'discord.js';
@@ -16,11 +17,12 @@ import { getXpForLevel } from '../../systems/progression/leveling.js';
 import { questsCatalog } from '../../utils/catalog.js';
 import { canPrestige, getPrestigeRewards, calculatePrestigeReset } from '../../systems/progression/prestige.js';
 import { db } from '../../database/client.js';
-import { players } from '../../database/schema.js';
+import { players, playerSkills } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { profileEmbed, statsEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { loadItems } from '../../systems/exploration/loot.js';
 import { getNavButtons } from '../../utils/navigation.js';
+import { SKILLS } from '../../systems/combat/skills.js';
 
 export const data = new SlashCommandBuilder()
   .setName('player')
@@ -37,6 +39,11 @@ export const data = new SlashCommandBuilder()
   )
   .addSubcommand((subcommand) =>
     subcommand
+      .setName('preset')
+      .setDescription('Configure your 3 quick-cast attack/skill presets.')
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
       .setName('prestige')
       .setDescription('Reset your level to 1 for permanent stat bonuses (+5% per prestige).')
   );
@@ -47,6 +54,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await runProfile(interaction);
   } else if (subcommand === 'stats') {
     await runStats(interaction);
+  } else if (subcommand === 'preset') {
+    await runPreset(interaction);
   } else if (subcommand === 'prestige') {
     await runPrestige(interaction);
   }
@@ -355,5 +364,150 @@ export async function handlePrestigeInteraction(interaction: ButtonInteraction) 
   } catch (error) {
     console.error('Error handling prestige button:', error);
     await interaction.followUp({ content: '❌ Failed to process prestige action.', ephemeral: true });
+  }
+}
+
+export async function runPreset(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  feedbackMsg?: string
+) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        await interaction.deferUpdate();
+      } else {
+        await interaction.deferReply();
+      }
+    }
+
+    const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
+    const presets = (player.presets || ['attack', null, null]) as (string | null)[];
+
+    const getPresetName = (presetId: string | null) => {
+      if (!presetId) return '🔴 *Empty*';
+      if (presetId === 'attack') return '⚔️ Basic Attack';
+      const skillDef = SKILLS.find((s) => s.id === presetId);
+      return skillDef ? `🌀 ${skillDef.name}` : presetId;
+    };
+
+    const embed = new EmbedBuilder()
+      .setColor(0x7C3AED)
+      .setTitle('⚙️ Combat Quick Presets')
+      .setDescription(
+        (feedbackMsg ? `✅ **${feedbackMsg}**\n\n` : '') +
+        'Configure up to 3 quick-cast presets to use in combat or boss raids.\n' +
+        'Click a button below to set that preset slot.'
+      )
+      .addFields(
+        { name: 'Button 1 Preset', value: getPresetName(presets[0]), inline: true },
+        { name: 'Button 2 Preset', value: getPresetName(presets[1]), inline: true },
+        { name: 'Button 3 Preset', value: getPresetName(presets[2]), inline: true }
+      )
+      .setFooter({ text: 'Arcanora — Quick Presets' })
+      .setTimestamp();
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`player_preset_set_1_${player.discordId}`)
+        .setLabel('Set Preset 1')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(`player_preset_set_2_${player.discordId}`)
+        .setLabel('Set Preset 2')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(`player_preset_set_3_${player.discordId}`)
+        .setLabel('Set Preset 3')
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    await interaction.editReply({
+      embeds: [embed],
+      components: [row]
+    });
+  } catch (err) {
+    console.error('Error running preset command:', err);
+    const embed = errorEmbed('Preset Error', 'An error occurred while loading presets.');
+    await interaction.editReply({ embeds: [embed], components: [] });
+  }
+}
+
+export async function handlePresetInteraction(interaction: ButtonInteraction | any) {
+  const parts = interaction.customId.split('_');
+  const actionType = parts[2];
+  const slotNum = parseInt(parts[3] || '1', 10);
+  const userId = parts[4] || '';
+
+  if (interaction.user.id !== userId) {
+    await interaction.reply({
+      content: '❌ This preset menu is not yours!',
+      ephemeral: true
+    });
+    return;
+  }
+
+  if (actionType === 'set') {
+    await interaction.deferUpdate();
+    const player = await findOrCreatePlayer(userId, interaction.user.username);
+    const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
+
+    const options = [
+      {
+        label: 'Basic Attack',
+        value: 'attack',
+        description: 'Perform a normal strike.',
+        emoji: '⚔️'
+      }
+    ];
+
+    learned.forEach((l) => {
+      const skillDef = SKILLS.find((s) => s.id === l.skillId);
+      if (skillDef) {
+        options.push({
+          label: skillDef.name,
+          value: skillDef.id,
+          description: skillDef.description.slice(0, 50),
+          emoji: '🌀'
+        });
+      }
+    });
+
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId(`player_preset_select_${slotNum}_${userId}`)
+      .setPlaceholder(`Select action for Preset ${slotNum}...`)
+      .addOptions(options);
+
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+    const embed = new EmbedBuilder()
+      .setColor(0x7C3AED)
+      .setTitle(`⚙️ Set Preset ${slotNum}`)
+      .setDescription(`Choose a combat action from your learned skills to map to Preset ${slotNum}.`);
+
+    await interaction.editReply({
+      embeds: [embed],
+      components: [row]
+    });
+  } else if (actionType === 'select') {
+    await interaction.deferUpdate();
+    const player = await findOrCreatePlayer(userId, interaction.user.username);
+    const selectedAction = interaction.values[0];
+
+    const presets = [...(player.presets as (string | null)[])];
+    presets[slotNum - 1] = selectedAction;
+
+    await db
+      .update(players)
+      .set({ presets })
+      .where(eq(players.id, player.id));
+
+    const getPresetName = (presetId: string | null) => {
+      if (!presetId) return 'Empty';
+      if (presetId === 'attack') return 'Basic Attack';
+      const skillDef = SKILLS.find((s) => s.id === presetId);
+      return skillDef ? skillDef.name : presetId;
+    };
+
+    await runPreset(interaction, `Preset ${slotNum} successfully mapped to ${getPresetName(selectedAction)}!`);
   }
 }
