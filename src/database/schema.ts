@@ -27,6 +27,9 @@ export const players = pgTable('players', {
   ]).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   lastSeen: timestamp('last_seen', { withTimezone: true }),
+  stamina: integer('stamina').default(100).notNull(),
+  staminaMax: integer('stamina_max').default(100).notNull(),
+  lastStaminaRegen: timestamp('last_stamina_regen', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
   discordIdIdx: uniqueIndex('players_discord_id_idx').on(table.discordId),
   levelExpIdx: index('players_level_exp_idx').on(table.level, table.exp),
@@ -186,6 +189,20 @@ export const playerSkills = pgTable('player_skills', {
   playerSkillIdx: uniqueIndex('player_skills_idx').on(table.playerId, table.skillId),
 }));
 
+// ─── EXPLORATION_SESSIONS ───
+export const explorationSessions = pgTable('exploration_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id, { onDelete: 'cascade' }).notNull(),
+  channelId: varchar('channel_id', { length: 20 }).notNull(),
+  zoneId: varchar('zone_id', { length: 32 }).notNull(),
+  currentNodeId: varchar('current_node_id', { length: 32 }).notNull(),
+  previousNodeId: varchar('previous_node_id', { length: 32 }),
+  party: jsonb('party').default({ leaderId: '', members: [] }).notNull(),
+  mapState: jsonb('map_state').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ═══════════════════════════════════════════════════════════════
 // ─── RELATIONS ───
 // ═══════════════════════════════════════════════════════════════
@@ -215,6 +232,10 @@ export const playersRelations = relations(players, ({ one, many }) => ({
   cooldowns: many(cooldowns),
   guildMemberships: many(guildMembers),
   bossParticipations: many(bossParticipants),
+  explorationSession: one(explorationSessions, {
+    fields: [players.id],
+    references: [explorationSessions.playerId],
+  }),
 }));
 
 export const playerStatsRelations = relations(playerStats, ({ one }) => ({
@@ -352,6 +373,13 @@ export const dailyLoginsRelations = relations(dailyLogins, ({ one }) => ({
 export const playerSkillsRelations = relations(playerSkills, ({ one }) => ({
   player: one(players, {
     fields: [playerSkills.playerId],
+    references: [players.id],
+  }),
+}));
+
+export const explorationSessionsRelations = relations(explorationSessions, ({ one }) => ({
+  player: one(players, {
+    fields: [explorationSessions.playerId],
     references: [players.id],
   }),
 }));

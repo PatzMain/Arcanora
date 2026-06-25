@@ -1,0 +1,11 @@
+{
+  "id": "potion_stamina_medium",
+  "name": "Stamina Potion",
+  "description": "Restores 60 Stamina.",
+  "type": "consumable",
+  "rarity": "uncommon",
+  "stats": {},
+  "buyPrice": 180,
+  "sellPrice": 72,
+  "levelReq": 1
+}

@@ -1,0 +1,11 @@
+{
+  "id": "potion_stamina_small",
+  "name": "Small Stamina Potion",
+  "description": "Restores 30 Stamina.",
+  "type": "consumable",
+  "rarity": "common",
+  "stats": {},
+  "buyPrice": 100,
+  "sellPrice": 40,
+  "levelReq": 1
+}

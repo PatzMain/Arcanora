@@ -195,3 +195,101 @@ export async function getPlayerWithClampedStats(discordId: string) {
   return player;
 }
 
+/**
+ * Get the player and apply stamina regeneration logic based on elapsed time.
+ */
+export async function getAndUpdatePlayerStamina(playerId: string, tx: any = db) {
+  const player = await tx.query.players.findFirst({
+    where: eq(players.id, playerId),
+  });
+
+  if (!player) return null;
+
+  const now = new Date();
+  if (player.stamina >= player.staminaMax) {
+    if (player.lastStaminaRegen.getTime() !== now.getTime()) {
+      const [updated] = await tx
+        .update(players)
+        .set({ lastStaminaRegen: now })
+        .where(eq(players.id, playerId))
+        .returning();
+      return updated;
+    }
+    return player;
+  }
+
+  const elapsedMs = now.getTime() - player.lastStaminaRegen.getTime();
+  const intervalMs = 5 * 60 * 1000; // 5 minutes
+
+  if (elapsedMs >= intervalMs) {
+    const intervals = Math.floor(elapsedMs / intervalMs);
+    const newStamina = Math.min(player.staminaMax, player.stamina + intervals);
+    const newLastRegen = new Date(player.lastStaminaRegen.getTime() + intervals * intervalMs);
+
+    const [updated] = await tx
+      .update(players)
+      .set({
+        stamina: newStamina,
+        lastStaminaRegen: newLastRegen,
+      })
+      .where(eq(players.id, playerId))
+      .returning();
+
+    return updated;
+  }
+
+  return player;
+}
+
+/**
+ * Deduct a specified amount of stamina from the player.
+ * Calls getAndUpdatePlayerStamina first to ensure the stamina is current.
+ */
+export async function deductPlayerStamina(playerId: string, amount: number): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const player = await getAndUpdatePlayerStamina(playerId, tx);
+    if (!player) return false;
+
+    if (player.stamina < amount) {
+      return false;
+    }
+
+    const newStamina = player.stamina - amount;
+    const setClause: any = { stamina: newStamina };
+    if (player.stamina === player.staminaMax) {
+      setClause.lastStaminaRegen = new Date();
+    }
+
+    await tx
+      .update(players)
+      .set(setClause)
+      .where(eq(players.id, playerId));
+
+    return true;
+  });
+}
+
+/**
+ * Replenish a player's stamina, capping it at staminaMax.
+ */
+export async function replenishPlayerStamina(playerId: string, amount: number) {
+  return db.transaction(async (tx) => {
+    const player = await getAndUpdatePlayerStamina(playerId, tx);
+    if (!player) return null;
+
+    const newStamina = Math.min(player.staminaMax, player.stamina + amount);
+    const setClause: any = { stamina: newStamina };
+    if (newStamina === player.staminaMax) {
+      setClause.lastStaminaRegen = new Date();
+    }
+
+    const [updated] = await tx
+      .update(players)
+      .set(setClause)
+      .where(eq(players.id, playerId))
+      .returning();
+
+    return updated;
+  });
+}
+

@@ -374,8 +374,29 @@ export async function handleCombatInteraction(
       const embed = successEmbed('Fled Battle', `💨 You successfully fled from the **Lv.${enemyDef.level} ${enemyDef.name}**.`);
       embed.setColor(0xF59E0B); // Amber warnings
       
-      const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
-      await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
+      const { getExplorationSessionByPlayerId, updateExplorationSession } = await import('../../database/queries/exploration.js');
+      const { buildNavId } = await import('../../utils/navigation.js');
+      const expSession = await getExplorationSessionByPlayerId(player.id);
+      
+      let components: any[] = [];
+      if (expSession) {
+        const backtrackNodeId = expSession.previousNodeId || 'start';
+        await updateExplorationSession(expSession.id, {
+          currentNodeId: backtrackNodeId,
+          previousNodeId: null
+        });
+        const backBtn = new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', player.discordId))
+          .setLabel('Back to Dungeon')
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji('➡️');
+        components = [new ActionRowBuilder<ButtonBuilder>().addComponents(backBtn)];
+      } else {
+        const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+        components = navButtons ? [navButtons] : [];
+      }
+
+      await interaction.editReply({ embeds: [embed], components });
       return;
     }
 
@@ -439,8 +460,33 @@ export async function handleCombatInteraction(
         // Advance quest progress for defeating the mob
         await advanceQuestProgress(player.id, 'kill', enemyDef.id, 1, interaction);
 
-        const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
-        await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
+        const { getExplorationSessionByPlayerId, updateExplorationSession } = await import('../../database/queries/exploration.js');
+        const { buildNavId } = await import('../../utils/navigation.js');
+        const { updateFogOfWar } = await import('../exploration/dungeonGenerator.js');
+        const expSession = await getExplorationSessionByPlayerId(player.id);
+        
+        let components: any[] = [];
+        if (expSession) {
+          const currentNodeId = expSession.currentNodeId;
+          expSession.mapState.nodes[currentNodeId].status = 'cleared';
+          expSession.mapState.nodes = updateFogOfWar(expSession.mapState.nodes, currentNodeId);
+          
+          await updateExplorationSession(expSession.id, {
+            mapState: expSession.mapState
+          });
+          
+          const continueBtn = new ButtonBuilder()
+            .setCustomId(buildNavId('player_map', player.discordId))
+            .setLabel('Continue Dungeon')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('➡️');
+          components = [new ActionRowBuilder<ButtonBuilder>().addComponents(continueBtn)];
+        } else {
+          const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+          components = navButtons ? [navButtons] : [];
+        }
+
+        await interaction.editReply({ embeds: [embed], components });
       } else {
         // Defeat!
         // Reset player current HP to 10% of max HP as a revival state
@@ -450,9 +496,16 @@ export async function handleCombatInteraction(
           .update(players)
           .set({
             hpCurrent: recoveryHp,
-            manaCurrent: 10
+            manaCurrent: 10,
+            currentZoneId: 'cozy_tavern'
           })
           .where(eq(players.id, player.id));
+
+        const { getExplorationSessionByPlayerId, deleteExplorationSession } = await import('../../database/queries/exploration.js');
+        const expSession = await getExplorationSessionByPlayerId(player.id);
+        if (expSession) {
+          await deleteExplorationSession(expSession.id);
+        }
 
         const embed = errorEmbed(
           'Defeat!',

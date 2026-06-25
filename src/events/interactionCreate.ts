@@ -149,6 +149,13 @@ export async function execute(interaction: Interaction) {
       } catch (error) {
         logger.error({ error, customId }, 'Error processing map travel interaction');
       }
+    } else if (customId.startsWith('map_enter_dungeon_') || customId.startsWith('dungeon_')) {
+      try {
+        const { handleDungeonInteraction } = await import('../commands/player/map.js');
+        await handleDungeonInteraction(interaction as any);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing dungeon interaction');
+      }
     } else if (customId.startsWith('player_preset_')) {
       try {
         await handlePresetInteraction(interaction as any);

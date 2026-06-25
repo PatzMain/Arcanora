@@ -35,7 +35,7 @@ const HELP_CATEGORIES: Record<string, HelpCategory> & {
     title: 'Combat',
     description: 'Fight monsters and explore locations',
     commands: [
-      { name: 'combat explore', description: 'Explore a location to fight enemies and find loot.', usage: '/combat explore' },
+      { name: 'map', description: 'View the world map, travel between locations, or start a procedural dungeon crawl.', usage: '/map' },
       { name: 'combat fight', description: 'Fight a monster or continue an active combat encounter.', usage: '/combat fight' },
       { name: 'boss info', description: 'View current active World Boss status and contribution leaderboard.', usage: '/boss info' },
       { name: 'boss fight', description: 'Join the raid and fight the active World Boss.', usage: '/boss fight' }

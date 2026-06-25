@@ -1,0 +1,11 @@
+{
+  "id": "potion_stamina_large",
+  "name": "Large Stamina Potion",
+  "description": "Fully restores Stamina.",
+  "type": "consumable",
+  "rarity": "rare",
+  "stats": {},
+  "buyPrice": 300,
+  "sellPrice": 120,
+  "levelReq": 1
+}
