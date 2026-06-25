@@ -43,11 +43,24 @@ export async function execute(client: Client) {
 
   try {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
-    const clientId = process.env.DISCORD_CLIENT_ID || client.user?.id;
+    const clientId = client.user?.id || process.env.DISCORD_CLIENT_ID;
 
     if (!clientId) {
       logger.error('Client ID is missing. Cannot register slash commands.');
       return;
+    }
+
+    // Clear stale guild-level commands to ensure global commands are visible
+    for (const guild of client.guilds.cache.values()) {
+      try {
+        const guildCommands = await guild.commands.fetch();
+        if (guildCommands.size > 0) {
+          logger.info(`Clearing ${guildCommands.size} stale guild-level commands for guild: ${guild.name} (${guild.id})`);
+          await guild.commands.set([]);
+        }
+      } catch (err) {
+        logger.warn(`Could not fetch/clear guild commands for guild ${guild.name}: ${err}`);
+      }
     }
 
     logger.info('Registering slash commands...');

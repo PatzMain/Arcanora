@@ -12,7 +12,7 @@ export const data = new SlashCommandBuilder()
   .setDescription('Get the invite link to add Arcanora to other servers.');
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  const clientId = process.env.DISCORD_CLIENT_ID || interaction.client.user?.id;
+  const clientId = interaction.client.user?.id || process.env.DISCORD_CLIENT_ID;
   const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot%20applications.commands`;
 
   const embed = successEmbed(
