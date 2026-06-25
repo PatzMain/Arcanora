@@ -417,6 +417,15 @@ export async function runMap(
       components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu));
     }
 
+    // Dungeon selector buttons
+    const dungeons = [
+      { id: 'verdant_meadows', name: 'Verdant Outpost', lv: 1 },
+      { id: 'shadow_forest', name: 'Whispering Canopy', lv: 3 },
+      { id: 'crystal_caverns', name: 'Glittering Depths', lv: 6 },
+      { id: 'volcanic_wastes', name: 'Volcanic Wastes', lv: 10 },
+      { id: 'abyssal_depths', name: 'Abyssal Depths', lv: 15 }
+    ];
+
     // Add Create Co-op Lobby selector
     const lobbyOptions = dungeons
       .filter((d: any) => player.level >= d.lv)
@@ -433,15 +442,6 @@ export async function runMap(
         .addOptions(lobbyOptions);
       components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(lobbySelect));
     }
-
-    // Dungeon selector buttons
-    const dungeons = [
-      { id: 'verdant_meadows', name: 'Verdant Outpost', lv: 1 },
-      { id: 'shadow_forest', name: 'Whispering Canopy', lv: 3 },
-      { id: 'crystal_caverns', name: 'Glittering Depths', lv: 6 },
-      { id: 'volcanic_wastes', name: 'Volcanic Wastes', lv: 10 },
-      { id: 'abyssal_depths', name: 'Abyssal Depths', lv: 15 }
-    ];
 
     const dungeonRow1 = new ActionRowBuilder<ButtonBuilder>();
     const dungeonRow2 = new ActionRowBuilder<ButtonBuilder>();
