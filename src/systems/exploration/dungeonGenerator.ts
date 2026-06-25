@@ -241,8 +241,6 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
         encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'normal') };
       } else if (type === 'elite') {
         encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'rare') };
-      } else if (type === 'boss') {
-        encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'boss') };
       } else if (type === 'puzzle') {
         const riddleIdx = Math.floor(Math.random() * RIDDLES.length);
         encounterData = { riddle: RIDDLES[riddleIdx] };
@@ -296,21 +294,21 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
   
   // 4. Connect Layers
   for (let L = 0; L < layers.length - 1; L++) {
-    const currentLayer = layers[L];
-    const nextLayer = layers[L + 1];
+    const currentLayer = layers[L]!;
+    const nextLayer = layers[L + 1]!;
     
     // Connect each node in current layer to at least one node in next layer
     for (const currId of currentLayer) {
-      const nextId = nextLayer[Math.floor(Math.random() * nextLayer.length)];
-      nodes[currId].connections.push(nextId);
+      const nextId = nextLayer[Math.floor(Math.random() * nextLayer.length)]!;
+      nodes[currId]!.connections.push(nextId);
     }
     
     // Ensure every node in next layer has at least one incoming connection
     for (const nextId of nextLayer) {
-      const incoming = currentLayer.filter(currId => nodes[currId].connections.includes(nextId));
+      const incoming = currentLayer.filter(currId => nodes[currId]!.connections.includes(nextId));
       if (incoming.length === 0) {
-        const randomCurrId = currentLayer[Math.floor(Math.random() * currentLayer.length)];
-        nodes[randomCurrId].connections.push(nextId);
+        const randomCurrId = currentLayer[Math.floor(Math.random() * currentLayer.length)]!;
+        nodes[randomCurrId]!.connections.push(nextId);
       }
     }
     
@@ -318,10 +316,10 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
     if (nextLayer.length > 1) {
       for (const currId of currentLayer) {
         if (Math.random() < 0.3) {
-          const unusedNext = nextLayer.filter(nextId => !nodes[currId].connections.includes(nextId));
+          const unusedNext = nextLayer.filter(nextId => !nodes[currId]!.connections.includes(nextId));
           if (unusedNext.length > 0) {
-            const extraNextId = unusedNext[Math.floor(Math.random() * unusedNext.length)];
-            nodes[currId].connections.push(extraNextId);
+            const extraNextId = unusedNext[Math.floor(Math.random() * unusedNext.length)]!;
+            nodes[currId]!.connections.push(extraNextId);
           }
         }
       }
@@ -330,10 +328,10 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
   
   // 5. Initial Fog of War Reveal
   // start is visited, reveal all nodes connected from start
-  nodes['start'].status = 'visited';
-  for (const connId of nodes['start'].connections) {
+  nodes['start']!.status = 'visited';
+  for (const connId of nodes['start']!.connections) {
     if (nodes[connId]) {
-      nodes[connId].status = 'revealed';
+      nodes[connId]!.status = 'revealed';
     }
   }
   
@@ -353,19 +351,22 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
  */
 export function updateFogOfWar(nodes: Record<string, DungeonNode>, currentNodeId: string): Record<string, DungeonNode> {
   // Mark current node as visited
-  nodes[currentNodeId].status = 'visited';
+  if (nodes[currentNodeId]) {
+    nodes[currentNodeId]!.status = 'visited';
+  }
   
   // Collect all visited nodes
-  const visitedIds = Object.keys(nodes).filter(id => nodes[id].status === 'visited' || nodes[id].status === 'cleared');
+  const visitedIds = Object.keys(nodes).filter(id => nodes[id]?.status === 'visited' || nodes[id]?.status === 'cleared');
   
   // Reveal all nodes connected to visited nodes that are not visited themselves
   for (const id of Object.keys(nodes)) {
-    if (nodes[id].status !== 'visited' && nodes[id].status !== 'cleared') {
-      const hasVisitedPredecessor = visitedIds.some(vId => nodes[vId].connections.includes(id));
+    const node = nodes[id]!;
+    if (node.status !== 'visited' && node.status !== 'cleared') {
+      const hasVisitedPredecessor = visitedIds.some(vId => nodes[vId]?.connections.includes(id));
       if (hasVisitedPredecessor) {
-        nodes[id].status = 'revealed';
+        node.status = 'revealed';
       } else {
-        nodes[id].status = 'hidden';
+        node.status = 'hidden';
       }
     }
   }

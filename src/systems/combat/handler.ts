@@ -467,12 +467,13 @@ export async function handleCombatInteraction(
         
         let components: any[] = [];
         if (expSession) {
+          const mapState = expSession.mapState as any;
           const currentNodeId = expSession.currentNodeId;
-          expSession.mapState.nodes[currentNodeId].status = 'cleared';
-          expSession.mapState.nodes = updateFogOfWar(expSession.mapState.nodes, currentNodeId);
+          mapState.nodes[currentNodeId].status = 'cleared';
+          mapState.nodes = updateFogOfWar(mapState.nodes, currentNodeId);
           
           await updateExplorationSession(expSession.id, {
-            mapState: expSession.mapState
+            mapState
           });
           
           const continueBtn = new ButtonBuilder()

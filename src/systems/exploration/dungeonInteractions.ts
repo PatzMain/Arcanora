@@ -460,11 +460,11 @@ const eventHandler: NodeInteractionHandler = {
       if (outcomeId === 'shrine_touch') {
         if (Math.random() < 0.5) {
           const newHp = Math.max(1, player.hpCurrent - 20);
-          [updatedPlayer] = await db.update(players).set({ hpCurrent: newHp }).where(eq(players.id, player.id)).returning();
+          await db.update(players).set({ hpCurrent: newHp }).where(eq(players.id, player.id));
           resultText += `\n\n💥 You take **20 shadow damage** from the backlash!`;
         } else {
           const newGold = player.gold + 250;
-          [updatedPlayer] = await db.update(players).set({ gold: newGold }).where(eq(players.id, player.id)).returning();
+          await db.update(players).set({ gold: newGold }).where(eq(players.id, player.id));
           resultText += `\n\n🪙 You find **250 gold** hidden inside the altar!`;
         }
       } else if (outcomeId === 'shrine_pray') {
@@ -475,7 +475,7 @@ const eventHandler: NodeInteractionHandler = {
         });
         const stats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
         const restoredMana = Math.min(stats.manaMax, player.manaCurrent + Math.round(stats.manaMax * 0.3));
-        [updatedPlayer] = await db.update(players).set({ manaCurrent: restoredMana }).where(eq(players.id, player.id)).returning();
+        await db.update(players).set({ manaCurrent: restoredMana }).where(eq(players.id, player.id));
         resultText += `\n\n💙 Restored **30% Mana**!`;
       } else if (outcomeId === 'fountain_drink') {
         const equippedDbItems = await getEquippedItems(player.id);
@@ -486,12 +486,12 @@ const eventHandler: NodeInteractionHandler = {
         const stats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
         const restoredHp = Math.min(stats.hpMax, player.hpCurrent + Math.round(stats.hpMax * 0.4));
         const restoredMana = Math.min(stats.manaMax, player.manaCurrent + Math.round(stats.manaMax * 0.4));
-        [updatedPlayer] = await db.update(players).set({ hpCurrent: restoredHp, manaCurrent: restoredMana }).where(eq(players.id, player.id)).returning();
+        await db.update(players).set({ hpCurrent: restoredHp, manaCurrent: restoredMana }).where(eq(players.id, player.id));
         resultText += `\n\n💚 Restored **40% HP & Mana**!`;
       } else if (outcomeId === 'fountain_coin') {
         if (player.gold >= 50) {
           const newGold = player.gold - 50;
-          [updatedPlayer] = await db.update(players).set({ gold: newGold }).where(eq(players.id, player.id)).returning();
+          await db.update(players).set({ gold: newGold }).where(eq(players.id, player.id));
           resultText += `\n\n✨ You feel a warm blessing! (Deducted 50 Gold).`;
         } else {
           resultText = `You don't have enough gold to toss! Nothing happens.`;
@@ -499,12 +499,18 @@ const eventHandler: NodeInteractionHandler = {
       } else if (outcomeId === 'bones_search') {
         if (Math.random() < 0.3) {
           const newHp = Math.max(1, player.hpCurrent - 10);
-          [updatedPlayer] = await db.update(players).set({ hpCurrent: newHp }).where(eq(players.id, player.id)).returning();
+          await db.update(players).set({ hpCurrent: newHp }).where(eq(players.id, player.id));
           resultText += `\n\n🕷️ A toxic spider bites you! You lose **10 HP**.`;
         } else {
           await addItem(player.id, 'potion_stamina_small', 1);
           resultText += `\n\n🎒 You found a **Small Stamina Potion**!`;
         }
+      }
+
+      // Reload player to fetch computed stats cleanly
+      const refreshed = await getPlayerWithClampedStats(player.discordId);
+      if (refreshed) {
+        updatedPlayer = refreshed;
       }
 
       const embed = new EmbedBuilder()

@@ -27,6 +27,7 @@ import {
   deleteExplorationSession
 } from '../../database/queries/exploration.js';
 import { dungeonNodeRegistry } from '../../systems/exploration/dungeonInteractions.js';
+import { itemBehaviorRegistry } from '../../systems/items/itemBehavior.js';
 
 export const data = new SlashCommandBuilder()
   .setName('map')
@@ -99,15 +100,20 @@ export async function runMap(
 
     const discordId = overridePlayerId || interaction.user.id;
     // Load player and ensure stats are clamped, update stamina
-    let player = await getPlayerWithClampedStats(discordId);
-    if (!player) {
+    const initialPlayer = await getPlayerWithClampedStats(discordId);
+    if (!initialPlayer) {
       const err = errorEmbed('Error', 'Player profile not found. Please complete the /tutorial first.');
       await interaction.editReply({ embeds: [err] });
       return;
     }
 
     // Refresh stamina passively
-    player = await getAndUpdatePlayerStamina(player.id);
+    const player = await getAndUpdatePlayerStamina(initialPlayer.id);
+    if (!player) {
+      const err = errorEmbed('Error', 'Player profile not found.');
+      await interaction.editReply({ embeds: [err] });
+      return;
+    }
 
     // Check if player has an active exploration session
     const session = await getExplorationSessionByPlayerId(player.id);
@@ -631,6 +637,10 @@ export async function handleDungeonInteraction(
 
     if (customId.startsWith('dungeon_lobby_create_select_')) {
       const zoneId = (interaction as StringSelectMenuInteraction).values[0];
+      if (!zoneId) {
+        await interaction.reply({ content: '❌ No dungeon selected.', flags: [MessageFlags.Ephemeral] });
+        return;
+      }
       const zone = zonesCatalog.find(z => z.id === zoneId);
       if (!zone || player.level < zone.minLevel) {
         await interaction.reply({ content: `❌ Dungeon locked. Required Level: ${zone?.minLevel || 1}`, flags: [MessageFlags.Ephemeral] });
@@ -658,6 +668,11 @@ export async function handleDungeonInteraction(
     if (action === 'lobby') {
       const lobbyAction = parts[2];
       const sessionId = parts[3];
+
+      if (!lobbyAction || !sessionId) {
+        await interaction.reply({ content: '❌ Invalid lobby action parameters.', flags: [MessageFlags.Ephemeral] });
+        return;
+      }
 
       const lobbySession = await db.query.explorationSessions.findFirst({
         where: eq(explorationSessions.id, sessionId),
@@ -884,6 +899,11 @@ export async function handleDungeonInteraction(
     if (action === 'potion') {
       // StringSelectMenuInteraction for potion use
       const dbItemId = (interaction as StringSelectMenuInteraction).values[0];
+      if (!dbItemId) {
+        await interaction.reply({ content: '❌ No item selected.', flags: [MessageFlags.Ephemeral] });
+        return;
+      }
+
       const dbItem = await db.query.inventory.findFirst({ where: eq(inventory.id, dbItemId) });
       if (!dbItem || dbItem.quantity <= 0) {
         await interaction.reply({ content: '❌ Item not found.', flags: [MessageFlags.Ephemeral] });
@@ -891,6 +911,11 @@ export async function handleDungeonInteraction(
       }
 
       const itemDef = itemsCatalog.find(i => i.id === dbItem.itemId);
+      if (!itemDef) {
+        await interaction.reply({ content: '❌ Item definition not found.', flags: [MessageFlags.Ephemeral] });
+        return;
+      }
+
       const customBehavior = itemBehaviorRegistry.get(dbItem.itemId);
 
       if (customBehavior) {
@@ -948,6 +973,11 @@ export async function handleDungeonInteraction(
     if (action === 'action') {
       const nodeType = parts[2];
       const nodeAction = parts[3];
+      if (!nodeType || !nodeAction) {
+        await interaction.reply({ content: '❌ Invalid dungeon action.', flags: [MessageFlags.Ephemeral] });
+        return;
+      }
+
       const mapState = session.mapState as any;
       const currentNodeId = session.currentNodeId;
       const currNode = mapState.nodes[currentNodeId];
@@ -1037,7 +1067,7 @@ export async function handleDungeonInteraction(
 
       let result: any;
       if (nodeAction === 'choice') {
-        const clickedIdx = parseInt(parts[4]);
+        const clickedIdx = parseInt(parts[4] || '0');
         result = await handler.onAction('submit', context, { answerIndex: clickedIdx });
       } else if (nodeAction === 'choose') {
         const outcomeId = parts.slice(4, -1).join('_');
