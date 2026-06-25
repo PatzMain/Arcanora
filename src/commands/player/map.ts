@@ -364,12 +364,12 @@ export async function runMap(
       for (const loc of locs) {
         const isCurrent = loc.id === player.currentZoneId;
         const isUnlocked = player.level >= loc.minLevel;
+        if (!isCurrent && !isUnlocked) continue;
+
         const emoji = zoneEmojis[loc.id] || '📍';
         let status = '';
         if (isCurrent) {
           status = '📍 **Current Location**';
-        } else if (!isUnlocked) {
-          status = `🔒 *Locked (Requires Lv. ${loc.minLevel})*`;
         } else {
           status = `🚗 *Available (Lv. ${loc.minLevel}-${loc.maxLevel})*`;
         }
@@ -378,28 +378,27 @@ export async function runMap(
                     `⤷ ${status}\n\n`;
       }
 
-      embed.addFields({
-        name: `✨ ${rName}`,
-        value: locsText.trim(),
-        inline: false
-      });
+      if (locsText.trim().length > 0) {
+        embed.addFields({
+          name: `✨ ${rName}`,
+          value: locsText.trim(),
+          inline: false
+        });
+      }
     }
 
     const components: any[] = [];
 
     // Travel menu
     const travelOptions = zonesCatalog
-      .filter((zone) => zone.id !== player.currentZoneId)
+      .filter((zone) => zone.id !== player.currentZoneId && player.level >= zone.minLevel)
       .map((zone) => {
-        const isUnlocked = player.level >= zone.minLevel;
         const emoji = zoneEmojis[zone.id] || '📍';
         return {
           label: zone.name,
           value: zone.id,
-          description: isUnlocked 
-            ? `Travel here (Lv. ${zone.minLevel})` 
-            : `Locked - Requires Level ${zone.minLevel}`,
-          emoji: isUnlocked ? emoji : '🔒',
+          description: `Travel here (Lv. ${zone.minLevel})`,
+          emoji,
         };
       });
 
@@ -419,11 +418,10 @@ export async function runMap(
       { id: 'crystal_caverns', name: 'Glittering Depths', lv: 6 },
       { id: 'volcanic_wastes', name: 'Volcanic Wastes', lv: 10 },
       { id: 'abyssal_depths', name: 'Abyssal Depths', lv: 15 }
-    ];
+    ].filter(d => player.level >= d.lv);
 
     // Add Create Co-op Lobby selector
     const lobbyOptions = dungeons
-      .filter((d: any) => player.level >= d.lv)
       .map((d: any) => ({
         label: `Lobby: ${d.name}`,
         value: d.id,
@@ -447,9 +445,7 @@ export async function runMap(
         .setLabel(`${d.name} (Lv.${d.lv})`)
         .setStyle(ButtonStyle.Primary);
 
-      if (player.level < d.lv) {
-        btn.setStyle(ButtonStyle.Secondary).setLabel(`🔒 ${d.name} (Lv.${d.lv})`).setDisabled(true);
-      } else if (player.stamina < 15) {
+      if (player.stamina < 15) {
         btn.setLabel(`${d.name} (15 🔋 Required)`).setDisabled(true);
       }
 
@@ -460,7 +456,9 @@ export async function runMap(
       }
     });
 
-    components.push(dungeonRow1);
+    if (dungeonRow1.components.length > 0) {
+      components.push(dungeonRow1);
+    }
     if (dungeonRow2.components.length > 0) {
       components.push(dungeonRow2);
     }
