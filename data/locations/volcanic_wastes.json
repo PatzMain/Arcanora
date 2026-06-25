@@ -1,40 +1,87 @@
 {
   "id": "volcanic_wastes",
-  "name": "Brimstone Peak",
-  "description": "A treacherous, ash-choked volcanic peak sliced by rivers of molten lava. The air is thick with sulfur, and powerful elemental entities claim this burning domain.",
+  "name": "Volcanic Wastes",
+  "description": "A scorched wasteland of black obsidian and slow-flowing lava rivers under a smoke-filled sky.",
   "minLevel": 10,
   "maxLevel": 15,
   "explorationCooldown": 150,
-  "region": "The Infernal Peaks",
-  "isDungeon": false,
+  "region": "Ashen Frontier",
+  "area": "Ember Wastes",
+  "type": "combat",
+  "visualTheme": "Desolate black volcanic soil cracked open with rivers of yellow-orange lava, under an ash-clouded sky.",
+  "history": {
+    "createdWhy": "Created by the eruption of Mount Ignis five centuries ago.",
+    "builtWho": "No one settled here, but fire cults built altars to pray to the mountain deity.",
+    "majorEvents": "The War of Ashes concluded here when the Fire Monarch was entombed.",
+    "whyExists": "Source of highly volatile volcanic minerals and obsidian rocks.",
+    "currentConflicts": "The seal on the fire cult's temple is weakening, causing magma surges."
+  },
+  "ecosystem": {
+    "creatures": [
+      "fire_imp",
+      "lava_golem",
+      "magma_basilisk",
+      "ash_wraith",
+      "fire_drake"
+    ],
+    "resources": ["mat_obsidian_chunk", "mat_copper_ore"],
+    "weather": "Choking sulfur fumes and ashfall",
+    "hazards": ["Lava Geysers"]
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "ignatius",
+        "name": "Scholar Ignatius",
+        "role": "Volcanologist",
+        "dialogue": [
+          "Do you feel it? The mountain breathes... and it is angry.",
+          "Lava is predictable, but the monsters that live inside it are not.",
+          "I need samples of obsidian, but my old legs cannot carry me close enough."
+        ]
+      }
+    ],
+    "factions": ["Acolytes of Mount Ignis"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_10_volcanic_entry"],
+    "secrets": [
+      {
+        "id": "secret_altar",
+        "name": "Smoldering Shrine",
+        "description": "An ancient stone altar glowing with dormant elemental heat."
+      }
+    ]
+  },
+  "connections": ["ancient_mine", "lava_keep", "abyssal_depths"],
   "enemies": [
-    "lava_hound",
+    "fire_imp",
+    "lava_golem",
+    "magma_basilisk",
     "ash_wraith",
-    "obsidian_scorpion",
-    "fire_elemental",
-    "magma_wyrm",
-    "infernal_titan"
+    "fire_drake"
   ],
   "encounters": [
     {
       "type": "normal_mob",
-      "weight": 40
+      "weight": 55
     },
     {
       "type": "empty",
-      "weight": 15
-    },
-    {
-      "type": "treasure",
       "weight": 20
     },
     {
+      "type": "treasure",
+      "weight": 15
+    },
+    {
       "type": "rare_mob",
-      "weight": 18
+      "weight": 8
     },
     {
       "type": "boss",
-      "weight": 7
+      "weight": 2
     }
   ]
 }

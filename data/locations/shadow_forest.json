@@ -5,8 +5,57 @@
   "minLevel": 3,
   "maxLevel": 6,
   "explorationCooldown": 90,
-  "region": "The Whispering Wilds",
-  "isDungeon": false,
+  "region": "Kingdom of Eldoria",
+  "area": "Whispering Forest",
+  "type": "combat",
+  "visualTheme": "Twilight-shrouded woodlands where glowing moss outlines gnarled pathways and a low mist clings to the soil.",
+  "history": {
+    "createdWhy": "Formed over millennia by wild magic seeping from the Leyline Nexus.",
+    "builtWho": "An uninhabited wilderness, though ancient druids once maintained shrines here.",
+    "majorEvents": "Corrupted by the shadow curse following the fall of the Nameless Citadel.",
+    "whyExists": "Acts as a buffer zone between civilization and the wild depths of the world.",
+    "currentConflicts": "The spreading blight is turning native beasts into aggressive monsters."
+  },
+  "ecosystem": {
+    "creatures": [
+      "shadow_stalker",
+      "dark_treant",
+      "venom_spider",
+      "cursed_owl",
+      "nightshade_witch",
+      "ancient_hollow"
+    ],
+    "resources": ["mat_wood", "mat_leather", "mat_spider_silk"],
+    "weather": "Dense purple mist and cold wind",
+    "hazards": ["Poisonous Brambles"]
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "elara",
+        "name": "Druid Elara",
+        "role": "Forest Protector",
+        "dialogue": [
+          "The trees weep... their roots taste shadow.",
+          "Do not stray from the glowing paths. The mist claims the unwary.",
+          "I sense a deep disturbance beneath the watchtower."
+        ]
+      }
+    ],
+    "factions": ["Circle of Thorns"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_03_forest_depths"],
+    "secrets": [
+      {
+        "id": "secret_nexus",
+        "name": "Leyline Rift",
+        "description": "A minor fissure of pulsing arcane energy hidden beneath a hollow tree."
+      }
+    ]
+  },
+  "connections": ["verdant_meadows", "goblin_sanctuary", "crystal_caverns"],
   "enemies": [
     "shadow_stalker",
     "dark_treant",

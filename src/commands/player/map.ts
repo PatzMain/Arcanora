@@ -28,6 +28,11 @@ import {
 } from '../../database/queries/exploration.js';
 import { dungeonNodeRegistry } from '../../systems/exploration/dungeonInteractions.js';
 import { itemBehaviorRegistry } from '../../systems/items/itemBehavior.js';
+import {
+  discoverLocation,
+  getPlayerDiscoveredLocations
+} from '../../database/queries/worldQueries.js';
+import { travelToNode, exploreNode } from '../../systems/exploration/worldExplorer.js';
 
 export const data = new SlashCommandBuilder()
   .setName('map')
@@ -312,170 +317,148 @@ export async function runMap(
     }
 
     // ──────────────────────────────────────────
-    // NO ACTIVE SESSION — LOBBY SELECTOR SCREEN
+    // NO ACTIVE SESSION — WORLD MAP VIEW
     // ──────────────────────────────────────────
+    // Load player's discovered location IDs
+    let discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
+    if (discoveredLocIds.length === 0) {
+      await discoverLocation(player.id, 'cozy_tavern');
+      await discoverLocation(player.id, 'verdant_meadows');
+      discoveredLocIds = ['cozy_tavern', 'verdant_meadows'];
+    }
+
+    const currentLoc = zonesCatalog.find((z) => z.id === player.currentZoneId) || zonesCatalog.find((z) => z.id === 'cozy_tavern')!;
+
     const embed = new EmbedBuilder()
       .setColor(0x7C3AED)
-      .setTitle('🗺️ Arcanora Dungeon Explorer')
+      .setTitle(`🗺️ World Map: ${currentLoc.name}`)
       .setDescription(
         (travelMsg ? `✅ **${travelMsg}**\n\n` : '') +
-        `🔋 **Current Stamina**: \`${player.stamina}/${player.staminaMax}\`\n\n` +
-        'Choose a procedural dungeon to enter. Entering a dungeon costs **15 Stamina**.\n' +
-        'Deeper dungeons scale in length, risk, and epic loot drops.'
+        `🔋 **Stamina**: \`${player.stamina}/${player.staminaMax}\`   ` +
+        `❤️ **HP**: \`${player.hpCurrent}\`   💧 **Mana**: \`${player.manaCurrent}\`\n\n` +
+        `**Region**: ${currentLoc.region} | **Area**: ${currentLoc.area} | **Type**: ${currentLoc.type.toUpperCase()}\n\n` +
+        `*"${currentLoc.description}"*\n\n` +
+        `📍 **Visual Theme:**\n${currentLoc.visualTheme || 'Unknown'}\n\n` +
+        `🌿 **Ecosystem:**\n` +
+        `• ☀️ Weather: ${currentLoc.ecosystem?.weather || 'Mild'}\n` +
+        `• 📦 Resources: ${currentLoc.ecosystem?.resources?.map((rId: string) => itemsCatalog.find((i) => i.id === rId)?.name || rId).join(', ') || 'None'}\n` +
+        `• 👾 Creatures: ${currentLoc.ecosystem?.creatures?.map((cId: string) => {
+          const def = enemiesCatalog.find((e) => e.id === cId);
+          return def ? `${def.name} (Lv.${def.level})` : cId;
+        }).join(', ') || 'None'}`
       )
-      .setFooter({ text: 'Arcanora — Travel and Dungeon Crawls' })
-      .setTimestamp();
-
-    // Group locations by region
-    const regions: Record<string, typeof zonesCatalog> = {};
-    zonesCatalog.forEach((zone) => {
-      const reg = zone.region || 'The Whispering Wilds';
-      if (!regions[reg]) {
-        regions[reg] = [];
-      }
-      regions[reg].push(zone);
-    });
-
-    const regionOrder = [
-      'The Whispering Wilds',
-      'The Subterranean Core',
-      'The Infernal Peaks',
-      'The Sunken Abysses'
-    ];
-
-    const zoneEmojis: Record<string, string> = {
-      cozy_tavern: '🛌',
-      verdant_meadows: '🌿',
-      shadow_forest: '🌲',
-      goblin_sanctuary: '🏰',
-      crystal_caverns: '💎',
-      ancient_mine: '🏰',
-      volcanic_wastes: '🌋',
-      lava_keep: '🏰',
-      abyssal_depths: '🌊',
-      sunken_temple: '🏰'
-    };
-
-    for (const rName of regionOrder) {
-      const locs = regions[rName];
-      if (!locs || locs.length === 0) continue;
-
-      let locsText = '';
-      for (const loc of locs) {
-        const isCurrent = loc.id === player.currentZoneId;
-        const isUnlocked = player.level >= loc.minLevel;
-        if (!isCurrent && !isUnlocked) continue;
-
-        const emoji = zoneEmojis[loc.id] || '📍';
-        let status = '';
-        if (isCurrent) {
-          status = '📍 **Current Location**';
-        } else {
-          status = `🚗 *Available (Lv. ${loc.minLevel}-${loc.maxLevel})*`;
-        }
-
-        locsText += `${emoji} **${loc.name}** (Lv. ${loc.minLevel}-${loc.maxLevel})\n` +
-                    `⤷ ${status}\n\n`;
-      }
-
-      if (locsText.trim().length > 0) {
-        embed.addFields({
-          name: `✨ ${rName}`,
-          value: locsText.trim(),
+      .addFields(
+        {
+          name: '📜 History & Lore',
+          value:
+            `• *Why built:* ${currentLoc.history?.createdWhy || 'Unknown'}\n` +
+            `• *Settler/Builder:* ${currentLoc.history?.builtWho || 'Unknown'}\n` +
+            `• *Major event:* ${currentLoc.history?.majorEvents || 'None'}\n` +
+            `• *Current conflict:* ${currentLoc.history?.currentConflicts || 'None'}`,
           inline: false
-        });
-      }
-    }
+        },
+        {
+          name: '👥 Social Presence',
+          value:
+            `• NPCs: ${currentLoc.social?.npcs?.map((n: any) => `**${n.name}** (${n.role})`).join(', ') || 'None'}\n` +
+            `• Factions: ${currentLoc.social?.factions?.join(', ') || 'None'}`,
+          inline: false
+        }
+      )
+      .setFooter({ text: 'Arcanora — World Exploration & Node Travel' })
+      .setTimestamp();
 
     const components: any[] = [];
 
-    // Travel menu
-    const travelOptions = zonesCatalog
-      .filter((zone) => zone.id !== player.currentZoneId && player.level >= zone.minLevel)
-      .map((zone) => {
-        const emoji = zoneEmojis[zone.id] || '📍';
-        return {
-          label: zone.name,
-          value: zone.id,
-          description: `Travel here (Lv. ${zone.minLevel})`,
-          emoji,
-        };
-      });
+    // Row 1: Exploration & Dungeon & Rest actions
+    const actionRow = new ActionRowBuilder<ButtonBuilder>();
+    
+    // Explore button
+    actionRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`map_world_explore_${player.discordId}`)
+        .setLabel('🔎 Explore Node (-10 🔋)')
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(player.stamina < 10)
+    );
 
-    if (travelOptions.length > 0) {
-      const selectMenu = new StringSelectMenuBuilder()
-        .setCustomId(`map_travel_select_${player.discordId}`)
-        .setPlaceholder('🗺️ Travel to another location...')
-        .addOptions(travelOptions);
-      
-      components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu));
-    }
-
-    // Dungeon selector buttons
-    const dungeons = [
-      { id: 'verdant_meadows', name: 'Verdant Outpost', lv: 1 },
-      { id: 'shadow_forest', name: 'Whispering Canopy', lv: 3 },
-      { id: 'crystal_caverns', name: 'Glittering Depths', lv: 6 },
-      { id: 'volcanic_wastes', name: 'Volcanic Wastes', lv: 10 },
-      { id: 'abyssal_depths', name: 'Abyssal Depths', lv: 15 }
-    ].filter(d => player.level >= d.lv);
-
-    // Add Create Co-op Lobby selector
-    const lobbyOptions = dungeons
-      .map((d: any) => ({
-        label: `Lobby: ${d.name}`,
-        value: d.id,
-        description: `Create a co-op lobby for ${d.name}`
-      }));
-
-    if (lobbyOptions.length > 0) {
-      const lobbySelect = new StringSelectMenuBuilder()
-        .setCustomId(`dungeon_lobby_create_select_${player.discordId}`)
-        .setPlaceholder('👥 Create a Co-op Dungeon Lobby...')
-        .addOptions(lobbyOptions);
-      components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(lobbySelect));
-    }
-
-    const dungeonRow1 = new ActionRowBuilder<ButtonBuilder>();
-    const dungeonRow2 = new ActionRowBuilder<ButtonBuilder>();
-
-    dungeons.forEach((d, idx) => {
-      const btn = new ButtonBuilder()
-        .setCustomId(`map_enter_dungeon_${d.id}_${player.discordId}`)
-        .setLabel(`${d.name} (Lv.${d.lv})`)
-        .setStyle(ButtonStyle.Primary);
-
-      if (player.stamina < 15) {
-        btn.setLabel(`${d.name} (15 🔋 Required)`).setDisabled(true);
-      }
-
-      if (idx < 3) {
-        dungeonRow1.addComponents(btn);
-      } else {
-        dungeonRow2.addComponents(btn);
-      }
-    });
-
-    if (dungeonRow1.components.length > 0) {
-      components.push(dungeonRow1);
-    }
-    if (dungeonRow2.components.length > 0) {
-      components.push(dungeonRow2);
-    }
-
-    // Rest at Cozy Tavern Button (if currently at Tavern)
-    if (player.currentZoneId === 'cozy_tavern') {
-      const restRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    // Rest button (if Cozy Tavern)
+    if (currentLoc.id === 'cozy_tavern') {
+      actionRow.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('tavern_rest', player.discordId))
+          .setCustomId(`map_world_rest_${player.discordId}`)
           .setLabel('Rest & Sleep at Tavern')
-          .setStyle(ButtonStyle.Success)
+          .setStyle(ButtonStyle.Primary)
           .setEmoji('🛌')
       );
-      components.push(restRow);
     }
 
-    // Profile & Bag shortcuts
+    // Dungeon solo & co-op entry buttons
+    if (currentLoc.isDungeon) {
+      actionRow.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`map_enter_dungeon_${currentLoc.id}_${player.discordId}`)
+          .setLabel('🏰 Enter Solo (-15 🔋)')
+          .setStyle(ButtonStyle.Danger)
+          .setDisabled(player.stamina < 15),
+        new ButtonBuilder()
+          .setCustomId(`map_world_coop_${currentLoc.id}_${player.discordId}`)
+          .setLabel('👥 Create Lobby')
+          .setStyle(ButtonStyle.Primary)
+      );
+    }
+
+    components.push(actionRow);
+
+    // Row 2: Travel buttons to adjacent nodes
+    const connections = currentLoc.connections || [];
+    if (connections.length > 0) {
+      const travelRow = new ActionRowBuilder<ButtonBuilder>();
+      
+      connections.forEach((targetId: string) => {
+        const targetLoc = zonesCatalog.find((z) => z.id === targetId);
+        const isDiscovered = discoveredLocIds.includes(targetId);
+        
+        if (isDiscovered) {
+          travelRow.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`map_world_travel_${targetId}_${player.discordId}`)
+              .setLabel(`Travel to ${targetLoc?.name || targetId} (-10 🔋)`)
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(player.stamina < 10)
+          );
+        } else {
+          travelRow.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`map_world_travel_locked_${targetId}_${player.discordId}`)
+              .setLabel('❓ Unknown Path (Scout to unlock)')
+              .setStyle(ButtonStyle.Secondary)
+              .setDisabled(true)
+          );
+        }
+      });
+      
+      components.push(travelRow);
+    }
+
+    // Row 3: Talk to NPC Select Menu
+    const npcs = currentLoc.social?.npcs || [];
+    if (npcs.length > 0) {
+      const npcSelect = new StringSelectMenuBuilder()
+        .setCustomId(`map_world_npc_${player.discordId}`)
+        .setPlaceholder('💬 Talk to a local resident...')
+        .addOptions(
+          npcs.map((n: any) => ({
+            label: n.name,
+            value: n.id,
+            description: n.role
+          }))
+        );
+      
+      components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(npcSelect));
+    }
+
+    // Row 4: Shortcuts row
     const shortcutsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(buildNavId('player_profile', player.discordId)).setLabel('Profile').setStyle(ButtonStyle.Secondary).setEmoji('👤'),
       new ButtonBuilder().setCustomId(buildNavId('inventory_bag', player.discordId)).setLabel('Bag').setStyle(ButtonStyle.Secondary).setEmoji('🎒'),
@@ -1116,5 +1099,149 @@ export async function handleDungeonInteraction(
   } catch (err) {
     console.error('Error handling dungeon interaction:', err);
     await interaction.reply({ content: '❌ An error occurred.', flags: [MessageFlags.Ephemeral] });
+  }
+}
+
+/**
+ * Handles all interactions (buttons & select menus) starting with map_world_
+ */
+export async function handleWorldMapInteraction(
+  interaction: ButtonInteraction | StringSelectMenuInteraction
+) {
+  const customId = interaction.customId;
+  const parts = customId.split('_'); // map_world_action_...
+  const userId = parts[parts.length - 1];
+
+  if (interaction.user.id !== userId) {
+    await interaction.reply({
+      content: '❌ This map interface is not yours!',
+      flags: [MessageFlags.Ephemeral]
+    });
+    return;
+  }
+
+  // Defer update or reply depending on what we will do
+  // Some paths might trigger followUps, but we always defer first to give us time
+  await interaction.deferUpdate();
+
+  try {
+    const player = await getPlayerWithClampedStats(interaction.user.id);
+    if (!player) return;
+
+    if (customId.startsWith('map_world_travel_')) {
+      const targetLocationId = parts[3]!; // map_world_travel_${targetLocationId}_${userId}
+      await travelToNode(player.id, targetLocationId);
+      const targetLoc = zonesCatalog.find(z => z.id === targetLocationId);
+      await runMap(interaction as any, `You traveled to **${targetLoc?.name || targetLocationId}**.`);
+      return;
+    }
+
+    if (customId.startsWith('map_world_explore_')) {
+      const result = await exploreNode(player.id);
+      
+      if (result.type === 'combat') {
+        // Direct transition to combat screen!
+        const { runFight } = await import('../combat/combat.js');
+        // Let's call runFight to display active combat panel
+        await runFight(interaction as any);
+        return;
+      }
+      
+      if (result.type === 'puzzle') {
+        // Render puzzle riddle
+        const riddle = result.puzzle;
+        const riddleEmbed = new EmbedBuilder()
+          .setColor(0x8B5CF6)
+          .setTitle('🧩 Solve the Riddle')
+          .setDescription(`**${riddle.question}**`);
+        
+        const answerRow = new ActionRowBuilder<ButtonBuilder>();
+        riddle.options.forEach((opt: string, idx: number) => {
+          answerRow.addComponents(
+            new ButtonBuilder()
+              .setCustomId(`map_world_puzzle_solve_${idx === riddle.correctIndex ? 'correct' : 'wrong'}_${player.discordId}`)
+              .setLabel(opt)
+              .setStyle(ButtonStyle.Secondary)
+          );
+        });
+        
+        await interaction.followUp({
+          embeds: [riddleEmbed],
+          components: [answerRow],
+          flags: [MessageFlags.Ephemeral]
+        });
+        return;
+      }
+
+      // Other types (resource, chest, discovery, empty, etc.) yield text messages
+      await runMap(interaction as any, result.message);
+      return;
+    }
+
+    if (customId.startsWith('map_world_puzzle_solve_')) {
+      const outcome = parts[4]!; // 'correct' or 'wrong'
+      const isCorrect = outcome === 'correct';
+      
+      if (isCorrect) {
+        const goldReward = 150;
+        await awardGold(player.id, goldReward, 'Solved world exploration riddle');
+        const embed = successEmbed(
+          '🧩 Riddle Solved!',
+          `Correct! You solve the riddle and a small cache opens, revealing **${goldReward} Gold**!`
+        );
+        await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      } else {
+        const embed = errorEmbed(
+          '🧩 Incorrect Answer',
+          'Incorrect. The obelisk glows red and discharges static shock, but you manage to walk away.'
+        );
+        await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      }
+      await runMap(interaction as any);
+      return;
+    }
+
+    if (customId.startsWith('map_world_npc_')) {
+      const selectMenu = interaction as StringSelectMenuInteraction;
+      const npcId = selectMenu.values[0]!;
+      const currentLoc = zonesCatalog.find(z => z.id === player.currentZoneId)!;
+      const npc = currentLoc.social?.npcs?.find(n => n.id === npcId);
+      
+      if (npc && npc.dialogue.length > 0) {
+        const line = npc.dialogue[Math.floor(Math.random() * npc.dialogue.length)]!;
+        const embed = new EmbedBuilder()
+          .setColor(0x3B82F6)
+          .setTitle(`💬 ${npc.name}`)
+          .setDescription(`*"${line}"*`);
+        await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      }
+      return;
+    }
+
+    if (customId.startsWith('map_world_rest_')) {
+      await runTavernRest(interaction as any);
+      return;
+    }
+
+    if (customId.startsWith('map_world_coop_')) {
+      const zoneId = parts[3]!;
+      await createExplorationSession({
+        playerId: player.id,
+        channelId: interaction.channelId || '',
+        zoneId,
+        currentNodeId: 'lobby',
+        party: {
+          leaderId: player.id,
+          members: [{ playerId: player.id, username: player.username, level: player.level }]
+        },
+        mapState: { lobbyOpen: true }
+      });
+      await runMap(interaction as any, `Created co-op lobby for ${zoneId}!`);
+      return;
+    }
+
+  } catch (err: any) {
+    console.error('Error handling world map interaction:', err);
+    await interaction.followUp({ content: `❌ Error: ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
   }
 }

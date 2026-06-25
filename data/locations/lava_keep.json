@@ -1,39 +1,69 @@
 {
   "id": "lava_keep",
   "name": "Lava Keep",
-  "description": "A dark volcanic keep constructed over active magma streams. Demonic and elemental forces guard the fiery chambers within.",
-  "minLevel": 14,
-  "maxLevel": 16,
+  "description": "A ruined basalt fortress surrounded by lava moats, serving as the stronghold of the Fire Monarch.",
+  "minLevel": 10,
+  "maxLevel": 15,
   "explorationCooldown": 180,
-  "region": "The Infernal Peaks",
+  "region": "Ashen Frontier",
+  "area": "Ruined Citadel",
+  "type": "dungeon",
+  "visualTheme": "Imposing obsidian fortress arches half-melted by magma flows, decorated with spiked battlements.",
+  "history": {
+    "createdWhy": "Constructed to guard the northern boundary of the ancient frontier.",
+    "builtWho": "The Dark Elves of the Obsidian Mountains.",
+    "majorEvents": "Captured by the Fire Monarch during the Great Eruption.",
+    "whyExists": "Remains as a bastion of elemental fire energy.",
+    "currentConflicts": "The fire monsters are planning an invasion of the lower valleys."
+  },
+  "ecosystem": {
+    "creatures": [
+      "fire_monarch",
+      "lava_warrior",
+      "lava_hound",
+      "blaze_weaver"
+    ],
+    "resources": ["mat_obsidian_chunk", "mat_gold_ore"],
+    "weather": "Extreme heat wave",
+    "hazards": ["Melting Bridges"]
+  },
+  "social": {
+    "npcs": [],
+    "factions": ["Lava Legion"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_14_keep_siege"],
+    "secrets": []
+  },
+  "connections": ["volcanic_wastes"],
   "isDungeon": true,
   "enemies": [
+    "fire_monarch",
+    "lava_warrior",
     "lava_hound",
-    "ash_wraith",
-    "obsidian_scorpion",
-    "fire_elemental",
-    "infernal_titan"
+    "blaze_weaver"
   ],
   "encounters": [
     {
       "type": "normal_mob",
-      "weight": 30
+      "weight": 55
     },
     {
       "type": "empty",
-      "weight": 10
-    },
-    {
-      "type": "treasure",
-      "weight": 35
-    },
-    {
-      "type": "rare_mob",
       "weight": 15
     },
     {
-      "type": "boss",
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
       "weight": 10
+    },
+    {
+      "type": "boss",
+      "weight": 5
     }
   ]
 }

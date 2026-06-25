@@ -5,8 +5,42 @@
   "minLevel": 1,
   "maxLevel": 100,
   "explorationCooldown": 0,
-  "region": "The Whispering Wilds",
-  "isDungeon": false,
-  "enemies": [],
-  "encounters": []
+  "region": "Kingdom of Eldoria",
+  "area": "Silverbrook Village",
+  "type": "settlement",
+  "visualTheme": "A warm, bustling rustic tavern with timber beams, a glowing stone fireplace, and comfortable beds smelling of lavender.",
+  "history": {
+    "createdWhy": "Built as a resting station along the old trade road between the capital and the forest colonies.",
+    "builtWho": "Founded by Silas Senior, a retired vanguard soldier, and now run by his son Silas.",
+    "majorEvents": "Served as a refuge for villagers during the Goblin Skirmishes.",
+    "whyExists": "Remains the only safe haven for travellers entering the Whispering Wilds.",
+    "currentConflicts": "Targeted by local bandits looking to pilfer imports from the trade routes."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Warm and cozy indoors, light rain outside",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "silas",
+        "name": "Innkeeper Silas",
+        "role": "Tavern Keeper",
+        "dialogue": [
+          "Welcome back, adventurer! Need a soft bed?",
+          "My father fought in the vanguard, but I prefer the peace of a warm stew.",
+          "Watch the roads to the east. Bandits are getting bolder."
+        ]
+      }
+    ],
+    "factions": ["Silverbrook Citizens"],
+    "travelers": ["Merchant Joren", "Guard Captain Vaelen"]
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["verdant_meadows"]
 }

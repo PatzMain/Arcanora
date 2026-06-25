@@ -203,6 +203,17 @@ export const explorationSessions = pgTable('exploration_sessions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+
+// ─── PLAYER_WORLD_DISCOVERIES ───
+export const playerWorldDiscoveries = pgTable('player_world_discoveries', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id, { onDelete: 'cascade' }).notNull(),
+  locationId: varchar('location_id', { length: 32 }).notNull(),
+  discoveredAt: timestamp('discovered_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  playerLocIdx: uniqueIndex('player_world_discoveries_idx').on(table.playerId, table.locationId),
+}));
+
 // ═══════════════════════════════════════════════════════════════
 // ─── RELATIONS ───
 // ═══════════════════════════════════════════════════════════════
@@ -235,6 +246,14 @@ export const playersRelations = relations(players, ({ one, many }) => ({
   explorationSession: one(explorationSessions, {
     fields: [players.id],
     references: [explorationSessions.playerId],
+  }),
+  worldDiscoveries: many(playerWorldDiscoveries),
+}));
+
+export const playerWorldDiscoveriesRelations = relations(playerWorldDiscoveries, ({ one }) => ({
+  player: one(players, {
+    fields: [playerWorldDiscoveries.playerId],
+    references: [players.id],
   }),
 }));
 

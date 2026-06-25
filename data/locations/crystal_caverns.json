@@ -1,40 +1,87 @@
 {
   "id": "crystal_caverns",
   "name": "Glittering Depths",
-  "description": "A breathtaking underground labyrinth illuminated by clusters of glowing, resonant crystals. Watch your step, as lethal beasts hunt in the prismatic reflections.",
+  "description": "A subterranean cavern illuminated by massive veins of raw, pulsing mana crystals.",
   "minLevel": 6,
   "maxLevel": 10,
   "explorationCooldown": 120,
-  "region": "The Subterranean Core",
-  "isDungeon": false,
+  "region": "Kingdom of Eldoria",
+  "area": "Moonlit Caverns",
+  "type": "combat",
+  "visualTheme": "Glowing blue and pink cavern halls where crystalline stalactites chime softly from cave wind.",
+  "history": {
+    "createdWhy": "Formed by geothermal pressure and concentrated environmental mana pools.",
+    "builtWho": "Explored by early miners who fled when elemental creatures awakened.",
+    "majorEvents": "The Great Collapse trapped several mining crews, now whispered to be ghosts.",
+    "whyExists": "Source of raw crystals used to power the Kingdom's defenses.",
+    "currentConflicts": "The local cavern fauna has mutated from feeding on raw magic."
+  },
+  "ecosystem": {
+    "creatures": [
+      "crystal_bat",
+      "subterranean_crawler",
+      "crystal_golem",
+      "gem_serpent",
+      "crystal_colossus"
+    ],
+    "resources": ["mat_iron_ore", "mat_crystal_shard", "mat_silver_ore"],
+    "weather": "Chilly cave dampness with hum of magic",
+    "hazards": ["Falling Crystals"]
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "grim",
+        "name": "Prospector Grim",
+        "role": "Cave Surveyor",
+        "dialogue": [
+          "A beauty, ain't it? Just don't tap the red ones too hard.",
+          "Raw mana crystals fetch a nice coin, but they attract nasty beasts.",
+          "Mind the chasms. Some holes don't have a bottom."
+        ]
+      }
+    ],
+    "factions": ["Eldorian Mining Guild"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_06_cavern_entry"],
+    "secrets": [
+      {
+        "id": "secret_vault",
+        "name": "Hidden Geode",
+        "description": "A pocket geode of pure, unstabilized magic crystals."
+      }
+    ]
+  },
+  "connections": ["shadow_forest", "ancient_mine"],
   "enemies": [
+    "crystal_bat",
+    "subterranean_crawler",
     "crystal_golem",
     "gem_serpent",
-    "cave_troll",
-    "glowbat_swarm",
-    "prismatic_drake",
     "crystal_colossus"
   ],
   "encounters": [
     {
       "type": "normal_mob",
-      "weight": 45
+      "weight": 50
     },
     {
       "type": "empty",
-      "weight": 15
-    },
-    {
-      "type": "treasure",
       "weight": 20
     },
     {
-      "type": "rare_mob",
+      "type": "treasure",
       "weight": 15
     },
     {
+      "type": "rare_mob",
+      "weight": 12
+    },
+    {
       "type": "boss",
-      "weight": 5
+      "weight": 3
     }
   ]
 }

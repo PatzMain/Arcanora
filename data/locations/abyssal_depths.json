@@ -1,40 +1,85 @@
 {
   "id": "abyssal_depths",
-  "name": "Abyssal Trench",
-  "description": "A silent, freezing ocean trench plunged into perpetual darkness. Unspeakable gargantuan horrors and lost relics of forgotten ages lie buried in its crushing depths.",
+  "name": "Abyssal Depths",
+  "description": "The deepest, darkest trench in the ocean floor, where sunlight never reaches and alien leviathans roam.",
   "minLevel": 15,
   "maxLevel": 20,
   "explorationCooldown": 180,
-  "region": "The Sunken Abysses",
-  "isDungeon": false,
+  "region": "Ashen Frontier",
+  "area": "Smuggler's Crossing",
+  "type": "combat",
+  "visualTheme": "Sunless deep-sea trenches lit only by the bioluminescent glow of floating jellyfish and deep hydrothermal vents.",
+  "history": {
+    "createdWhy": "Formed by a tectonic rift that sank half of the ancient southern continent.",
+    "builtWho": "Uninhabited by humans, but deep-sea mermen built kelp shrines here.",
+    "majorEvents": "The ancient flagship of the Smuggler King was pulled down by the Abyssal Kraken.",
+    "whyExists": "Hosts the rarest void essence deposits and deep-sea treasures.",
+    "currentConflicts": "The awakening of the Kraken is causing massive ocean whirlpools that destroy coastal trade."
+  },
+  "ecosystem": {
+    "creatures": [
+      "abyssal_eel",
+      "anglerfish_stalker",
+      "trench_lurker",
+      "abyssal_kraken"
+    ],
+    "resources": ["mat_void_essence", "mat_spider_silk"],
+    "weather": "High crushing water pressure and total darkness",
+    "hazards": ["Freezing Whirlpools"]
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "nautilus",
+        "name": "Captain Nautilus",
+        "role": "Submarine Explorer",
+        "dialogue": [
+          "Check your air tanks, traveler. Down here, pressure is the real killer.",
+          "They say a ship of pure gold lies at the bottom of the trench.",
+          "The Kraken isn't just an animal. It's an ancient curse."
+        ]
+      }
+    ],
+    "factions": ["Deep-Sea Cartographers"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_15_ocean_descent"],
+    "secrets": [
+      {
+        "id": "secret_wreck",
+        "name": "Sunken Galleon",
+        "description": "The rotting remains of a smuggler vessel loaded with antique chests."
+      }
+    ]
+  },
+  "connections": ["volcanic_wastes", "sunken_temple"],
   "enemies": [
-    "void_walker",
-    "deep_lurker",
-    "abyssal_kraken",
-    "soul_eater",
-    "eldritch_horror",
-    "the_nameless_one"
+    "abyssal_eel",
+    "anglerfish_stalker",
+    "trench_lurker",
+    "abyssal_kraken"
   ],
   "encounters": [
     {
       "type": "normal_mob",
-      "weight": 35
+      "weight": 55
     },
     {
       "type": "empty",
-      "weight": 15
-    },
-    {
-      "type": "treasure",
-      "weight": 22
-    },
-    {
-      "type": "rare_mob",
       "weight": 20
     },
     {
-      "type": "boss",
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
       "weight": 8
+    },
+    {
+      "type": "boss",
+      "weight": 2
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
 import { findOrCreatePlayer, getPlayerByDiscordId } from '../../database/queries/player.js';
 import { addItem, equipItem } from '../../database/queries/inventory.js';
 import { startQuest } from '../../database/queries/quest.js';
+import { discoverLocation } from '../../database/queries/worldQueries.js';
 import { db } from '../../database/client.js';
 import { players, playerSkills } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
@@ -158,6 +159,10 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
 
     // 1. Initialize player profile in a transaction/helper
     const player = await findOrCreatePlayer(discordId, username);
+
+    // Discover starting locations
+    await discoverLocation(player.id, 'cozy_tavern');
+    await discoverLocation(player.id, 'verdant_meadows');
 
     // 2. Set chosen class
     await db

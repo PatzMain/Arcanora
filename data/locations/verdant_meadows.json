@@ -5,8 +5,56 @@
   "minLevel": 1,
   "maxLevel": 3,
   "explorationCooldown": 60,
-  "region": "The Whispering Wilds",
-  "isDungeon": false,
+  "region": "Kingdom of Eldoria",
+  "area": "Whispering Forest",
+  "type": "settlement",
+  "visualTheme": "Sun-drenched wooden stockade perched on a grassy ridge, overlooking rolling pastures of wild clover.",
+  "history": {
+    "createdWhy": "Established as a logging colony and scouting outpost to monitor forest movements.",
+    "builtWho": "Constructed by Eldorian royal engineers during the expansion era.",
+    "majorEvents": "Survived three seasonal goblin siege attempts, defending the eastern frontier.",
+    "whyExists": "Acts as a vital supplier of timber and herbs to the inner kingdom.",
+    "currentConflicts": "The nearby goblin clans have cut off trade caravans to the capital."
+  },
+  "ecosystem": {
+    "creatures": [
+      "forest_sprite",
+      "wild_boar",
+      "thornback_beetle",
+      "rabid_wolf",
+      "mushroom_guardian"
+    ],
+    "resources": ["mat_wood", "mat_herbs"],
+    "weather": "Bright sunshine with a gentle breeze",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "vaelen",
+        "name": "Guard Captain Vaelen",
+        "role": "Outpost Commander",
+        "dialogue": [
+          "Stay vigilant. Goblins are raiding further from the woods.",
+          "If you are going into the forest, make sure you are armed.",
+          "The King's troops are delayed. We are on our own."
+        ]
+      }
+    ],
+    "factions": ["Eldorian Vanguard"],
+    "travelers": ["Woodcutter Ralph"]
+  },
+  "gameplay": {
+    "quests": ["story_01_begin", "story_02_meadows_clear"],
+    "secrets": [
+      {
+        "id": "secret_cache",
+        "name": "Hidden Stockpile",
+        "description": "A cache of forgotten supply crates hidden behind the watchtower."
+      }
+    ]
+  },
+  "connections": ["cozy_tavern", "shadow_forest"],
   "enemies": [
     "forest_sprite",
     "wild_boar",

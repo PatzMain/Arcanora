@@ -1,39 +1,69 @@
 {
   "id": "goblin_sanctuary",
-  "name": "Goblin Sanctuary",
-  "description": "A hidden underground sanctuary ruled by a cunning goblin chieftain. Rich in lost treasures, but heavily guarded by territorial defenders.",
-  "minLevel": 5,
-  "maxLevel": 7,
+  "name": "Fallen Watchtower",
+  "description": "An abandoned stone watchtower once used by Eldorian scouts, now occupied by the Red Sun goblin tribe.",
+  "minLevel": 3,
+  "maxLevel": 6,
   "explorationCooldown": 120,
-  "region": "The Whispering Wilds",
+  "region": "Kingdom of Eldoria",
+  "area": "Fallen Watchtower",
+  "type": "dungeon",
+  "visualTheme": "Crumbling circular stone tower heavily fortified with crude wooden spikes and bone decorations.",
+  "history": {
+    "createdWhy": "Built during the Great Border War to safeguard the valley below.",
+    "builtWho": "Scouts of the Eldorian Royal Guard.",
+    "majorEvents": "Fell to the Red Sun tribe due to a surprise night attack.",
+    "whyExists": "Serves as the main base of operations for goblin raids in the Whispering Wilds.",
+    "currentConflicts": "The goblins are manufacturing weapons using black-market iron."
+  },
+  "ecosystem": {
+    "creatures": [
+      "goblin_scout",
+      "goblin_warrior",
+      "goblin_shaman",
+      "goblin_chieftain"
+    ],
+    "resources": ["mat_copper_ore", "mat_leather"],
+    "weather": "Overcast and windy",
+    "hazards": ["Tripwire Trap"]
+  },
+  "social": {
+    "npcs": [],
+    "factions": ["Red Sun Tribe"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_04_watchtower_siege"],
+    "secrets": []
+  },
+  "connections": ["shadow_forest"],
   "isDungeon": true,
   "enemies": [
-    "forest_sprite",
-    "wild_boar",
-    "rabid_wolf",
-    "mushroom_guardian",
-    "shadow_stalker"
+    "goblin_scout",
+    "goblin_warrior",
+    "goblin_shaman",
+    "goblin_chieftain"
   ],
   "encounters": [
     {
       "type": "normal_mob",
-      "weight": 30
+      "weight": 55
     },
     {
       "type": "empty",
-      "weight": 10
-    },
-    {
-      "type": "treasure",
-      "weight": 35
-    },
-    {
-      "type": "rare_mob",
       "weight": 15
     },
     {
-      "type": "boss",
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
       "weight": 10
+    },
+    {
+      "type": "boss",
+      "weight": 5
     }
   ]
 }

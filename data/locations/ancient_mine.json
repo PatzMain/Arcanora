@@ -1,11 +1,42 @@
 {
   "id": "ancient_mine",
-  "name": "Ancient Mine",
+  "name": "Forgotten Mines",
   "description": "An abandoned mine shaft where glittering crystals hide dark shadows. Highly volatile elemental creatures dwell in its deepest reaches.",
   "minLevel": 9,
   "maxLevel": 11,
   "explorationCooldown": 150,
-  "region": "The Subterranean Core",
+  "region": "Ashen Frontier",
+  "area": "Forgotten Mines",
+  "type": "dungeon",
+  "visualTheme": "Decaying wooden support beams and rusted mine-cart tracks descending into pitching black mine shafts.",
+  "history": {
+    "createdWhy": "Dug by the Iron Clan dwarfs to extract gold and silver ore.",
+    "builtWho": "The Dwarf Kings of the Black Mountains.",
+    "majorEvents": "Abandoned overnight when miners broke into a nest of subterranean elemental serpents.",
+    "whyExists": "Now serves as a breeding ground for mineral-fed monsters.",
+    "currentConflicts": "Bandits are using the upper levels to store stolen military shipments."
+  },
+  "ecosystem": {
+    "creatures": [
+      "crystal_golem",
+      "gem_serpent",
+      "cave_troll",
+      "crystal_colossus"
+    ],
+    "resources": ["mat_iron_ore", "mat_silver_ore", "mat_gold_ore", "mat_crystal_shard"],
+    "weather": "Dry and dust-choked air",
+    "hazards": ["Unstable Shaft Collapse"]
+  },
+  "social": {
+    "npcs": [],
+    "factions": ["Iron Clan Dwarfs"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_09_mine_exploration"],
+    "secrets": []
+  },
+  "connections": ["crystal_caverns", "volcanic_wastes"],
   "isDungeon": true,
   "enemies": [
     "crystal_golem",

@@ -1,40 +1,69 @@
 {
   "id": "sunken_temple",
   "name": "Sunken Temple",
-  "description": "An ancient underwater structure submerged deep within the Abyssal Trench, preserving powerful relics of a bygone era, guarded by marine terrors.",
-  "minLevel": 18,
+  "description": "A ruined temple of a forgotten civilization, buried deep under the ocean waves.",
+  "minLevel": 15,
   "maxLevel": 20,
-  "explorationCooldown": 240,
-  "region": "The Sunken Abysses",
+  "explorationCooldown": 180,
+  "region": "Ashen Frontier",
+  "area": "Smuggler's Crossing",
+  "type": "dungeon",
+  "visualTheme": "Coral-encrusted marble pillars and submerged ceremonial halls where glowing sea anemones light the path.",
+  "history": {
+    "createdWhy": "Dedicated to the ancient sea god Neptune by the precursor civilization.",
+    "builtWho": "The Precursors (the Nameless builders).",
+    "majorEvents": "Sank into the ocean when the precursors' mainland collapsed during the Cataclysm.",
+    "whyExists": "Houses the primordial water crystal that keeps the oceans in balance.",
+    "currentConflicts": "Corrupted deep-sea cultists are trying to shatter the water crystal to drown the surface world."
+  },
+  "ecosystem": {
+    "creatures": [
+      "temple_guardian",
+      "submerged_specter",
+      "deep_cultist",
+      "abyssal_kraken"
+    ],
+    "resources": ["mat_void_essence", "mat_crystal_shard"],
+    "weather": "Submerged cold waters with ancient echoes",
+    "hazards": ["Suffocation / Water currents"]
+  },
+  "social": {
+    "npcs": [],
+    "factions": ["Precursor Sentinels"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_19_nameless_defeat"],
+    "secrets": []
+  },
+  "connections": ["abyssal_depths"],
   "isDungeon": true,
   "enemies": [
-    "void_walker",
-    "deep_lurker",
-    "abyssal_kraken",
-    "soul_eater",
-    "eldritch_horror",
-    "the_nameless_one"
+    "temple_guardian",
+    "submerged_specter",
+    "deep_cultist",
+    "abyssal_kraken"
   ],
   "encounters": [
     {
       "type": "normal_mob",
-      "weight": 30
+      "weight": 55
     },
     {
       "type": "empty",
-      "weight": 10
-    },
-    {
-      "type": "treasure",
-      "weight": 35
-    },
-    {
-      "type": "rare_mob",
       "weight": 15
     },
     {
-      "type": "boss",
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
       "weight": 10
+    },
+    {
+      "type": "boss",
+      "weight": 5
     }
   ]
 }

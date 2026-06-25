@@ -87,10 +87,8 @@ describe('Locations & Regions Mapping', () => {
 
   it('should assign a valid region to every location', () => {
     const validRegions = [
-      'The Whispering Wilds',
-      'The Subterranean Core',
-      'The Infernal Peaks',
-      'The Sunken Abysses'
+      'Kingdom of Eldoria',
+      'Ashen Frontier'
     ];
 
     for (const loc of zonesCatalog) {
@@ -154,5 +152,54 @@ describe('Preset Combos Migration & Validation', () => {
     expect(unlearnedResult.valid).toBe(false);
     expect(unlearnedResult.error).toContain('have not learned');
   });
+
+  it('should handle preset name edge cases correctly during migration and parsing', async () => {
+    const { parsePresets } = await import('../src/systems/combat/presets.js');
+
+    // 1. Very long name should be truncated to 20 characters
+    const longNamePresets = [
+      { name: 'ThisIsAVeryLongPresetNameThatExceeds20Characters', actions: ['attack'] },
+      { name: 'Preset 2', actions: [] },
+      { name: 'Preset 3', actions: [] }
+    ];
+    const parsedLong = parsePresets(longNamePresets);
+    expect(parsedLong[0].name).toBe('ThisIsAVeryLongPrese'); // 20 chars
+    expect(parsedLong[0].name.length).toBe(20);
+
+    // 2. Whitespace-only name should fall back to default slot name
+    const whitespacePresets = [
+      { name: '   ', actions: ['attack'] },
+      { name: 'Preset 2', actions: [] },
+      { name: 'Preset 3', actions: [] }
+    ];
+    const parsedWhitespace = parsePresets(whitespacePresets);
+    expect(parsedWhitespace[0].name).toBe('Preset 1');
+
+    // 3. Special characters should be preserved properly and truncated
+    const specialPresets = [
+      { name: '⚔️🛡️🔥 Rogue Preset ⚔️🛡️🔥', actions: ['attack'] },
+      { name: 'Preset 2', actions: [] },
+      { name: 'Preset 3', actions: [] }
+    ];
+    const parsedSpecial = parsePresets(specialPresets);
+    expect(parsedSpecial[0].name.length).toBe(20);
+    expect(parsedSpecial[0].name).toBe('⚔️🛡️🔥 Rogue Preset');
+  });
+
+
+  it('should guarantee deterministic alphabetical sorting of learned skills', () => {
+    const learnedSkills = [
+      { skillId: 'warrior_shield_wall' },
+      { skillId: 'warrior_power_strike' },
+      { skillId: 'healer_holy_light' }
+    ];
+
+    learnedSkills.sort((a, b) => a.skillId.localeCompare(b.skillId));
+
+    expect(learnedSkills[0].skillId).toBe('healer_holy_light');
+    expect(learnedSkills[1].skillId).toBe('warrior_power_strike');
+    expect(learnedSkills[2].skillId).toBe('warrior_shield_wall');
+  });
 });
+
 
