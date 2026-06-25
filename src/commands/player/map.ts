@@ -16,7 +16,7 @@ import { eq, and } from 'drizzle-orm';
 import { getPlayerWithClampedStats, getAndUpdatePlayerStamina, deductPlayerStamina } from '../../database/queries/player.js';
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
-import { zonesCatalog, itemsCatalog } from '../../utils/catalog.js';
+import { zonesCatalog, itemsCatalog, enemiesCatalog } from '../../utils/catalog.js';
 import { errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
 import { generateDungeonMap, updateFogOfWar } from '../../systems/exploration/dungeonGenerator.js';
