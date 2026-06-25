@@ -11,7 +11,7 @@ import {
   type StringSelectMenuInteraction
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { players, combatSessions, inventory } from '../../database/schema.js';
+import { players, combatSessions, inventory, explorationSessions } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getPlayerWithClampedStats, getAndUpdatePlayerStamina, deductPlayerStamina } from '../../database/queries/player.js';
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
@@ -85,7 +85,8 @@ function drawDungeonMapVisual(mapState: any, currentNodeId: string, previousNode
 
 export async function runMap(
   interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
-  travelMsg?: string
+  travelMsg?: string,
+  overridePlayerId?: string
 ) {
   try {
     if (!interaction.deferred && !interaction.replied) {
@@ -96,7 +97,7 @@ export async function runMap(
       }
     }
 
-    const discordId = interaction.user.id;
+    const discordId = overridePlayerId || interaction.user.id;
     // Load player and ensure stats are clamped, update stamina
     let player = await getPlayerWithClampedStats(discordId);
     if (!player) {
@@ -135,45 +136,33 @@ export async function runMap(
         const components: any[] = [];
         const row = new ActionRowBuilder<ButtonBuilder>();
 
-        const isLeader = player.id === session.playerId;
-        const isMember = party.members.some((m: any) => m.playerId === player.id);
+        const leaderDiscordId = (session as any).player.discordId;
 
-        if (!isMember && party.members.length < 4) {
-          row.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`dungeon_lobby_join_${session.id}_${player.discordId}`)
-              .setLabel('Join Party')
-              .setStyle(ButtonStyle.Primary)
-              .setEmoji('👥')
-          );
-        } else if (isMember && !isLeader) {
-          row.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`dungeon_lobby_leave_${session.id}_${player.discordId}`)
-              .setLabel('Leave Party')
-              .setStyle(ButtonStyle.Danger)
-              .setEmoji('🚪')
-          );
-        }
+        row.addComponents(
+          new ButtonBuilder()
+            .setCustomId(`dungeon_lobby_join_${session.id}_${leaderDiscordId}`)
+            .setLabel('Join Party')
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('👥')
+            .setDisabled(party.members.length >= 4),
+          new ButtonBuilder()
+            .setCustomId(`dungeon_lobby_leave_${session.id}_${leaderDiscordId}`)
+            .setLabel('Leave Party')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji('🚪'),
+          new ButtonBuilder()
+            .setCustomId(`dungeon_lobby_start_${session.id}_${leaderDiscordId}`)
+            .setLabel('Start Dungeon')
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('🚀'),
+          new ButtonBuilder()
+            .setCustomId(`dungeon_lobby_cancel_${session.id}_${leaderDiscordId}`)
+            .setLabel('Cancel Lobby')
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji('❌')
+        );
 
-        if (isLeader) {
-          row.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`dungeon_lobby_start_${session.id}_${player.discordId}`)
-              .setLabel('Start Dungeon')
-              .setStyle(ButtonStyle.Success)
-              .setEmoji('🚀'),
-            new ButtonBuilder()
-              .setCustomId(`dungeon_lobby_cancel_${session.id}_${player.discordId}`)
-              .setLabel('Cancel Lobby')
-              .setStyle(ButtonStyle.Danger)
-              .setEmoji('❌')
-          );
-        }
-
-        if (row.components.length > 0) {
-          components.push(row);
-        }
+        components.push(row);
 
         await interaction.editReply({
           embeds: [embed],
@@ -624,34 +613,14 @@ export async function handleDungeonInteraction(
   interaction: ButtonInteraction | StringSelectMenuInteraction
 ) {
   const customId = interaction.customId;
-  const parts = customId.split('_'); // dungeon_{action}_{extra}_{userId}
-  
-  // Format: dungeon_move_{nodeId}_{userId}
-  // Format: dungeon_action_{nodeType}_{nodeAction}_{userId}
-  // Format: dungeon_use_potion_{userId}
-  // Format: dungeon_potion_select_{userId}
-  // Format: dungeon_abandon_{userId}
-  
+  const parts = customId.split('_');
+  const userId = parts[parts.length - 1];
+
   const action = parts[1];
-  let userId = '';
+  const isLobbyJoin = customId.startsWith('dungeon_lobby_join_');
+  const isLobbyLeave = customId.startsWith('dungeon_lobby_leave_');
 
-  if (action === 'move') {
-    userId = parts[3];
-  } else if (action === 'action') {
-    userId = parts[4];
-  } else if (action === 'use' || action === 'abandon' || action === 'potion') {
-    userId = parts[3];
-  } else if (customId.startsWith('map_enter_dungeon_')) {
-    const dungeonParts = customId.split('_'); // map_enter_dungeon_{zoneId}_{userId}
-    userId = dungeonParts[4];
-  } else if (action === 'lobby') {
-    userId = parts[4];
-  } else if (customId.startsWith('dungeon_lobby_create_select_')) {
-    const lobbyParts = customId.split('_'); // dungeon_lobby_create_select_{userId}
-    userId = lobbyParts[4];
-  }
-
-  if (interaction.user.id !== userId) {
+  if (!isLobbyJoin && !isLobbyLeave && interaction.user.id !== userId) {
     await interaction.reply({ content: '❌ This dungeon session is not yours!', flags: [MessageFlags.Ephemeral] });
     return;
   }
@@ -691,7 +660,8 @@ export async function handleDungeonInteraction(
       const sessionId = parts[3];
 
       const lobbySession = await db.query.explorationSessions.findFirst({
-        where: eq(explorationSessions.id, sessionId)
+        where: eq(explorationSessions.id, sessionId),
+        with: { player: true }
       });
 
       if (!lobbySession) {
@@ -719,11 +689,22 @@ export async function handleDungeonInteraction(
           .where(eq(explorationSessions.id, sessionId));
 
         await interaction.reply({ content: '✅ You joined the party!', flags: [MessageFlags.Ephemeral] });
-        await runMap(interaction as any);
+        await runMap(interaction as any, undefined, lobbySession.player.discordId);
         return;
       }
 
       if (lobbyAction === 'leave') {
+        const isMember = party.members.some((m: any) => m.playerId === player.id);
+        if (!isMember) {
+          await interaction.reply({ content: '❌ You are not in this party.', flags: [MessageFlags.Ephemeral] });
+          return;
+        }
+
+        if (lobbySession.playerId === player.id) {
+          await interaction.reply({ content: '❌ As leader, you must cancel the lobby instead of leaving. Use "Cancel Lobby".', flags: [MessageFlags.Ephemeral] });
+          return;
+        }
+
         party.members = party.members.filter((m: any) => m.playerId !== player.id);
         await db
           .update(explorationSessions)
@@ -731,7 +712,7 @@ export async function handleDungeonInteraction(
           .where(eq(explorationSessions.id, sessionId));
 
         await interaction.reply({ content: '✅ You left the party.', flags: [MessageFlags.Ephemeral] });
-        await runMap(interaction as any);
+        await runMap(interaction as any, undefined, lobbySession.player.discordId);
         return;
       }
 
@@ -796,8 +777,7 @@ export async function handleDungeonInteraction(
     }
 
     if (customId.startsWith('map_enter_dungeon_')) {
-      const dungeonParts = customId.split('_');
-      const zoneId = dungeonParts[3];
+      const zoneId = parts.slice(3, -1).join('_');
 
       // Check level requirement
       const zone = zonesCatalog.find(z => z.id === zoneId);
@@ -838,7 +818,7 @@ export async function handleDungeonInteraction(
     }
 
     if (action === 'move') {
-      const targetNodeId = parts[2];
+      const targetNodeId = parts.slice(2, -1).join('_');
 
       // Deduct stamina
       const deducted = await deductPlayerStamina(player.id, 10);
@@ -1057,10 +1037,10 @@ export async function handleDungeonInteraction(
 
       let result: any;
       if (nodeAction === 'choice') {
-        const clickedIdx = parseInt(parts[3]);
+        const clickedIdx = parseInt(parts[4]);
         result = await handler.onAction('submit', context, { answerIndex: clickedIdx });
       } else if (nodeAction === 'choose') {
-        const outcomeId = parts[3];
+        const outcomeId = parts.slice(4, -1).join('_');
         result = await handler.onAction('choose', context, { outcomeId });
       } else {
         result = await handler.onAction(nodeAction, context);
