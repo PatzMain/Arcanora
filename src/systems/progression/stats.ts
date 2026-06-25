@@ -19,7 +19,7 @@ export type StatBlock = Record<StatKey, number>;
 /**
  * Fully computed character stats after all modifiers are applied.
  */
-export interface ComputedStats extends StatBlock {}
+export type ComputedStats = StatBlock;
 
 /**
  * Helper to add stats from a source block into a target block.

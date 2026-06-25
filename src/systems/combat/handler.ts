@@ -10,7 +10,7 @@ import { db } from '../../database/client.js';
 import { combatSessions, players, playerSkills, inventory } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getEnemyById, scaleEnemyStats } from './enemy.js';
-import { processPlayerTurn, processEnemyTurn, type CombatStats, type CombatAction, getStatModifier, calculateDamage, calculateDodgeChance } from './engine.js';
+import { processPlayerTurn, processEnemyTurn, type CombatStats, type CombatAction, getStatModifier } from './engine.js';
 import { executeSkill, getSkillById, SKILLS } from './skills.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { resolveLoot, getItemData } from '../../systems/exploration/loot.js';
@@ -23,8 +23,7 @@ import { advanceQuestProgress } from '../progression/questSystem.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { getNavButtons } from '../../utils/navigation.js';
 import { itemBehaviorRegistry } from '../items/itemBehavior.js';
-import { parsePresets, validateCombo, buildPresetButtons } from './presets.js';
-import { rollChance } from '../../utils/random.js';
+import { parsePresets, buildPresetButtons } from './presets.js';
 
 
 
@@ -114,7 +113,7 @@ export async function handleCombatInteraction(
         const slotNum = parseInt(interaction.customId.split('_')[2] || '1', 10);
         const presets = parsePresets(player.presets);
         const slot = presets[slotNum - 1];
-        if (!slot) {
+        if (!slot || !slot.actions || slot.actions.length === 0) {
           await interaction.followUp({ content: '❌ Preset slot is empty or invalid.', ephemeral: true });
           return;
         }
@@ -123,20 +122,34 @@ export async function handleCombatInteraction(
         const learnedSkillsDb = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
         const learnedSkillIds = learnedSkillsDb.map((s) => s.skillId);
 
-        // Validate combo
-        const validation = validateCombo(slot, state.playerMana, learnedSkillIds);
-        if (!validation.valid) {
-          await interaction.followUp({ content: `❌ Combo validation failed: ${validation.error}`, ephemeral: true });
-          return;
-        }
+        // Determine the action index based on the current round (1-indexed)
+        const actionIndex = (state.round - 1) % slot.actions.length;
+        const actionId = slot.actions[actionIndex] || 'attack';
 
-        // Loop and execute actions in sequence
-        state.combatLog.push(`⚡ You triggered preset combo: **${slot.name}**!`);
+        state.combatLog.push(`⚡ Preset **${slot.name}** (Step ${actionIndex + 1}/${slot.actions.length}):`);
 
-        for (const actionId of slot.actions) {
-          if (state.enemyHp <= 0 || state.playerHp <= 0) {
-            break; // Stop if either side dies mid-combo
+        if (actionId === 'attack') {
+          action = { type: 'attack' };
+        } else {
+          // Skill execution
+          const skillDef = getSkillById(actionId);
+          if (!skillDef) {
+            await interaction.followUp({ content: `❌ Skill definition for "${actionId}" not found.`, ephemeral: true });
+            return;
           }
+
+          if (!learnedSkillIds.includes(actionId)) {
+            await interaction.followUp({ content: `❌ You have not learned "${skillDef.name}".`, ephemeral: true });
+            return;
+          }
+
+          if (state.playerMana < skillDef.manaCost) {
+            await interaction.followUp({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}, Current: ${state.playerMana}`, ephemeral: true });
+            return;
+          }
+
+          // Deduct Mana
+          state.playerMana -= skillDef.manaCost;
 
           // Calculate effective stats for this action (layer active buffs dynamically)
           const atkMod = getStatModifier(state.playerBuffs, 'attack');
@@ -152,88 +165,59 @@ export async function handleCombatInteraction(
             critChance: Math.max(0, combatStats.critChance + critMod),
           };
 
-          if (actionId === 'attack') {
-            // Check if enemy dodges
-            const dodgeChance = calculateDodgeChance(currentStats.speed, scaledEnemyStats.speed);
-            if (rollChance(dodgeChance)) {
-              state.combatLog.push('💨 Your attack missed! The enemy dodged!');
-              continue;
-            }
+          const enemyCombatStats: CombatStats = {
+            hp: state.enemyHp,
+            maxHp: state.enemyMaxHp,
+            mana: 0,
+            maxMana: 0,
+            attack: scaledEnemyStats.attack,
+            defense: scaledEnemyStats.defense,
+            speed: scaledEnemyStats.speed,
+            critChance: 0,
+            critDmg: 150,
+            luck: 0,
+          };
 
-            const { damage, isCrit } = calculateDamage(
-              currentStats.attack,
-              scaledEnemyStats.defense,
-              currentStats.critChance,
-              currentStats.critDmg
-            );
+          // Execute skill effects
+          const result = executeSkill(skillDef, currentStats, enemyCombatStats);
 
-            state.enemyHp = Math.max(0, state.enemyHp - damage);
-            const logMsg = isCrit
-              ? `💥 **CRITICAL HIT!** You deal **${damage}** damage!`
-              : `⚔️ You hit for **${damage}** damage.`;
-            state.combatLog.push(logMsg);
+          // Apply skill damage / healing / buffs
+          if (skillDef.id === 'healer_purify') {
+            state.playerBuffs = state.playerBuffs.filter((b: any) => b.type !== 'debuff');
+          }
+
+          if (skillDef.id === 'mage_mana_surge') {
+            state.playerMana = Math.min(state.playerMaxMana, state.playerMana + result.healing);
           } else {
-            // It's a skill!
-            const skillDef = getSkillById(actionId);
-            if (!skillDef) continue;
+            state.playerHp = Math.min(state.playerMaxHp, state.playerHp + result.healing);
+          }
 
-            // Deduct Mana
-            state.playerMana -= skillDef.manaCost;
+          state.enemyHp = Math.max(0, state.enemyHp - result.damage);
 
-            const enemyCombatStats: CombatStats = {
-              hp: state.enemyHp,
-              maxHp: state.enemyMaxHp,
-              mana: 0,
-              maxMana: 0,
-              attack: scaledEnemyStats.attack,
-              defense: scaledEnemyStats.defense,
-              speed: scaledEnemyStats.speed,
-              critChance: 0,
-              critDmg: 150,
-              luck: 0,
-            };
-
-            // Execute skill effects
-            const result = executeSkill(skillDef, currentStats, enemyCombatStats);
-
-            // Apply skill damage / healing / buffs
-            if (skillDef.id === 'healer_purify') {
-              state.playerBuffs = state.playerBuffs.filter((b: any) => b.type !== 'debuff');
-            }
-
-            if (skillDef.id === 'mage_mana_surge') {
-              state.playerMana = Math.min(state.playerMaxMana, state.playerMana + result.healing);
-            } else {
-              state.playerHp = Math.min(state.playerMaxHp, state.playerHp + result.healing);
-            }
-
-            state.enemyHp = Math.max(0, state.enemyHp - result.damage);
-
-            // Add status effects
-            for (const eff of result.effects) {
-              if (eff.stat) {
-                const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
-                if (effectTarget === 'self') {
-                  state.playerBuffs.push(eff);
-                } else {
-                  state.enemyBuffs.push(eff);
-                }
+          // Add status effects
+          for (const eff of result.effects) {
+            if (eff.stat) {
+              const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
+              if (effectTarget === 'self') {
+                state.playerBuffs.push(eff);
               } else {
-                const effectType = skillDef.effects.find((e) => e.type === 'dot' || e.type === 'hot')?.type;
-                if (effectType === 'hot') {
-                  state.playerBuffs.push(eff);
-                } else {
-                  state.enemyBuffs.push(eff);
-                }
+                state.enemyBuffs.push(eff);
+              }
+            } else {
+              const effectType = skillDef.effects.find((e) => e.type === 'dot' || e.type === 'hot')?.type;
+              if (effectType === 'hot') {
+                state.playerBuffs.push(eff);
+              } else {
+                state.enemyBuffs.push(eff);
               }
             }
-
-            state.combatLog.push(result.description);
           }
-        }
 
-        // Set action type to skill so processPlayerTurn doesn't recalculate base attack/skills
-        action = { type: 'skill', skillId: slot.name };
+          state.combatLog.push(result.description);
+
+          // Set action type to skill so processPlayerTurn doesn't recalculate base attack/skills
+          action = { type: 'skill', skillId: skillDef.name };
+        }
       }
     } else if (interaction.isStringSelectMenu()) {
       if (interaction.customId === 'combat_use_skill') {

@@ -96,7 +96,7 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
   const isSettlement = currentLocation.type === 'settlement' || currentLocation.type === 'landmark';
   
   // Weights: combat, resource, puzzle, chest, discovery
-  let roll = Math.random() * 100;
+  const roll = Math.random() * 100;
   let type: ExploreResult['type'] = 'empty';
 
   if (isSettlement) {
@@ -118,7 +118,7 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
   // Double check if there are no connections to discover
   const discoveredLocs = await getPlayerDiscoveredLocations(playerId);
   const undiscoveredConnections = (currentLocation.connections || []).filter(
-    id => !discoveredLocs.includes(id)
+    (id: string) => !discoveredLocs.includes(id)
   );
 
   // If discovery rolled but no undiscovered connections exist, fallback to chest or resource

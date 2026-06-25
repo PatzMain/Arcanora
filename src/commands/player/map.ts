@@ -33,6 +33,7 @@ import {
   getPlayerDiscoveredLocations
 } from '../../database/queries/worldQueries.js';
 import { travelToNode, exploreNode } from '../../systems/exploration/worldExplorer.js';
+import { awardGold } from '../../economy/currency.js';
 
 export const data = new SlashCommandBuilder()
   .setName('map')
@@ -1205,7 +1206,7 @@ export async function handleWorldMapInteraction(
       const selectMenu = interaction as StringSelectMenuInteraction;
       const npcId = selectMenu.values[0]!;
       const currentLoc = zonesCatalog.find(z => z.id === player.currentZoneId)!;
-      const npc = currentLoc.social?.npcs?.find(n => n.id === npcId);
+      const npc = currentLoc.social?.npcs?.find((n: any) => n.id === npcId);
       
       if (npc && npc.dialogue.length > 0) {
         const line = npc.dialogue[Math.floor(Math.random() * npc.dialogue.length)]!;

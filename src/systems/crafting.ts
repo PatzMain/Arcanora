@@ -107,7 +107,7 @@ export function executeCraft(
 
   // Roll for quality — luck shifts probability toward higher tiers
   const luckBonus = luck / 100;
-  let perfectChance = 5 + 5 * luckBonus;
+  const perfectChance = 5 + 5 * luckBonus;
   let qualityChance = 25 + 10 * luckBonus;
   // Ensure we don't exceed 100 total
   if (perfectChance + qualityChance > 80) {

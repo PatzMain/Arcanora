@@ -4,7 +4,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  ComponentType,
   type ChatInputCommandInteraction,
   type ButtonInteraction
 } from 'discord.js';
@@ -18,11 +17,10 @@ import { computeStats } from '../../systems/progression/stats.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { resolveLoot } from '../../systems/exploration/loot.js';
 import { executeSkill, getSkillById, SKILLS } from '../../systems/combat/skills.js';
-import { calculateDamage, getStatModifier, calculateDodgeChance } from '../../systems/combat/engine.js';
+import { calculateDamage, getStatModifier } from '../../systems/combat/engine.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { bossInfoEmbed, bossSkirmishEmbed, bossVictoryEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
-import { parsePresets, validateCombo, buildPresetButtons } from '../../systems/combat/presets.js';
-import { rollChance } from '../../utils/random.js';
+import { parsePresets, buildPresetButtons } from '../../systems/combat/presets.js';
 
 export const data = new SlashCommandBuilder()
   .setName('boss')
@@ -185,6 +183,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         components: actionRows
       });
 
+      let round = 1;
       while (true) {
         try {
           const compInteraction = await response.awaitMessageComponent({
@@ -237,7 +236,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               const slotNum = parseInt(compInteraction.customId.split('_')[2] || '1', 10);
               const parsedPresets = parsePresets(freshPlayer.presets);
               const slot = parsedPresets[slotNum - 1];
-              if (!slot) {
+              if (!slot || !slot.actions || slot.actions.length === 0) {
                 await compInteraction.reply({ content: '❌ Preset slot is empty or invalid.', ephemeral: true });
                 continue;
               }
@@ -246,98 +245,68 @@ export async function execute(interaction: ChatInputCommandInteraction) {
               const learnedSkillsDb = await db.select().from(playerSkills).where(eq(playerSkills.playerId, freshPlayer.id));
               const learnedSkillIds = learnedSkillsDb.map((s) => s.skillId);
 
-              // Validate combo
-              const validation = validateCombo(slot, freshPlayer.manaCurrent, learnedSkillIds);
-              if (!validation.valid) {
-                await compInteraction.reply({ content: `❌ Combo validation failed: ${validation.error}`, ephemeral: true });
-                continue;
-              }
+              // Determine the action index based on the current round (1-indexed)
+              const actionIndex = (round - 1) % slot.actions.length;
+              const actionId = slot.actions[actionIndex] || 'attack';
 
-              // Loop and execute actions in sequence
-              const comboLogs: string[] = [];
-              const tempPlayerBuffs: any[] = [];
-              let totalDmg = 0;
-              let totalHeal = 0;
+              logMsg = `⚡ **Preset ${slot.name}** (Step ${actionIndex + 1}/${slot.actions.length}):\n`;
 
-              for (const actionId of slot.actions) {
-                // Check if boss or player is already dead
-                if (freshBoss.hpCurrent - totalDmg <= 0 || freshPlayer.hpCurrent + totalHeal <= 0) {
-                  break;
+              if (actionId === 'attack') {
+                const result = calculateDamage(playerStats.attack, enemyDef.stats.defense, playerStats.critChance, playerStats.critDmg);
+                playerDmg = result.damage;
+                logMsg += result.isCrit
+                  ? `💥 **CRITICAL HIT!** You dealt **${playerDmg}** damage!`
+                  : `⚔️ You hit for **${playerDmg}** damage.`;
+              } else {
+                // Skill!
+                const skillDef = getSkillById(actionId);
+                if (!skillDef) {
+                  await compInteraction.reply({ content: `❌ Skill definition for "${actionId}" not found.`, ephemeral: true });
+                  continue;
                 }
 
-                // Calculate effective stats for this action
-                const atkMod = getStatModifier(tempPlayerBuffs, 'attack');
-                const defMod = getStatModifier(tempPlayerBuffs, 'defense');
-                const spdMod = getStatModifier(tempPlayerBuffs, 'speed');
-                const critMod = getStatModifier(tempPlayerBuffs, 'critChance');
+                if (!learnedSkillIds.includes(actionId)) {
+                  await compInteraction.reply({ content: `❌ You have not learned "${skillDef.name}".`, ephemeral: true });
+                  continue;
+                }
 
-                const currentStats: import('../../systems/combat/engine.js').CombatStats = {
-                  hp: Math.max(0, freshPlayer.hpCurrent + totalHeal),
+                if (freshPlayer.manaCurrent < skillDef.manaCost) {
+                  await compInteraction.reply({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}, Current: ${freshPlayer.manaCurrent}`, ephemeral: true });
+                  continue;
+                }
+
+                manaCost = skillDef.manaCost;
+
+                const dummyEnemyStats = {
+                  hp: freshBoss.hpCurrent,
+                  maxHp: freshBoss.hpMax,
+                  mana: 0,
+                  maxMana: 0,
+                  attack: enemyDef.stats.attack,
+                  defense: enemyDef.stats.defense,
+                  speed: enemyDef.stats.speed,
+                  critChance: 5,
+                  critDmg: 150,
+                  luck: 0
+                };
+
+                const singleCastStats: import('../../systems/combat/engine.js').CombatStats = {
+                  hp: freshPlayer.hpCurrent,
                   maxHp: playerStats.hpMax,
-                  mana: Math.max(0, freshPlayer.manaCurrent - manaCost),
+                  mana: freshPlayer.manaCurrent,
                   maxMana: playerStats.manaMax,
-                  attack: Math.max(1, playerStats.attack + atkMod),
-                  defense: Math.max(1, playerStats.defense + defMod),
-                  speed: Math.max(0, playerStats.speed + spdMod),
-                  critChance: Math.max(0, playerStats.critChance + critMod),
+                  attack: playerStats.attack,
+                  defense: playerStats.defense,
+                  speed: playerStats.speed,
+                  critChance: playerStats.critChance,
                   critDmg: playerStats.critDmg,
                   luck: playerStats.luck,
                 };
-
-                if (actionId === 'attack') {
-                  const { damage, isCrit } = calculateDamage(
-                    currentStats.attack,
-                    enemyDef.stats.defense,
-                    currentStats.critChance,
-                    currentStats.critDmg
-                  );
-                  totalDmg += damage;
-                  comboLogs.push(isCrit
-                    ? `💥 **CRITICAL HIT!** You dealt **${damage}** damage!`
-                    : `⚔️ You hit for **${damage}** damage.`
-                  );
-                } else {
-                  // Skill!
-                  const skillDef = getSkillById(actionId);
-                  if (!skillDef) continue;
-
-                  // Deduct mana cost
-                  manaCost += skillDef.manaCost;
-
-                  const dummyEnemyStats = {
-                    hp: Math.max(0, freshBoss.hpCurrent - totalDmg),
-                    maxHp: freshBoss.hpMax,
-                    mana: 0,
-                    maxMana: 0,
-                    attack: enemyDef.stats.attack,
-                    defense: enemyDef.stats.defense,
-                    speed: enemyDef.stats.speed,
-                    critChance: 5,
-                    critDmg: 150,
-                    luck: 0
-                  };
-
-                  const skillResult = executeSkill(skillDef, currentStats, dummyEnemyStats);
-                  totalDmg += skillResult.damage;
-                  totalHeal += skillResult.healing;
-
-                  // Add buffs/debuffs
-                  for (const eff of skillResult.effects) {
-                    if (eff.stat) {
-                      const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
-                      if (effectTarget === 'self') {
-                        tempPlayerBuffs.push(eff);
-                      }
-                    }
-                  }
-
-                  comboLogs.push(`🌀 You cast **${skillDef.name}**! ${skillResult.description}`);
-                }
+                const skillResult = executeSkill(skillDef, singleCastStats, dummyEnemyStats);
+                playerDmg = skillResult.damage;
+                playerHeal = skillResult.healing;
+                logMsg += `🌀 You cast **${skillDef.name}**! ${skillResult.description}`;
               }
-
-              playerDmg = totalDmg;
-              playerHeal = totalHeal;
-              logMsg = `⚡ **Preset Combo: ${slot.name}**\n` + comboLogs.join('\n');
             }
           } else if (compInteraction.isStringSelectMenu()) {
             if (compInteraction.customId === 'boss_use_skill') {
@@ -578,6 +547,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embeds: [nextEmbed],
             components: actionRows
           });
+
+          round++;
 
         } catch (e) {
           // Skirmish Timed Out
