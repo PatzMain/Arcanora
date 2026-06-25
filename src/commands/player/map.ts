@@ -1129,7 +1129,7 @@ export async function handleWorldMapInteraction(
     if (!player) return;
 
     if (customId.startsWith('map_world_travel_')) {
-      const targetLocationId = parts[3]!; // map_world_travel_${targetLocationId}_${userId}
+      const targetLocationId = parts.slice(3, -1).join('_');
       await travelToNode(player.id, targetLocationId);
       const targetLoc = zonesCatalog.find(z => z.id === targetLocationId);
       await runMap(interaction as any, `You traveled to **${targetLoc?.name || targetLocationId}**.`);
@@ -1224,7 +1224,7 @@ export async function handleWorldMapInteraction(
     }
 
     if (customId.startsWith('map_world_coop_')) {
-      const zoneId = parts[3]!;
+      const zoneId = parts.slice(3, -1).join('_');
       await createExplorationSession({
         playerId: player.id,
         channelId: interaction.channelId || '',
