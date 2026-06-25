@@ -623,14 +623,16 @@ export function bossVictoryEmbed(
     );
 }
 
-/**
- * Error message embed with danger styling.
- */
-export function errorEmbed(title: string, description: string): EmbedBuilder {
+export function errorEmbed(title: string, description: string, errorObj?: any): EmbedBuilder {
+  let finalDesc = description;
+  if (errorObj) {
+    const errorMsg = errorObj.stack || errorObj.message || String(errorObj);
+    finalDesc += `\n\n**Copyable Error Details:**\n\`\`\`\n${errorMsg}\n\`\`\``;
+  }
   return baseEmbed()
     .setColor(COLORS.DANGER)
     .setTitle(`❌ ${title}`)
-    .setDescription(description);
+    .setDescription(finalDesc);
 }
 
 /**

@@ -1159,7 +1159,7 @@ export async function handleWorldMapInteraction(
         riddle.options.forEach((opt: string, idx: number) => {
           answerRow.addComponents(
             new ButtonBuilder()
-              .setCustomId(`map_world_puzzle_solve_${idx === riddle.correctIndex ? 'correct' : 'wrong'}_${player.discordId}`)
+              .setCustomId(`map_world_puzzle_solve_${idx === riddle.correctIndex ? 'correct' : 'wrong'}_${idx}_${player.discordId}`)
               .setLabel(opt)
               .setStyle(ButtonStyle.Secondary)
           );

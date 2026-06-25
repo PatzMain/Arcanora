@@ -57,7 +57,7 @@ export async function execute(interaction: Interaction) {
       await command.execute(interaction);
     } catch (error) {
       logger.error({ error, commandName: cmdName }, 'Error executing slash command');
-      const embed = errorEmbed('Command Error', 'An unexpected error occurred while executing this command.');
+      const embed = errorEmbed('Command Error', 'An unexpected error occurred while executing this command.', error);
       if (interaction.deferred || interaction.replied) {
         await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
       } else {
@@ -70,104 +70,53 @@ export async function execute(interaction: Interaction) {
   // 2. Handle Component Interactions (Buttons & Select Menus)
   if (interaction.isButton() || interaction.isStringSelectMenu()) {
     const customId = interaction.customId;
-
-    if (customId.startsWith('combat_')) {
-      try {
+    try {
+      if (customId.startsWith('combat_')) {
         await handleCombatInteraction(interaction);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing combat interaction');
-      }
-    } else if (customId.startsWith('shop_')) {
-      try {
+      } else if (customId.startsWith('shop_')) {
         await handleShopInteraction(interaction);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing shop interaction');
-      }
-    } else if (customId.startsWith('tutorial_') && interaction.isStringSelectMenu()) {
-      try {
+      } else if (customId.startsWith('tutorial_') && interaction.isStringSelectMenu()) {
         await handleTutorialInteraction(interaction);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing tutorial interaction');
-      }
-    } else if (customId.startsWith('nav_')) {
-      try {
+      } else if (customId.startsWith('nav_')) {
         await handleNavInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing navigation interaction');
-      }
-    } else if (customId.startsWith('bag_')) {
-      try {
+      } else if (customId.startsWith('bag_')) {
         await handleBagInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing bag interaction');
-      }
-    } else if (customId.startsWith('equip_select_')) {
-      try {
+      } else if (customId.startsWith('equip_select_')) {
         await handleEquipInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing equip interaction');
-      }
-    } else if (customId.startsWith('sell_select_')) {
-      try {
+      } else if (customId.startsWith('sell_select_')) {
         await handleSellInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing sell interaction');
-      }
-    } else if (customId.startsWith('quests_')) {
-      try {
+      } else if (customId.startsWith('quests_')) {
         await handleQuestsInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing quests active pagination interaction');
-      }
-    } else if (customId.startsWith('quests_board_select_')) {
-      try {
+      } else if (customId.startsWith('quests_board_select_')) {
         await handleQuestsBoardSelect(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing quests board select interaction');
-      }
-    } else if (customId.startsWith('prestige_')) {
-      try {
+      } else if (customId.startsWith('prestige_')) {
         await handlePrestigeInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing prestige interaction');
-      }
-    } else if (customId.startsWith('guild_')) {
-      try {
+      } else if (customId.startsWith('guild_')) {
         await handleGuildInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing guild interaction');
-      }
-    } else if (customId.startsWith('leaderboard_')) {
-      try {
+      } else if (customId.startsWith('leaderboard_')) {
         await handleLeaderboardInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing leaderboard interaction');
-      }
-    } else if (customId.startsWith('map_travel_')) {
-      try {
+      } else if (customId.startsWith('map_travel_')) {
         await handleMapTravelInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing map travel interaction');
-      }
-    } else if (customId.startsWith('map_world_')) {
-      try {
+      } else if (customId.startsWith('map_world_')) {
         const { handleWorldMapInteraction } = await import('../commands/player/map.js');
         await handleWorldMapInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing world map interaction');
-      }
-    } else if (customId.startsWith('map_enter_dungeon_') || customId.startsWith('dungeon_')) {
-      try {
+      } else if (customId.startsWith('map_enter_dungeon_') || customId.startsWith('dungeon_')) {
         const { handleDungeonInteraction } = await import('../commands/player/map.js');
         await handleDungeonInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing dungeon interaction');
-      }
-    } else if (customId.startsWith('player_preset_')) {
-      try {
+      } else if (customId.startsWith('player_preset_')) {
         await handlePresetInteraction(interaction as any);
-      } catch (error) {
-        logger.error({ error, customId }, 'Error processing player preset interaction');
+      }
+    } catch (error) {
+      logger.error({ error, customId }, 'Error processing component interaction');
+      const embed = errorEmbed('Interaction Error', 'An unexpected error occurred while processing this action.', error);
+      try {
+        if (interaction.deferred || interaction.replied) {
+          await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+        } else {
+          await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+        }
+      } catch (replyErr) {
+        logger.error({ error: replyErr }, 'Failed to send interaction error response');
       }
     }
   }
@@ -180,6 +129,16 @@ export async function execute(interaction: Interaction) {
         await handlePresetInteraction(interaction as any);
       } catch (error) {
         logger.error({ error, customId }, 'Error processing player preset modal interaction');
+        const embed = errorEmbed('Modal Submission Error', 'An unexpected error occurred while processing this modal submission.', error);
+        try {
+          if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+          } else {
+            await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+          }
+        } catch (replyErr) {
+          logger.error({ error: replyErr }, 'Failed to send modal error response');
+        }
       }
     }
   }
