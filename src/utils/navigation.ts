@@ -225,7 +225,7 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(buildNavId('player_map', userId))
-          .setLabel('Map')
+          .setLabel('View on Map')
           .setStyle(ButtonStyle.Secondary)
           .setEmoji('🗺️'),
         new ButtonBuilder()

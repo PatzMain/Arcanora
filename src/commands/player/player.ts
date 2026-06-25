@@ -18,7 +18,7 @@ import { getPlayerGuild } from '../../database/queries/guild.js';
 import { getActiveQuests } from '../../database/queries/quest.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { getXpForLevel } from '../../systems/progression/leveling.js';
-import { questsCatalog } from '../../utils/catalog.js';
+import { questsCatalog, zonesCatalog } from '../../utils/catalog.js';
 import { canPrestige, getPrestigeRewards, calculatePrestigeReset } from '../../systems/progression/prestige.js';
 import { db } from '../../database/client.js';
 import { players, playerSkills } from '../../database/schema.js';
@@ -124,6 +124,9 @@ export async function runProfile(
       storyQuestName = '🏆 Story Complete (Max Level)';
     }
 
+    const zoneDef = zonesCatalog.find((z) => z.id === player.currentZoneId);
+    const currentZoneName = zoneDef ? zoneDef.name : player.currentZoneId;
+
     const embed = profileEmbed(
       {
         username: player.username,
@@ -136,7 +139,10 @@ export async function runProfile(
         maxHp: stats.hpMax,
         currentMana: player.manaCurrent,
         maxMana: stats.manaMax,
-        storyQuestName
+        storyQuestName,
+        stamina: player.stamina,
+        staminaMax: player.staminaMax,
+        currentZoneName
       },
       stats,
       equippedItemsList,

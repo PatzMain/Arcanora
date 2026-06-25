@@ -103,6 +103,9 @@ export function profileEmbed(
     currentMana: number;
     maxMana: number;
     storyQuestName: string;
+    stamina: number;
+    staminaMax: number;
+    currentZoneName: string;
   },
   stats: {
     hpMax: number;
@@ -118,52 +121,41 @@ export function profileEmbed(
   guildName?: string,
 ): EmbedBuilder {
   const classIcon = classEmoji(player.className);
-  const classDisplay = player.className ? capitalize(player.className) : 'None (unlock at Lv.5)';
+  const classDisplay = player.className ? capitalize(player.className) : 'Novice (unlock at Lv.5)';
   const stars = prestigeStars(player.prestige);
 
   const equipLines = equipment.length > 0
-    ? equipment.map((e) => `${RARITY_EMOJIS[e.rarity] || '⚪'} **${e.slot}**: ${e.name}`).join('\n')
+    ? equipment.map((e) => `${RARITY_EMOJIS[e.rarity] || '⚪'} **${capitalize(e.slot)}**: ${e.name}`).join('\n')
     : '*No equipment*';
+
+  const hpBarString = hpBar(player.currentHp, stats.hpMax, 10);
+  const manaBarString = hpBar(player.currentMana, stats.manaMax, 10);
+  const staminaBarString = hpBar(player.stamina, player.staminaMax, 10);
+
+  const statsLine1 = `⚔️ ${stats.attack} ATK  ·  🛡️ ${stats.defense} DEF  ·  💨 ${stats.speed} SPD`;
+  const statsLine2 = `⚡ ${stats.critChance}% Crit  ·  💥 ${stats.critDmg}% CritDmg  ·  🍀 ${stats.luck} LUK`;
+
+  const embedDescription =
+    `${DIVIDER}\n` +
+    `Level ${player.level} ${classDisplay} ${player.prestige > 0 ? `· Prestige ${player.prestige}` : ''}\n` +
+    `📍 Location: **${player.currentZoneName}**\n` +
+    `📜 Story: **${player.storyQuestName}**\n\n` +
+    `❤️ ${hpBarString} \`${player.currentHp}/${stats.hpMax} HP\`\n` +
+    `💧 ${manaBarString} \`${player.currentMana}/${stats.manaMax} MP\`\n` +
+    `🔋 ${staminaBarString} \`${player.stamina}/${player.staminaMax} Stamina\`\n\n` +
+    `**Combat Stats**\n` +
+    `${statsLine1}\n` +
+    `${statsLine2}\n\n` +
+    `── **Equipment** ──\n` +
+    `${equipLines}\n\n` +
+    `── **Wealth** ──\n` +
+    `🪙 **${player.gold.toLocaleString()}** Gold  ·  💎 **${player.gems.toLocaleString()}** Gems\n` +
+    (guildName ? `\n🏰 **Guild**: ${guildName}` : '');
 
   return baseEmbed()
     .setColor(COLORS.PRIMARY)
     .setTitle(`${classIcon} ${player.username}${stars}`)
-    .setDescription(
-      `${DIVIDER}\n` +
-      `**Level ${player.level}** ${classDisplay}\n` +
-      `📜 Story: **${player.storyQuestName}**\n` +
-      (player.prestige > 0 ? `🏅 Prestige: **${player.prestige}**\n` : '') +
-      `${DIVIDER_SHORT}`,
-    )
-    .addFields(
-      {
-        name: '❤️ ── Health ──',
-        value: `${hpBar(player.currentHp, stats.hpMax)} \`${player.currentHp}/${stats.hpMax}\``,
-        inline: true,
-      },
-      {
-        name: '💧 ── Mana ──',
-        value: `${hpBar(player.currentMana, stats.manaMax)} \`${player.currentMana}/${stats.manaMax}\``,
-        inline: true,
-      },
-      { name: '\u200b', value: '\u200b', inline: true },
-      {
-        name: '💰 Currency',
-        value: `🪙 Gold: **${player.gold.toLocaleString()}**\n💎 Gems: **${player.gems.toLocaleString()}**`,
-        inline: true,
-      },
-      {
-        name: `${classIcon} ── Combat Stats ──`,
-        value:
-          `⚔️ ATK: \`${stats.attack}\` ┃ 🛡️ DEF: \`${stats.defense}\`\n` +
-          `💨 SPD: \`${stats.speed}\` ┃ 🍀 LUK: \`${stats.luck}\`\n` +
-          `⚡ CRIT: \`${stats.critChance}%\` (×\`${stats.critDmg}%\`)`,
-        inline: true,
-      },
-      { name: '\u200b', value: '\u200b', inline: true },
-      { name: `🎒 ── Equipment ──`, value: equipLines, inline: false },
-      ...(guildName ? [{ name: '🏰 Guild', value: guildName, inline: true }] : []),
-    );
+    .setDescription(embedDescription);
 }
 
 /**

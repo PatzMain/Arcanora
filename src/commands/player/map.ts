@@ -35,6 +35,8 @@ import {
 import { travelToNode, exploreNode } from '../../systems/exploration/worldExplorer.js';
 import { awardGold } from '../../economy/currency.js';
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export const data = new SlashCommandBuilder()
   .setName('map')
   .setDescription('View the world map, travel between regions and locations, and explore.');
@@ -61,32 +63,31 @@ function drawDungeonMapVisual(mapState: any, currentNodeId: string, previousNode
     }
   };
 
-  let text = '```\n';
+  let text = '';
   if (previousNodeId && mapState.nodes[previousNodeId]) {
     const prevNode = mapState.nodes[previousNodeId];
-    text += `   [${getSymbol(prevNode.type)} Visited: ${prevNode.name}]\n        │\n`;
+    text += `   *${getSymbol(prevNode.type)} Visited: ${prevNode.name}*\n       │\n`;
   }
   
-  text += `📍 YOU: [${getSymbol(currNode.type)} ${currNode.name}]\n`;
+  text += `📍 **YOU: ${getSymbol(currNode.type)} ${currNode.name}**\n`;
   
   const connIds = currNode.connections || [];
   if (connIds.length === 0) {
-    text += `        (Final Chamber)\n`;
+    text += `       *(Final Chamber)*\n`;
   } else {
     connIds.forEach((connId: string, idx: number) => {
       const nextNode = mapState.nodes[connId];
       if (nextNode) {
         const isLast = idx === connIds.length - 1;
-        const prefix = connIds.length === 1 ? '        └──' : (isLast ? '        └──' : '        ├──');
+        const prefix = connIds.length === 1 ? '       └──' : (isLast ? '       └──' : '       ├──');
         if (nextNode.status === 'hidden') {
-          text += `${prefix} [❓ Unknown Room]\n`;
+          text += `${prefix} ❓ **Unknown Room**\n`;
         } else {
-          text += `${prefix} [${getSymbol(nextNode.type)} ${nextNode.name}]\n`;
+          text += `${prefix} ${getSymbol(nextNode.type)} **${nextNode.name}**\n`;
         }
       }
     });
   }
-  text += '```';
   return text;
 }
 
@@ -197,17 +198,21 @@ export async function runMap(
       });
       const stats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
 
+      const roomTypeDisplay = currNode.type === 'room' ? 'Combat' : capitalize(currNode.type);
+      const zone = zonesCatalog.find(z => z.id === session.zoneId);
+      const dungeonName = zone ? zone.name : 'Unknown Dungeon';
+
       // Build Dungeon Embed
       const embed = new EmbedBuilder()
         .setColor(0x7C3AED) // Premium purple
-        .setTitle(`🏰 Dungeon: ${session.zoneId === 'verdant_meadows' ? 'Verdant Outpost' : session.zoneId === 'shadow_forest' ? 'Whispering Canopy' : session.zoneId === 'crystal_caverns' ? 'Glittering Depths' : session.zoneId === 'volcanic_wastes' ? 'Volcanic Wastes' : 'Abyssal Depths'}`)
+        .setTitle(`🏰 ${dungeonName} — Layer ${currNode.layer + 1}/${mapState.layersCount}`)
         .setDescription(
-          `🔋 **Stamina**: \`${player.stamina}/${player.staminaMax}\`   ` +
-          `❤️ **HP**: \`${player.hpCurrent}/${stats.hpMax}\`   ` +
-          `💧 **Mana**: \`${player.manaCurrent}/${stats.manaMax}\`\n\n` +
-          `🗺️ **Dungeon Map Layout:**\n${drawDungeonMapVisual(mapState, currentNodeId, session.previousNodeId)}`
+          `📍 **${currNode.name}** (${roomTypeDisplay} Room)\n` +
+          `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP\n\n` +
+          `── **Paths Ahead** ──\n` +
+          `${drawDungeonMapVisual(mapState, currentNodeId, session.previousNodeId)}`
         )
-        .setFooter({ text: `Current Room: ${currNode.name} | Layer ${currNode.layer + 1} / ${mapState.layersCount}` })
+        .setFooter({ text: '🧭 Each room movement costs 10 Stamina' })
         .setTimestamp();
 
       const components: any[] = [];
@@ -228,7 +233,7 @@ export async function runMap(
           const label = isHidden ? '❓ Unknown Room' : nextNode.name;
           const moveBtn = new ButtonBuilder()
             .setCustomId(`dungeon_move_${connId}_${player.discordId}`)
-            .setLabel(`${label} (-10 🔋)`)
+            .setLabel(label)
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(mustFight || player.stamina < 10);
           moveRow.addComponents(moveBtn);
@@ -330,56 +335,64 @@ export async function runMap(
 
     const currentLoc = zonesCatalog.find((z) => z.id === player.currentZoneId) || zonesCatalog.find((z) => z.id === 'cozy_tavern')!;
 
+    const equippedDbItems = await getEquippedItems(player.id);
+    const equippedItemsList = equippedDbItems.map((dbItem) => {
+      const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+      return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
+    });
+    const stats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
+
+    // Build destination lines for the "Where to Go" section
+    let destinationsText = '';
+    const connections = currentLoc.connections || [];
+    for (const targetId of connections) {
+      const targetLoc = zonesCatalog.find((z) => z.id === targetId);
+      if (!targetLoc) continue;
+      
+      const isDiscovered = discoveredLocIds.includes(targetId);
+      let typeIcon = '🌲';
+      if (targetLoc.type === 'settlement') typeIcon = '🏠';
+      else if (targetLoc.isDungeon) typeIcon = '🏰';
+      
+      const locDisplay = isDiscovered ? targetLoc.name : 'Unknown Path';
+      const typeDisplay = isDiscovered ? capitalize(targetLoc.type) : 'Scout to unlock';
+      const lvDisplay = `Lv.${targetLoc.minLevel}+`;
+      
+      destinationsText += `• ${typeIcon} **${locDisplay}**  ·  ${lvDisplay}  ·  ${typeDisplay}\n`;
+    }
+    if (!destinationsText) destinationsText = '*No connections available.*';
+
+    // Vitals block
+    const vitalsText = `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP`;
+
+    // Embed Description
+    const descriptionText =
+      (travelMsg ? `✅ **${travelMsg}**\n\n` : '') +
+      `**Lv.${currentLoc.minLevel}-${currentLoc.maxLevel}  ·  ${capitalize(currentLoc.type)}  ·  ${currentLoc.region}**\n\n` +
+      `*"${currentLoc.description}"*\n\n` +
+      `${vitalsText}\n\n` +
+      `── **Where to Go** ──\n` +
+      destinationsText;
+
     const embed = new EmbedBuilder()
       .setColor(0x7C3AED)
-      .setTitle(`🗺️ World Map: ${currentLoc.name}`)
-      .setDescription(
-        (travelMsg ? `✅ **${travelMsg}**\n\n` : '') +
-        `🔋 **Stamina**: \`${player.stamina}/${player.staminaMax}\`   ` +
-        `❤️ **HP**: \`${player.hpCurrent}\`   💧 **Mana**: \`${player.manaCurrent}\`\n\n` +
-        `**Region**: ${currentLoc.region} | **Area**: ${currentLoc.area} | **Type**: ${currentLoc.type.toUpperCase()}\n\n` +
-        `*"${currentLoc.description}"*\n\n` +
-        `📍 **Visual Theme:**\n${currentLoc.visualTheme || 'Unknown'}\n\n` +
-        `🌿 **Ecosystem:**\n` +
-        `• ☀️ Weather: ${currentLoc.ecosystem?.weather || 'Mild'}\n` +
-        `• 📦 Resources: ${currentLoc.ecosystem?.resources?.map((rId: string) => itemsCatalog.find((i) => i.id === rId)?.name || rId).join(', ') || 'None'}\n` +
-        `• 👾 Creatures: ${currentLoc.ecosystem?.creatures?.map((cId: string) => {
-          const def = enemiesCatalog.find((e) => e.id === cId);
-          return def ? `${def.name} (Lv.${def.level})` : cId;
-        }).join(', ') || 'None'}`
-      )
-      .addFields(
-        {
-          name: '📜 History & Lore',
-          value:
-            `• *Why built:* ${currentLoc.history?.createdWhy || 'Unknown'}\n` +
-            `• *Settler/Builder:* ${currentLoc.history?.builtWho || 'Unknown'}\n` +
-            `• *Major event:* ${currentLoc.history?.majorEvents || 'None'}\n` +
-            `• *Current conflict:* ${currentLoc.history?.currentConflicts || 'None'}`,
-          inline: false
-        },
-        {
-          name: '👥 Social Presence',
-          value:
-            `• NPCs: ${currentLoc.social?.npcs?.map((n: any) => `**${n.name}** (${n.role})`).join(', ') || 'None'}\n` +
-            `• Factions: ${currentLoc.social?.factions?.join(', ') || 'None'}`,
-          inline: false
-        }
-      )
-      .setFooter({ text: 'Arcanora — World Exploration & Node Travel' })
+      .setTitle(`🗺️ ${currentLoc.name}`)
+      .setDescription(descriptionText)
+      .setFooter({ text: 'Arcanora — World Exploration' })
       .setTimestamp();
 
     const components: any[] = [];
 
-    // Row 1: Exploration & Dungeon & Rest actions
+    // Row 1: Exploration & Action buttons
     const actionRow = new ActionRowBuilder<ButtonBuilder>();
     
     // Explore button
     actionRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`map_world_explore_${player.discordId}`)
-        .setLabel('🔎 Explore Node (-10 🔋)')
+        .setLabel('Explore Node')
         .setStyle(ButtonStyle.Success)
+        .setEmoji('🔎')
         .setDisabled(player.stamina < 10)
     );
 
@@ -388,7 +401,7 @@ export async function runMap(
       actionRow.addComponents(
         new ButtonBuilder()
           .setCustomId(`map_world_rest_${player.discordId}`)
-          .setLabel('Rest & Sleep at Tavern')
+          .setLabel('Rest at Tavern')
           .setStyle(ButtonStyle.Primary)
           .setEmoji('🛌')
       );
@@ -399,67 +412,62 @@ export async function runMap(
       actionRow.addComponents(
         new ButtonBuilder()
           .setCustomId(`map_enter_dungeon_${currentLoc.id}_${player.discordId}`)
-          .setLabel('🏰 Enter Solo (-15 🔋)')
+          .setLabel('Enter Solo')
           .setStyle(ButtonStyle.Danger)
+          .setEmoji('🏰')
           .setDisabled(player.stamina < 15),
         new ButtonBuilder()
           .setCustomId(`map_world_coop_${currentLoc.id}_${player.discordId}`)
-          .setLabel('👥 Create Lobby')
+          .setLabel('Create Lobby')
           .setStyle(ButtonStyle.Primary)
+          .setEmoji('👥')
       );
     }
 
+    // Inspect button
+    actionRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`map_world_inspect_${player.discordId}`)
+        .setLabel('Inspect')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji('🔍')
+    );
+
     components.push(actionRow);
 
-    // Row 2: Travel buttons to adjacent nodes
-    const connections = currentLoc.connections || [];
-    if (connections.length > 0) {
-      const travelRow = new ActionRowBuilder<ButtonBuilder>();
+    // Row 2: Travel select menu
+    const travelOptions = [];
+    for (const targetId of connections) {
+      const targetLoc = zonesCatalog.find((z) => z.id === targetId);
+      if (!targetLoc) continue;
       
-      connections.forEach((targetId: string) => {
-        const targetLoc = zonesCatalog.find((z) => z.id === targetId);
-        const isDiscovered = discoveredLocIds.includes(targetId);
-        
-        if (isDiscovered) {
-          travelRow.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`map_world_travel_${targetId}_${player.discordId}`)
-              .setLabel(`Travel to ${targetLoc?.name || targetId} (-10 🔋)`)
-              .setStyle(ButtonStyle.Primary)
-              .setDisabled(player.stamina < 10)
-          );
-        } else {
-          travelRow.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`map_world_travel_locked_${targetId}_${player.discordId}`)
-              .setLabel('❓ Unknown Path (Scout to unlock)')
-              .setStyle(ButtonStyle.Secondary)
-              .setDisabled(true)
-          );
-        }
+      const isDiscovered = discoveredLocIds.includes(targetId);
+      const isLocked = player.level < targetLoc.minLevel || !isDiscovered;
+      
+      let typeEmoji = '🌲';
+      if (targetLoc.type === 'settlement') typeEmoji = '🏠';
+      else if (targetLoc.isDungeon) typeEmoji = '🏰';
+      
+      const statusIcon = isLocked ? '🔒' : '➡️';
+      const label = `${statusIcon} ${targetLoc.name}`;
+      const description = `${typeEmoji} ${targetLoc.type.toUpperCase()} · Lv.${targetLoc.minLevel}+ ${isDiscovered ? '' : '(Undiscovered)'}`;
+      
+      travelOptions.push({
+        label,
+        value: targetId,
+        description: description.substring(0, 100)
       });
-      
-      components.push(travelRow);
     }
 
-    // Row 3: Talk to NPC Select Menu
-    const npcs = currentLoc.social?.npcs || [];
-    if (npcs.length > 0) {
-      const npcSelect = new StringSelectMenuBuilder()
-        .setCustomId(`map_world_npc_${player.discordId}`)
-        .setPlaceholder('💬 Talk to a local resident...')
-        .addOptions(
-          npcs.map((n: any) => ({
-            label: n.name,
-            value: n.id,
-            description: n.role
-          }))
-        );
-      
-      components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(npcSelect));
+    if (travelOptions.length > 0) {
+      const travelSelect = new StringSelectMenuBuilder()
+        .setCustomId(`map_world_travel_select_${player.discordId}`)
+        .setPlaceholder('🗺️ Travel to another location...')
+        .addOptions(travelOptions);
+      components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(travelSelect));
     }
 
-    // Row 4: Shortcuts row
+    // Row 3: Shortcuts row
     const shortcutsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(buildNavId('player_profile', player.discordId)).setLabel('Profile').setStyle(ButtonStyle.Secondary).setEmoji('👤'),
       new ButtonBuilder().setCustomId(buildNavId('inventory_bag', player.discordId)).setLabel('Bag').setStyle(ButtonStyle.Secondary).setEmoji('🎒'),
@@ -542,7 +550,7 @@ export async function runTavernRest(
 ) {
   try {
     if (!interaction.deferred && !interaction.replied) {
-      await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+      await interaction.deferUpdate();
     }
 
     const player = await getPlayerWithClampedStats(interaction.user.id);
@@ -573,20 +581,7 @@ export async function runTavernRest(
 
     await db.delete(combatSessions).where(eq(combatSessions.playerId, player.id));
 
-    const embed = new EmbedBuilder()
-      .setColor(0x10B981)
-      .setTitle('🛌 Cozy Tavern Rest')
-      .setDescription(
-        `You rent a comfortable room at the **Cozy Tavern** and get a peaceful night of sleep.\n\n` +
-        `💖 **HP fully restored**: \`${stats.hpMax}/${stats.hpMax}\`\n` +
-        `🧪 **Mana fully restored**: \`${stats.manaMax}/${stats.manaMax}\`\n` +
-        `🔋 **Stamina fully restored**: \`${player.staminaMax}/${player.staminaMax}\`\n` +
-        `✨ **All active combat sessions cleared!**`
-      )
-      .setFooter({ text: 'Arcanora — Rest & Recovery' })
-      .setTimestamp();
-
-    await interaction.editReply({ embeds: [embed] });
+    await runMap(interaction as any, '💤 You slept peacefully. HP, Mana, and Stamina fully restored!');
   } catch (error) {
     console.error('Error resting at tavern:', error);
     const err = errorEmbed('Rest Error', 'Failed to rest at the tavern.');
@@ -1128,6 +1123,150 @@ export async function handleWorldMapInteraction(
   try {
     const player = await getPlayerWithClampedStats(interaction.user.id);
     if (!player) return;
+
+    if (customId.startsWith('map_world_travel_select_')) {
+      const selectMenu = interaction as StringSelectMenuInteraction;
+      const targetLocationId = selectMenu.values[0]!;
+      const targetLoc = zonesCatalog.find((z) => z.id === targetLocationId);
+      if (!targetLoc) return;
+
+      let discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
+      if (discoveredLocIds.length === 0) {
+        discoveredLocIds = ['cozy_tavern', 'verdant_meadows'];
+      }
+
+      const isDiscovered = discoveredLocIds.includes(targetLocationId);
+      const levelLocked = player.level < targetLoc.minLevel;
+      const lockReason = !isDiscovered 
+        ? 'This location is hidden. You must discover it first by exploring adjacent nodes.' 
+        : levelLocked 
+          ? `Your level is too low. Required: Level ${targetLoc.minLevel}.`
+          : player.stamina < 10
+            ? 'You do not have enough stamina (10 required).'
+            : null;
+
+      const isLocked = !!lockReason;
+
+      let typeEmoji = '🌲';
+      if (targetLoc.type === 'settlement') typeEmoji = '🏠';
+      else if (targetLoc.isDungeon) typeEmoji = '🏰';
+
+      const previewEmbed = new EmbedBuilder()
+        .setColor(isLocked ? 0xEF4444 : 0x10B981)
+        .setTitle(`🗺️ Travel Preview: ${targetLoc.name}`)
+        .setDescription(
+          `**Type**: ${typeEmoji} ${capitalize(targetLoc.type)}\n` +
+          `**Region**: ${targetLoc.region} | **Area**: ${targetLoc.area}\n` +
+          `**Level Requirement**: Lv.${targetLoc.minLevel}-${targetLoc.maxLevel}\n\n` +
+          `*"${targetLoc.description}"*\n\n` +
+          `🔋 **Stamina Cost**: 10 Stamina\n` +
+          (isLocked ? `\n⚠️ **Cannot Travel**: ${lockReason}` : '')
+        )
+        .setFooter({ text: 'Confirm travel below' })
+        .setTimestamp();
+
+      const confirmRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`map_world_travel_confirm_${targetLocationId}_${player.discordId}`)
+          .setLabel('Confirm Travel')
+          .setStyle(ButtonStyle.Success)
+          .setEmoji('✅')
+          .setDisabled(isLocked),
+        new ButtonBuilder()
+          .setCustomId(`map_world_travel_cancel_${player.discordId}`)
+          .setLabel('Cancel')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('❌')
+      );
+
+      await interaction.editReply({
+        embeds: [previewEmbed],
+        components: [confirmRow]
+      });
+      return;
+    }
+
+    if (customId.startsWith('map_world_travel_confirm_')) {
+      const targetLocationId = parts.slice(4, -1).join('_');
+      const targetLoc = zonesCatalog.find(z => z.id === targetLocationId);
+      
+      try {
+        await travelToNode(player.id, targetLocationId);
+        await runMap(interaction as any, `You traveled to **${targetLoc?.name || targetLocationId}**.`);
+      } catch (err: any) {
+        await interaction.followUp({ content: `❌ Travel failed: ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
+        await runMap(interaction as any);
+      }
+      return;
+    }
+
+    if (customId.startsWith('map_world_travel_cancel_')) {
+      await runMap(interaction as any);
+      return;
+    }
+
+    if (customId.startsWith('map_world_inspect_')) {
+      const currentLoc = zonesCatalog.find((z) => z.id === player.currentZoneId) || zonesCatalog.find((z) => z.id === 'cozy_tavern')!;
+      
+      const inspectEmbed = new EmbedBuilder()
+        .setColor(0x7C3AED)
+        .setTitle(`🔍 Inspect Location: ${currentLoc.name}`)
+        .setDescription(
+          `**Region**: ${currentLoc.region} | **Area**: ${currentLoc.area} | **Type**: ${currentLoc.type.toUpperCase()}\n\n` +
+          `*"${currentLoc.description}"*\n\n` +
+          `📍 **Visual Theme:**\n${currentLoc.visualTheme || 'Unknown'}\n\n` +
+          `🌿 **Ecosystem:**\n` +
+          `• ☀️ Weather: ${currentLoc.ecosystem?.weather || 'Mild'}\n` +
+          `• 📦 Resources: ${currentLoc.ecosystem?.resources?.map((rId: string) => itemsCatalog.find((i) => i.id === rId)?.name || rId).join(', ') || 'None'}\n` +
+          `• 👾 Creatures: ${currentLoc.ecosystem?.creatures?.map((cId: string) => {
+            const def = enemiesCatalog.find((e) => e.id === cId);
+            return def ? `${def.name} (Lv.${def.level})` : cId;
+          }).join(', ') || 'None'}`
+        )
+        .addFields(
+          {
+            name: '📜 History & Lore',
+            value:
+              `• *Why built:* ${currentLoc.history?.createdWhy || 'Unknown'}\n` +
+              `• *Settler/Builder:* ${currentLoc.history?.builtWho || 'Unknown'}\n` +
+              `• *Major event:* ${currentLoc.history?.majorEvents || 'None'}\n` +
+              `• *Current conflict:* ${currentLoc.history?.currentConflicts || 'None'}`,
+            inline: false
+          },
+          {
+            name: '👥 Social Presence',
+            value:
+              `• NPCs: ${currentLoc.social?.npcs?.map((n: any) => `**${n.name}** (${n.role})`).join(', ') || 'None'}\n` +
+              `• Factions: ${currentLoc.social?.factions?.join(', ') || 'None'}`,
+            inline: false
+          }
+        )
+        .setFooter({ text: 'Arcanora — Location Details' })
+        .setTimestamp();
+
+      const components: any[] = [];
+      const npcs = currentLoc.social?.npcs || [];
+      if (npcs.length > 0) {
+        const npcSelect = new StringSelectMenuBuilder()
+          .setCustomId(`map_world_npc_${player.discordId}`)
+          .setPlaceholder('💬 Talk to a local resident...')
+          .addOptions(
+            npcs.map((n: any) => ({
+              label: n.name,
+              value: n.id,
+              description: n.role
+            }))
+          );
+        components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(npcSelect));
+      }
+
+      await interaction.followUp({
+        embeds: [inspectEmbed],
+        components,
+        flags: [MessageFlags.Ephemeral]
+      });
+      return;
+    }
 
     if (customId.startsWith('map_world_travel_')) {
       const targetLocationId = parts.slice(3, -1).join('_');
