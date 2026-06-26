@@ -1,0 +1,25 @@
+{
+  "id": "giant_bullfrog",
+  "name": "Giant Bullfrog",
+  "description": "An enormous amphibian that catches prey with its sticky tongue.",
+  "zone": "silverbrook_river",
+  "rarity": "normal",
+  "level": 4,
+  "stats": {
+    "hp": 90,
+    "attack": 16,
+    "defense": 12,
+    "speed": 12
+  },
+  "abilities": [
+    {
+      "id": "tongue_lash",
+      "name": "Tongue Lash",
+      "damage": 20,
+      "chance": 25
+    }
+  ],
+  "lootTable": [],
+  "expReward": 30,
+  "goldReward": 15
+}

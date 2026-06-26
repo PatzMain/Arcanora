@@ -1,0 +1,10 @@
+{
+  "id": "mat_oak_logs",
+  "name": "Oak Logs",
+  "description": "Sturdy oak timber, highly valued for construction and house upgrades.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 25,
+  "sellPrice": 8,
+  "levelReq": 1
+}

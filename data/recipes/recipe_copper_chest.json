@@ -1,0 +1,20 @@
+{
+  "id": "recipe_copper_chest",
+  "name": "Copper Breastplate Smithing",
+  "description": "Forge a sturdy Copper Breastplate from copper ore and flaxen cloth.",
+  "resultItemId": "armor_copper_breastplate",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_copper_ore",
+      "quantity": 15
+    },
+    {
+      "itemId": "mat_flax_cloth",
+      "quantity": 2
+    }
+  ],
+  "levelReq": 1,
+  "successRate": 95,
+  "craftingExpReward": 45
+}

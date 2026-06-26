@@ -1,0 +1,43 @@
+{
+  "id": "birch_thicket",
+  "name": "Birch Thicket",
+  "description": "A dense grove of paper birches. Ideal for woodcutting, but watch out for territorial wood goblins.",
+  "minLevel": 4,
+  "maxLevel": 6,
+  "explorationCooldown": 45,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "combat",
+  "hasRestBed": false,
+  "visualTheme": "Dense white birch trunks stretching to a canopy of gold-green leaves, with birds chirping and rustling bushes.",
+  "history": {
+    "createdWhy": "Grew rapidly after the great forest fire of the previous century.",
+    "builtWho": "Wild nature preserve.",
+    "majorEvents": "Host to the Wood Goblin Skirmish of Level 5.",
+    "whyExists": "Serves as the main timber harvesting grounds for Oakhaven Hamlet.",
+    "currentConflicts": "Wood Goblins have set up camp traps to raid loggers."
+  },
+  "ecosystem": {
+    "creatures": ["wood_goblin", "wild_boar", "forest_sprite"],
+    "resources": ["mat_birch_logs", "mat_herbs"],
+    "weather": "Filtered sunlight, breezy",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["glittering_meadows", "goblin_outpost"],
+  "enemies": ["wood_goblin", "wild_boar", "forest_sprite"],
+  "encounters": [
+    { "type": "normal_mob", "weight": 65 },
+    { "type": "empty", "weight": 15 },
+    { "type": "treasure", "weight": 15 },
+    { "type": "rare_mob", "weight": 5 }
+  ]
+}

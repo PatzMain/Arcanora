@@ -1,0 +1,15 @@
+{
+  "id": "armor_copper_breastplate",
+  "name": "Copper Breastplate",
+  "description": "A sturdy breastplate made of beaten copper sheets, offering reliable protection.",
+  "type": "chest",
+  "rarity": "common",
+  "stats": {
+    "defense": 20,
+    "hpMax": 10
+  },
+  "buyPrice": 180,
+  "sellPrice": 60,
+  "levelReq": 2,
+  "maxDurability": 60
+}

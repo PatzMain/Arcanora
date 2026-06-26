@@ -1,0 +1,32 @@
+{
+  "id": "grak_zul",
+  "name": "Goblin Chieftain, Grak'Zul",
+  "description": "The formidable leader of the foothills goblin clan, wielding a massive stone club.",
+  "zone": "forgotten_ironmine",
+  "rarity": "boss",
+  "level": 10,
+  "stats": {
+    "hp": 600,
+    "attack": 60,
+    "defense": 40,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "ground_slam",
+      "name": "Ground Slam",
+      "damage": 80,
+      "chance": 35
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_cobalt_ore",
+      "dropRate": 100,
+      "minQty": 2,
+      "maxQty": 5
+    }
+  ],
+  "expReward": 350,
+  "goldReward": 200
+}

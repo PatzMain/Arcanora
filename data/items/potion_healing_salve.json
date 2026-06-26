@@ -1,0 +1,13 @@
+{
+  "id": "potion_healing_salve",
+  "name": "Healing Salve",
+  "description": "A soothing herbal salve that restores 40 HP.",
+  "type": "consumable",
+  "rarity": "common",
+  "stats": {
+    "hp": 40
+  },
+  "buyPrice": 50,
+  "sellPrice": 15,
+  "levelReq": 1
+}

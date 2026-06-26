@@ -1,0 +1,20 @@
+{
+  "id": "recipe_copper_boots",
+  "name": "Copper Greaves Smithing",
+  "description": "Forge protective Copper Greaves from copper ore and flaxen cloth.",
+  "resultItemId": "boots_copper_greaves",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_copper_ore",
+      "quantity": 8
+    },
+    {
+      "itemId": "mat_flax_cloth",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 1,
+  "successRate": 95,
+  "craftingExpReward": 25
+}

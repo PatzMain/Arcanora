@@ -1,0 +1,25 @@
+{
+  "id": "young_wolf",
+  "name": "Young Wolf",
+  "description": "A snarling juvenile wolf hunting at the edge of the hills.",
+  "zone": "glittering_meadows",
+  "rarity": "normal",
+  "level": 3,
+  "stats": {
+    "hp": 80,
+    "attack": 18,
+    "defense": 10,
+    "speed": 15
+  },
+  "abilities": [
+    {
+      "id": "bite",
+      "name": "Fierce Bite",
+      "damage": 22,
+      "chance": 30
+    }
+  ],
+  "lootTable": [],
+  "expReward": 25,
+  "goldReward": 15
+}

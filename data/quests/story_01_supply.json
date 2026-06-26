@@ -1,0 +1,24 @@
+{
+  "id": "story_01_supply",
+  "name": "Outpost Supply",
+  "description": "Deliver 10 Birch Logs and 5 Copper Ore to Ralph the Blacksmith.",
+  "type": "story",
+  "levelReq": 3,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "gather",
+      "target": "mat_birch_logs",
+      "required": 10
+    },
+    {
+      "type": "gather",
+      "target": "mat_copper_ore",
+      "required": 5
+    }
+  ],
+  "rewards": {
+    "exp": 300,
+    "gold": 100
+  }
+}

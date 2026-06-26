@@ -70,19 +70,19 @@ describe('Locations & Regions Mapping', () => {
   // Using top-level import for zonesCatalog
 
   it('should load all locations and dungeons from data/locations/', () => {
-    // 6 normal locations + 4 dungeons = 10 locations in total
-    expect(zonesCatalog.length).toBe(10);
+    // 14 normal locations + 5 dungeons = 19 locations in total
+    expect(zonesCatalog.length).toBe(19);
   });
 
   it('should correctly mark dungeons and locations', () => {
     const dungeons = zonesCatalog.filter(z => z.isDungeon === true);
     const locations = zonesCatalog.filter(z => !z.isDungeon);
 
-    expect(dungeons.length).toBe(4);
-    expect(locations.length).toBe(6);
+    expect(dungeons.length).toBe(5);
+    expect(locations.length).toBe(14);
 
     const dungeonIds = dungeons.map(d => d.id).sort();
-    expect(dungeonIds).toEqual(['ancient_mine', 'goblin_sanctuary', 'lava_keep', 'sunken_temple']);
+    expect(dungeonIds).toEqual(['ancient_mine', 'forgotten_ironmine', 'goblin_sanctuary', 'lava_keep', 'sunken_temple']);
   });
 
   it('should assign a valid region to every location', () => {

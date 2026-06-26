@@ -1,0 +1,25 @@
+{
+  "id": "mine_spider",
+  "name": "Mine Spider",
+  "description": "A venomous arachnid that has spun nests in the abandoned shafts.",
+  "zone": "forgotten_ironmine",
+  "rarity": "normal",
+  "level": 8,
+  "stats": {
+    "hp": 140,
+    "attack": 40,
+    "defense": 15,
+    "speed": 18
+  },
+  "abilities": [
+    {
+      "id": "poison_bite",
+      "name": "Poison Bite",
+      "damage": 45,
+      "chance": 25
+    }
+  ],
+  "lootTable": [],
+  "expReward": 75,
+  "goldReward": 40
+}

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { zonesCatalog, itemsCatalog } from '../src/utils/catalog.js';
 
 describe('BrownieRPG World Map Design & Adjacency Graph', () => {
-  it('should have all 10 locations loaded in the catalog', () => {
-    expect(zonesCatalog.length).toBe(10);
+  it('should have all 19 locations loaded in the catalog', () => {
+    expect(zonesCatalog.length).toBe(19);
   });
 
   it('should verify every location contains identity, lore, history, and ecosystem details', () => {
@@ -76,7 +76,7 @@ describe('BrownieRPG World Map Design & Adjacency Graph', () => {
     // Whispering Canopy (lvl 3) connects to Glittering Depths (lvl 6) and Fallen Watchtower (lvl 3)
     // and so on...
     const cozyTavern = zonesCatalog.find(z => z.id === 'cozy_tavern')!;
-    const verdantMeadows = zonesCatalog.find(z => z.id === 'verdant_meadows')!;
+    const oakhavenSquare = zonesCatalog.find(z => z.id === 'oakhaven_square')!;
     const shadowForest = zonesCatalog.find(z => z.id === 'shadow_forest')!;
     const crystalCaverns = zonesCatalog.find(z => z.id === 'crystal_caverns')!;
     const ancientMine = zonesCatalog.find(z => z.id === 'ancient_mine')!;
@@ -84,11 +84,21 @@ describe('BrownieRPG World Map Design & Adjacency Graph', () => {
     const abyssalDepths = zonesCatalog.find(z => z.id === 'abyssal_depths')!;
 
     expect(cozyTavern.minLevel).toBe(1);
-    expect(verdantMeadows.minLevel).toBe(1);
+    expect(oakhavenSquare.minLevel).toBe(1);
     expect(shadowForest.minLevel).toBe(3);
     expect(crystalCaverns.minLevel).toBe(6);
     expect(ancientMine.minLevel).toBe(9);
     expect(volcanicWastes.minLevel).toBe(10);
     expect(abyssalDepths.minLevel).toBe(15);
+  });
+
+  it('should verify that all 5 starter town locations have no enemies', () => {
+    const townZones = ['cozy_tavern', 'oakhaven_square', 'oakhaven_forge', 'apothecary', 'river_docks'];
+    for (const zoneId of townZones) {
+      const zone = zonesCatalog.find(z => z.id === zoneId);
+      expect(zone).toBeDefined();
+      const enemies = zone?.enemies || [];
+      expect(enemies.length).toBe(0);
+    }
   });
 });

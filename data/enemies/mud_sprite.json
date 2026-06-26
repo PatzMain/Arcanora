@@ -1,0 +1,18 @@
+{
+  "id": "mud_sprite",
+  "name": "Mud Sprite",
+  "description": "A minor elemental formed of river clay, throwing sludge.",
+  "zone": "silverbrook_river",
+  "rarity": "normal",
+  "level": 4,
+  "stats": {
+    "hp": 80,
+    "attack": 20,
+    "defense": 15,
+    "speed": 10
+  },
+  "abilities": [],
+  "lootTable": [],
+  "expReward": 30,
+  "goldReward": 18
+}

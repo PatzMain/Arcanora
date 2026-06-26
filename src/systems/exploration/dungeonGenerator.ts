@@ -89,6 +89,7 @@ export const EVENTS = [
 // Helper to determine depth layers count for each zone
 export function getDungeonDepth(zoneId: string): number {
   switch (zoneId) {
+    case 'forgotten_ironmine': return 5;
     case 'verdant_meadows': return 5;
     case 'shadow_forest': return 6;
     case 'crystal_caverns': return 7;

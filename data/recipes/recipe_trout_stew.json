@@ -1,0 +1,20 @@
+{
+  "id": "recipe_trout_stew",
+  "name": "Trout Stew Cooking",
+  "description": "Cook a hearty bowl of Trout Stew from river trout and wild herbs.",
+  "resultItemId": "food_trout_stew",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "fish_trout",
+      "quantity": 2
+    },
+    {
+      "itemId": "mat_herbs",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 1,
+  "successRate": 100,
+  "craftingExpReward": 15
+}

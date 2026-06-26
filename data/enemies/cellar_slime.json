@@ -1,0 +1,25 @@
+{
+  "id": "cellar_slime",
+  "name": "Cellar Slime",
+  "description": "A gooey, translucent glob that has infested the Cozy Tavern's cellar.",
+  "zone": "cozy_tavern",
+  "rarity": "normal",
+  "level": 1,
+  "stats": {
+    "hp": 40,
+    "attack": 8,
+    "defense": 5,
+    "speed": 10
+  },
+  "abilities": [],
+  "lootTable": [
+    {
+      "itemId": "potion_health_small",
+      "dropRate": 20,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 10,
+  "goldReward": 5
+}

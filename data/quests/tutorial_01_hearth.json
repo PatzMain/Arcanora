@@ -1,0 +1,19 @@
+{
+  "id": "tutorial_01_hearth",
+  "name": "A Warm Hearth",
+  "description": "Gather 3 logs to keep the tavern hearth burning.",
+  "type": "story",
+  "levelReq": 1,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "gather",
+      "target": "mat_wood",
+      "required": 3
+    }
+  ],
+  "rewards": {
+    "gold": 20,
+    "exp": 50
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "apothecary",
+  "name": "Apothecary Cottage",
+  "description": "Elara's cottage, smelling of dried sage and boiling wildflowers. Bunches of herbs hang from the rafters.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "settlement",
+  "hasRestBed": false,
+  "visualTheme": "A cozy timber cottage filled with shelves of glass vials, mortars, pestles, and jars of strange ingredients.",
+  "history": {
+    "createdWhy": "Built by the town council to provide medical support and tonic brewing.",
+    "builtWho": "Constructed by Oakhaven builders for Elara when she arrived from the Academy.",
+    "majorEvents": "Saved Oakhaven from a swamp-fever plague last spring.",
+    "whyExists": "Acts as the sole provider of healing drafts and herbal preparations in the area.",
+    "currentConflicts": "Wild herbs are getting contaminated by shadow blight spreading from the forest."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Warm and sweet-smelling, herbal vapor",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "elara",
+        "name": "Alchemist Elara",
+        "role": "Apothecary Alchemist",
+        "dialogue": [
+          "Nature holds the cure for every wound, and the poison for every foe.",
+          "Tread carefully, and respect the plants you harvest.",
+          "Need a quick health booster? My salves will keep you standing."
+        ]
+      }
+    ],
+    "factions": ["Oakhaven Artisans"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["oakhaven_square"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fish_carp",
+  "name": "Silver Carp",
+  "description": "A shiny, mid-sized carp that requires a bit more skill to catch.",
+  "type": "material",
+  "rarity": "uncommon",
+  "buyPrice": 35,
+  "sellPrice": 12,
+  "levelReq": 1
+}

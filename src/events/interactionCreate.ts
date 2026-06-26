@@ -6,10 +6,12 @@ import { handleShopInteraction } from '../commands/economy/economy.js';
 import { handleNavInteraction } from '../utils/navigation.js';
 import { handleBagInteraction, handleEquipInteraction, handleSellInteraction } from '../commands/inventory/inventory.js';
 import { handleQuestsInteraction, handleQuestsBoardSelect } from '../commands/quests/quest.js';
-import { handlePrestigeInteraction, handlePresetInteraction } from '../commands/player/player.js';
+import { handlePrestigeInteraction } from '../commands/player/prestige.js';
+import { handlePresetInteraction } from '../commands/player/presets.js';
 import { handleMapTravelInteraction } from '../commands/player/map.js';
 import { handleFeedbackModal } from '../commands/player/feedback.js';
-import { handleGuildInteraction, handleLeaderboardInteraction } from '../commands/guilds/guild.js';
+import { handleGuildInteraction } from '../commands/guilds/guildActions.js';
+import { handleLeaderboardInteraction } from '../commands/guilds/guildLeaderboard.js';
 import { handleAdminInteraction } from '../commands/admin/admin.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
@@ -109,6 +111,14 @@ export async function execute(interaction: Interaction) {
         await handlePresetInteraction(interaction as any);
       } else if (customId.startsWith('admin_')) {
         await handleAdminInteraction(interaction as any);
+      } else if (customId.startsWith('house_')) {
+        const parts = customId.split('_');
+        const { handleHouseInteraction } = await import('../commands/player/house.js');
+        await handleHouseInteraction(interaction as any, parts);
+      } else if (customId.startsWith('farm_')) {
+        const parts = customId.split('_');
+        const { handleFarmInteraction } = await import('../commands/player/farm.js');
+        await handleFarmInteraction(interaction as any, parts);
       }
     } catch (error) {
       logger.error({ error, customId }, 'Error processing component interaction');

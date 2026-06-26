@@ -1,0 +1,20 @@
+{
+  "id": "recipe_copper_sword",
+  "name": "Copper Sword Smithing",
+  "description": "Forge a sharp Copper Sword from copper ore and birch wood.",
+  "resultItemId": "weapon_copper_sword",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_copper_ore",
+      "quantity": 10
+    },
+    {
+      "itemId": "mat_birch_logs",
+      "quantity": 3
+    }
+  ],
+  "levelReq": 1,
+  "successRate": 95,
+  "craftingExpReward": 30
+}

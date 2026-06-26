@@ -1,0 +1,12 @@
+{
+  "id": "seed_wheat",
+  "name": "Wheat Seeds",
+  "description": "Seeds for planting wheat on your private farm plot.",
+  "type": "seed",
+  "rarity": "common",
+  "buyPrice": 10,
+  "sellPrice": 2,
+  "levelReq": 1,
+  "cropId": "crop_wheat",
+  "growthTimeSec": 3600
+}

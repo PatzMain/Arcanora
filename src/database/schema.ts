@@ -30,6 +30,9 @@ export const players = pgTable('players', {
   stamina: integer('stamina').default(100).notNull(),
   staminaMax: integer('stamina_max').default(100).notNull(),
   lastStaminaRegen: timestamp('last_stamina_regen', { withTimezone: true }).defaultNow().notNull(),
+  housingTier: integer('housing_tier').default(0).notNull(),
+  lastRestAt: timestamp('last_rest_at', { withTimezone: true }),
+  restType: varchar('rest_type', { length: 32 }).default('none').notNull(),
 }, (table) => ({
   discordIdIdx: uniqueIndex('players_discord_id_idx').on(table.discordId),
   levelExpIdx: index('players_level_exp_idx').on(table.level, table.exp),
@@ -249,6 +252,7 @@ export const playersRelations = relations(players, ({ one, many }) => ({
   }),
   worldDiscoveries: many(playerWorldDiscoveries),
   feedbacks: many(feedbacks),
+  farms: many(playerFarms),
 }));
 
 export const playerWorldDiscoveriesRelations = relations(playerWorldDiscoveries, ({ one }) => ({
@@ -427,6 +431,24 @@ export const feedbacks = pgTable('feedbacks', {
 export const feedbacksRelations = relations(feedbacks, ({ one }) => ({
   player: one(players, {
     fields: [feedbacks.playerId],
+    references: [players.id],
+  }),
+}));
+
+// ─── PLAYER_FARMS ───
+export const playerFarms = pgTable('player_farms', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id, { onDelete: 'cascade' }).notNull(),
+  plotIndex: integer('plot_index').notNull(),
+  cropId: varchar('crop_id', { length: 32 }),
+  plantedAt: timestamp('planted_at', { withTimezone: true }),
+  wateredAt: timestamp('watered_at', { withTimezone: true }),
+  harvestableAt: timestamp('harvestable_at', { withTimezone: true }),
+});
+
+export const playerFarmsRelations = relations(playerFarms, ({ one }) => ({
+  player: one(players, {
+    fields: [playerFarms.playerId],
     references: [players.id],
   }),
 }));

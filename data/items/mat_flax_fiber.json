@@ -1,0 +1,10 @@
+{
+  "id": "mat_flax_fiber",
+  "name": "Flax Fiber",
+  "description": "Fibrous stems of the flax plant, spun into threads and cloth.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 12,
+  "sellPrice": 4,
+  "levelReq": 1
+}

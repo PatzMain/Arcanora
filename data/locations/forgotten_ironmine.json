@@ -1,0 +1,43 @@
+{
+  "id": "forgotten_ironmine",
+  "name": "Forgotten Ironmine",
+  "description": "An abandoned mine occupied by Grak'Zul's goblin forces. Clear the chambers to reach the chieftain.",
+  "minLevel": 8,
+  "maxLevel": 10,
+  "explorationCooldown": 120,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "dungeon",
+  "isDungeon": true,
+  "hasRestBed": false,
+  "visualTheme": "A collapsing wooden structure diving deep into red-clay tunnels, littered with broken lanterns, minecarts, and goblin shields.",
+  "history": {
+    "createdWhy": "Built to extract high-grade iron ore under royal charter.",
+    "builtWho": "Excavated by Eldorian dwarven engineers.",
+    "majorEvents": "Overrun by the Blood-Club goblin clan during the vanguard retreat.",
+    "whyExists": "Represents the deepest mining vault in the Foothills region.",
+    "currentConflicts": "The Goblin Chieftain Grak'Zul coordinates foothills raids from the central chamber."
+  },
+  "ecosystem": {
+    "creatures": ["goblin_miner", "mine_spider", "ironhide_boar"],
+    "resources": ["mat_iron_ore", "mat_cobalt_ore", "mat_coal"],
+    "weather": "Stuffy, dust-laden air",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["shimmering_cave", "goblin_outpost", "shadow_forest"],
+  "enemies": ["goblin_miner", "mine_spider", "ironhide_boar"],
+  "encounters": [
+    { "type": "normal_mob", "weight": 70 },
+    { "type": "treasure", "weight": 20 },
+    { "type": "boss", "weight": 10 }
+  ]
+}

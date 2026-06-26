@@ -1,0 +1,12 @@
+{
+  "id": "seed_potato",
+  "name": "Potato Seeds",
+  "description": "Seeds for planting potatoes on your private farm plot.",
+  "type": "seed",
+  "rarity": "common",
+  "buyPrice": 15,
+  "sellPrice": 3,
+  "levelReq": 1,
+  "cropId": "crop_potato",
+  "growthTimeSec": 7200
+}

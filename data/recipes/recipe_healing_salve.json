@@ -1,0 +1,20 @@
+{
+  "id": "recipe_healing_salve",
+  "name": "Healing Salve Alchemy",
+  "description": "Brew a healing herbal salve from wild herbs and birch wood resin (sap).",
+  "resultItemId": "potion_healing_salve",
+  "resultQuantity": 1,
+  "materials": [
+    {
+      "itemId": "mat_herbs",
+      "quantity": 3
+    },
+    {
+      "itemId": "mat_wood",
+      "quantity": 1
+    }
+  ],
+  "levelReq": 1,
+  "successRate": 95,
+  "craftingExpReward": 20
+}

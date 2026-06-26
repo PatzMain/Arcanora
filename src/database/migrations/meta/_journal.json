@@ -57,6 +57,13 @@
       "when": 1782436088436,
       "tag": "0007_aspiring_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782460536344,
+      "tag": "0008_clear_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }

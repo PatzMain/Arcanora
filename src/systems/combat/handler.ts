@@ -4,28 +4,21 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { combatSessions, players, playerSkills, inventory } from '../../database/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { combatSessions, players } from '../../database/schema.js';
+import { eq } from 'drizzle-orm';
 import { getEnemyById, scaleEnemyStats } from './enemy.js';
-import { processPlayerTurn, processEnemyTurn, type CombatStats, type CombatAction, getStatModifier } from './engine.js';
-import { executeSkill, getSkillById, SKILLS } from './skills.js';
+import { processPlayerTurn, processEnemyTurn, type CombatStats } from './engine.js';
 import { computeStats } from '../../systems/progression/stats.js';
-import { resolveLoot, getItemData } from '../../systems/exploration/loot.js';
-import { awardGold, awardGems } from '../../economy/currency.js';
-import { getPlayerGuild } from '../../database/queries/guild.js';
-import { findOrCreatePlayer, awardPlayerExp } from '../../database/queries/player.js';
-import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
-import { combatEmbed, lootEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
-import { advanceQuestProgress } from '../progression/questSystem.js';
+import { findOrCreatePlayer } from '../../database/queries/player.js';
+import { getEquippedItems } from '../../database/queries/inventory.js';
+import { combatEmbed, successEmbed, errorEmbed } from '../../utils/embeds.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { getNavButtons } from '../../utils/navigation.js';
-import { itemBehaviorRegistry } from '../items/itemBehavior.js';
 import { parsePresets, buildPresetButtons } from './presets.js';
-
-
+import { getCombatSkillsRow, getCombatItemsRow } from './uiHelpers.js';
+import { handlePlayerTurnAction, resolveCombatEnd } from './combatResolver.js';
 
 export async function handleCombatInteraction(
   interaction: ButtonInteraction | StringSelectMenuInteraction
@@ -45,7 +38,6 @@ export async function handleCombatInteraction(
     });
 
     if (!activeSession) {
-      // No active combat
       await interaction.editReply({
         content: '❌ This combat session has expired or ended.',
         embeds: [],
@@ -100,252 +92,22 @@ export async function handleCombatInteraction(
     state.enemyMaxHp = scaledEnemyStats.hp;
 
     // 3. Resolve player action
-    let action: CombatAction = { type: 'attack' };
+    const action = await handlePlayerTurnAction(
+      interaction,
+      player,
+      state,
+      combatStats,
+      scaledEnemyStats,
+      enemyDef
+    );
 
-    if (interaction.isButton()) {
-      if (interaction.customId === 'combat_attack') {
-        action = { type: 'attack' };
-      } else if (interaction.customId === 'combat_defend') {
-        action = { type: 'defend' };
-      } else if (interaction.customId === 'combat_flee') {
-        action = { type: 'flee' };
-      } else if (interaction.customId.startsWith('combat_preset_')) {
-        const slotNum = parseInt(interaction.customId.split('_')[2] || '1', 10);
-        const presets = parsePresets(player.presets);
-        const slot = presets[slotNum - 1];
-        if (!slot || !slot.actions || slot.actions.length === 0) {
-          await interaction.followUp({ content: '❌ Preset slot is empty or invalid.', ephemeral: true });
-          return;
-        }
-
-        // Fetch learned skills
-        const learnedSkillsDb = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
-        const learnedSkillIds = learnedSkillsDb.map((s) => s.skillId);
-
-        // Determine the action index based on the current round (1-indexed)
-        const actionIndex = (state.round - 1) % slot.actions.length;
-        const actionId = slot.actions[actionIndex] || 'attack';
-
-        state.combatLog.push(`⚡ Preset **${slot.name}** (Step ${actionIndex + 1}/${slot.actions.length}):`);
-
-        if (actionId === 'attack') {
-          action = { type: 'attack' };
-        } else {
-          // Skill execution
-          const skillDef = getSkillById(actionId);
-          if (!skillDef) {
-            await interaction.followUp({ content: `❌ Skill definition for "${actionId}" not found.`, ephemeral: true });
-            return;
-          }
-
-          if (!learnedSkillIds.includes(actionId)) {
-            await interaction.followUp({ content: `❌ You have not learned "${skillDef.name}".`, ephemeral: true });
-            return;
-          }
-
-          if (state.playerMana < skillDef.manaCost) {
-            await interaction.followUp({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}, Current: ${state.playerMana}`, ephemeral: true });
-            return;
-          }
-
-          // Deduct Mana
-          state.playerMana -= skillDef.manaCost;
-
-          // Calculate effective stats for this action (layer active buffs dynamically)
-          const atkMod = getStatModifier(state.playerBuffs, 'attack');
-          const defMod = getStatModifier(state.playerBuffs, 'defense');
-          const spdMod = getStatModifier(state.playerBuffs, 'speed');
-          const critMod = getStatModifier(state.playerBuffs, 'critChance');
-
-          const currentStats = {
-            ...combatStats,
-            attack: Math.max(1, combatStats.attack + atkMod),
-            defense: Math.max(1, combatStats.defense + defMod),
-            speed: Math.max(0, combatStats.speed + spdMod),
-            critChance: Math.max(0, combatStats.critChance + critMod),
-          };
-
-          const enemyCombatStats: CombatStats = {
-            hp: state.enemyHp,
-            maxHp: state.enemyMaxHp,
-            mana: 0,
-            maxMana: 0,
-            attack: scaledEnemyStats.attack,
-            defense: scaledEnemyStats.defense,
-            speed: scaledEnemyStats.speed,
-            critChance: 0,
-            critDmg: 150,
-            luck: 0,
-          };
-
-          // Execute skill effects
-          const result = executeSkill(skillDef, currentStats, enemyCombatStats);
-
-          // Apply skill damage / healing / buffs
-          if (skillDef.id === 'healer_purify') {
-            state.playerBuffs = state.playerBuffs.filter((b: any) => b.type !== 'debuff');
-          }
-
-          if (skillDef.id === 'mage_mana_surge') {
-            state.playerMana = Math.min(state.playerMaxMana, state.playerMana + result.healing);
-          } else {
-            state.playerHp = Math.min(state.playerMaxHp, state.playerHp + result.healing);
-          }
-
-          state.enemyHp = Math.max(0, state.enemyHp - result.damage);
-
-          // Add status effects
-          for (const eff of result.effects) {
-            if (eff.stat) {
-              const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
-              if (effectTarget === 'self') {
-                state.playerBuffs.push(eff);
-              } else {
-                state.enemyBuffs.push(eff);
-              }
-            } else {
-              const effectType = skillDef.effects.find((e) => e.type === 'dot' || e.type === 'hot')?.type;
-              if (effectType === 'hot') {
-                state.playerBuffs.push(eff);
-              } else {
-                state.enemyBuffs.push(eff);
-              }
-            }
-          }
-
-          state.combatLog.push(result.description);
-
-          // Set action type to skill so processPlayerTurn doesn't recalculate base attack/skills
-          action = { type: 'skill', skillId: skillDef.name };
-        }
-      }
-    } else if (interaction.isStringSelectMenu()) {
-      if (interaction.customId === 'combat_use_skill') {
-        const skillId = interaction.values[0]!;
-        const skillDef = getSkillById(skillId);
-
-        if (!skillDef) {
-          await interaction.followUp({ content: '❌ Skill not found in database.', ephemeral: true });
-          return;
-        }
-
-        if (state.playerMana < skillDef.manaCost) {
-          await interaction.followUp({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}`, ephemeral: true });
-          return;
-        }
-
-        // Deduct Mana
-        state.playerMana -= skillDef.manaCost;
-
-        const enemyCombatStats: CombatStats = {
-          hp: state.enemyHp,
-          maxHp: state.enemyMaxHp,
-          mana: 0,
-          maxMana: 0,
-          attack: scaledEnemyStats.attack,
-          defense: scaledEnemyStats.defense,
-          speed: scaledEnemyStats.speed,
-          critChance: 0,
-          critDmg: 150,
-          luck: 0,
-        };
-
-        // Execute skill effects
-        const result = executeSkill(skillDef, combatStats, enemyCombatStats);
-
-        // Apply skill damage / healing / buffs
-        if (skillDef.id === 'healer_purify') {
-          state.playerBuffs = state.playerBuffs.filter((b: any) => b.type !== 'debuff');
-        }
-
-        if (skillDef.id === 'mage_mana_surge') {
-          state.playerMana = Math.min(state.playerMaxMana, state.playerMana + result.healing);
-        } else {
-          state.playerHp = Math.min(state.playerMaxHp, state.playerHp + result.healing);
-        }
-
-        state.enemyHp = Math.max(0, state.enemyHp - result.damage);
-
-        for (const eff of result.effects) {
-          if (eff.stat) { // If it's a stat buff/debuff
-            const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
-            if (effectTarget === 'self') {
-              state.playerBuffs.push(eff);
-            } else {
-              state.enemyBuffs.push(eff);
-            }
-          } else {
-            // DoT / HoT
-            const effectType = skillDef.effects.find((e) => e.type === 'dot' || e.type === 'hot')?.type;
-            if (effectType === 'hot') {
-              state.playerBuffs.push(eff);
-            } else {
-              state.enemyBuffs.push(eff);
-            }
-          }
-        }
-
-        action = { type: 'skill', skillId };
-        state.combatLog.push(result.description);
-      } else if (interaction.customId === 'combat_use_item') {
-        const inventoryId = interaction.values[0]!;
-        const dbItem = await db.query.inventory.findFirst({
-          where: eq(inventory.id, inventoryId)
-        });
-
-        if (!dbItem || dbItem.quantity <= 0) {
-          await interaction.followUp({ content: '❌ Item not found in bag.', ephemeral: true });
-          return;
-        }
-
-        const itemDef = catalog.find((i) => i.id === dbItem.itemId);
-        if (!itemDef || itemDef.type !== 'consumable') {
-          await interaction.followUp({ content: '❌ Item is not consumable.', ephemeral: true });
-          return;
-        }
-
-        // Apply item effects
-        const customBehavior = itemBehaviorRegistry.get(itemDef.id);
-        if (customBehavior) {
-          const result = await customBehavior.onUse({
-            playerId: player.id,
-            state: state,
-            itemDef,
-            dbItem
-          });
-          if (!result.success) {
-            await interaction.followUp({ content: `❌ Failed to use item: ${result.log || 'Unknown error'}`, ephemeral: true });
-            return;
-          }
-        } else {
-          if (itemDef.stats?.hp) {
-            state.playerHp = Math.min(state.playerMaxHp, state.playerHp + itemDef.stats.hp);
-          }
-          if (itemDef.stats?.mana) {
-            state.playerMana = Math.min(state.playerMaxMana, state.playerMana + itemDef.stats.mana);
-          }
-          if (itemDef.stats?.attack) {
-            state.playerBuffs.push({
-              id: `${itemDef.id}_buff`,
-              name: `${itemDef.name} (Atk ↑)`,
-              type: 'buff',
-              stat: 'attack',
-              value: itemDef.stats.attack,
-              turnsRemaining: 3
-            });
-          }
-        }
-
-        // Consume 1 item
-        await removeItem(player.id, dbItem.id, 1);
-
-        action = { type: 'item', itemId: itemDef.id };
-        state.combatLog.push(`🎒 You used **${itemDef.name}**!`);
-      }
+    if (!action) {
+      // Action handling produced a reply/followup due to error/validation (e.g. no mana, invalid preset)
+      return;
     }
 
     // Resolve Player Turn
-    const playerResult = processPlayerTurn(state, action, combatStats, scaledEnemyStats);
+    processPlayerTurn(state, action, combatStats, scaledEnemyStats);
 
     // If fled successfully
     if (state.isOver && !state.playerWon && action.type === 'flee') {
@@ -392,130 +154,7 @@ export async function handleCombatInteraction(
 
     // 5. Handle Combat End (Victory / Defeat)
     if (state.isOver) {
-      // Clear session from DB
-      await db.delete(combatSessions).where(eq(combatSessions.id, activeSession.id));
-
-      if (state.playerWon) {
-        // Victory!
-        const luck = playerStats.luck;
-        const lootDrops = resolveLoot(enemyDef.lootTable as any[], luck, enemyDef.rarity);
-
-        let goldGained = enemyDef.goldReward;
-        let expGained = enemyDef.expReward;
-        const acquiredItems: { name: string; quantity: number; rarity: string }[] = [];
-
-        // Apply bonus multipliers for rare/boss enemies
-        if (enemyDef.rarity === 'rare') {
-          goldGained = Math.round(goldGained * 1.5);
-          expGained = Math.round(expGained * 1.5);
-        } else if (enemyDef.rarity === 'boss') {
-          goldGained = goldGained * 2;
-          expGained = expGained * 2;
-        }
-
-        // Award gold
-        await awardGold(player.id, goldGained, `Defeated ${enemyDef.name}`);
-
-        // Add items to inventory
-        for (const drop of lootDrops) {
-          const itemDef = getItemData(drop.itemId);
-          if (itemDef) {
-            await addItem(player.id, drop.itemId, drop.quantity);
-            acquiredItems.push({
-              name: itemDef.name,
-              quantity: drop.quantity,
-              rarity: itemDef.rarity
-            });
-          }
-        }
-
-        // Award experience
-        const expResult = await awardPlayerExp(player.id, expGained);
-
-        // If they did not level up, update their HP/Mana post-combat based on final combat state
-        if (!expResult.leveledUp) {
-          await db
-            .update(players)
-            .set({
-              hpCurrent: Math.max(10, state.playerHp), // ensure they don't stay dead
-              manaCurrent: state.playerMana
-            })
-            .where(eq(players.id, player.id));
-        }
-
-        const embed = lootEmbed(acquiredItems, goldGained, expGained);
-        embed.setTitle(`🏆 Victory! Defeated ${enemyDef.name}`);
-        embed.setDescription(`You successfully defeated the **Lv.${enemyDef.level} ${enemyDef.name}**.`);
-
-        if (expResult.leveledUp) {
-          embed.addFields({
-            name: '🎉 LEVEL UP!',
-            value: `You reached **Level ${expResult.newLevel}**! Your HP and Mana have been fully restored.`,
-            inline: false
-          });
-        }
-
-        // Advance quest progress for defeating the mob
-        await advanceQuestProgress(player.id, 'kill', enemyDef.id, 1, interaction);
-
-        const { getExplorationSessionByPlayerId, updateExplorationSession } = await import('../../database/queries/exploration.js');
-        const { buildNavId } = await import('../../utils/navigation.js');
-        const { updateFogOfWar } = await import('../exploration/dungeonGenerator.js');
-        const expSession = await getExplorationSessionByPlayerId(player.id);
-        
-        let components: any[] = [];
-        if (expSession) {
-          const mapState = expSession.mapState as any;
-          const currentNodeId = expSession.currentNodeId;
-          mapState.nodes[currentNodeId].status = 'cleared';
-          mapState.nodes = updateFogOfWar(mapState.nodes, currentNodeId);
-          
-          await updateExplorationSession(expSession.id, {
-            mapState
-          });
-          
-          const continueBtn = new ButtonBuilder()
-            .setCustomId(buildNavId('player_map', player.discordId))
-            .setLabel('Continue Dungeon')
-            .setStyle(ButtonStyle.Primary)
-            .setEmoji('➡️');
-          components = [new ActionRowBuilder<ButtonBuilder>().addComponents(continueBtn)];
-        } else {
-          const victoryContext = state.source === 'hunt' ? 'combat_fight_victory_hunt' : 'combat_fight_victory';
-          const navButtons = getNavButtons(victoryContext, player.discordId, activeSession.zoneId);
-          components = navButtons ? [navButtons] : [];
-        }
-
-        await interaction.editReply({ embeds: [embed], components });
-      } else {
-        // Defeat!
-        // Reset player current HP to 10% of max HP as a revival state
-        const recoveryHp = Math.round(playerStats.hpMax * 0.1);
-
-        await db
-          .update(players)
-          .set({
-            hpCurrent: recoveryHp,
-            manaCurrent: 10,
-            currentZoneId: 'cozy_tavern'
-          })
-          .where(eq(players.id, player.id));
-
-        const { getExplorationSessionByPlayerId, deleteExplorationSession } = await import('../../database/queries/exploration.js');
-        const expSession = await getExplorationSessionByPlayerId(player.id);
-        if (expSession) {
-          await deleteExplorationSession(expSession.id);
-        }
-
-        const embed = errorEmbed(
-          'Defeat!',
-          `💀 You were defeated by the **Lv.${enemyDef.level} ${enemyDef.name}**!\n\n` +
-          `*You woke up in town, feeling weak. You recovered **${recoveryHp}** HP.*`
-        );
-        const victoryContext = state.source === 'hunt' ? 'combat_fight_victory_hunt' : 'combat_fight_victory';
-        const navButtons = getNavButtons(victoryContext, player.discordId, activeSession.zoneId);
-        await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
-      }
+      await resolveCombatEnd(interaction, player, state, activeSession, playerStats, enemyDef);
       return;
     }
 
@@ -576,67 +215,3 @@ export async function handleCombatInteraction(
     } catch {}
   }
 }
-
-
-
-async function getCombatSkillsRow(playerId: string, playerClass: string) {
-  try {
-    const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, playerId));
-    if (learned.length === 0) return null;
-
-    const options = learned.map(l => {
-      const skillDef = SKILLS.find(s => s.id === l.skillId);
-      if (!skillDef) return null;
-      return {
-        label: skillDef.name,
-        description: `Cost: ${skillDef.manaCost} Mana. ${skillDef.description.slice(0, 50)}`,
-        value: skillDef.id
-      };
-    }).filter(Boolean);
-
-    if (options.length === 0) return null;
-
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('combat_use_skill')
-      .setPlaceholder('🔮 Select a Skill to cast')
-      .addOptions(options as any[]);
-
-    return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
-  } catch (error) {
-    console.error('Failed to get combat skills:', error);
-    return null;
-  }
-}
-
-async function getCombatItemsRow(playerId: string) {
-  try {
-    const dbItems = await db.select().from(inventory).where(and(eq(inventory.playerId, playerId), eq(inventory.equipped, false)));
-    const catalog = itemsCatalog;
-
-    const consumables = dbItems.map(dbItem => {
-      const def = catalog.find(i => i.id === dbItem.itemId);
-      if (def && def.type === 'consumable') {
-        return {
-          label: `${def.name} (x${dbItem.quantity})`,
-          description: def.description.slice(0, 50),
-          value: dbItem.id
-        };
-      }
-      return null;
-    }).filter(Boolean);
-
-    if (consumables.length === 0) return null;
-
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('combat_use_item')
-      .setPlaceholder('🧪 Select a Consumable to use')
-      .addOptions(consumables as any[]);
-
-    return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
-  } catch (error) {
-    console.error('Failed to get combat items:', error);
-    return null;
-  }
-}
-
-

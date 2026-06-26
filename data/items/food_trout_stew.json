@@ -1,0 +1,13 @@
+{
+  "id": "food_trout_stew",
+  "name": "Trout Stew",
+  "description": "A warm, filling bowl of river trout stew. Restores 20 HP and 10 Stamina.",
+  "type": "consumable",
+  "rarity": "common",
+  "stats": {
+    "hp": 20
+  },
+  "buyPrice": 40,
+  "sellPrice": 15,
+  "levelReq": 1
+}

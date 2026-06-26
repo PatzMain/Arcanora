@@ -1,0 +1,43 @@
+{
+  "id": "silverbrook_river",
+  "name": "Silverbrook River",
+  "description": "Downstream from the docks, the river widens. Crabs and frogs inhabit the muddy banks.",
+  "minLevel": 3,
+  "maxLevel": 5,
+  "explorationCooldown": 30,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "combat",
+  "hasRestBed": false,
+  "visualTheme": "A wide, fast-flowing river with reeds, clay beds, and large stones protruding from the water.",
+  "history": {
+    "createdWhy": "Flows from the northern peaks, carving the silverbrook canyon.",
+    "builtWho": "Natural waterway.",
+    "majorEvents": "Initial mapping by Silverbrook guild cartographers.",
+    "whyExists": "Vital fresh water source and breeding ground for trout and carp.",
+    "currentConflicts": "Spawns mud sprites that flood the banks with sticky clay."
+  },
+  "ecosystem": {
+    "creatures": ["river_crab", "giant_bullfrog", "mud_sprite"],
+    "resources": ["fish_trout", "fish_carp"],
+    "weather": "Mist and river breeze",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["glittering_meadows", "shimmering_cave"],
+  "enemies": ["river_crab", "giant_bullfrog", "mud_sprite"],
+  "encounters": [
+    { "type": "normal_mob", "weight": 60 },
+    { "type": "empty", "weight": 20 },
+    { "type": "treasure", "weight": 10 },
+    { "type": "rare_mob", "weight": 10 }
+  ]
+}

@@ -6,7 +6,7 @@
   "maxLevel": 100,
   "explorationCooldown": 0,
   "region": "Kingdom of Eldoria",
-  "area": "Silverbrook Village",
+  "area": "Oakhaven Hamlet",
   "type": "settlement",
   "hasRestBed": true,
   "visualTheme": "A warm, bustling rustic tavern with timber beams, a glowing stone fireplace, and comfortable beds smelling of lavender.",
@@ -40,8 +40,8 @@
     "travelers": ["Merchant Joren", "Guard Captain Vaelen"]
   },
   "gameplay": {
-    "quests": [],
+    "quests": ["tutorial_01_hearth", "tutorial_02_stew", "tutorial_03_slimes"],
     "secrets": []
   },
-  "connections": ["verdant_meadows"]
+  "connections": ["oakhaven_square"]
 }

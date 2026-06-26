@@ -1,0 +1,47 @@
+{
+  "id": "oakhaven_forge",
+  "name": "Oakhaven Forge",
+  "description": "Ralph's blacksmith shop. The steady clang of hammer on iron echoes through the heavy heat of the forge.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "settlement",
+  "hasRestBed": false,
+  "visualTheme": "A hot, soot-covered stone workshop with a massive glowing hearth, racks of steel weapons, and a heavy iron anvil.",
+  "history": {
+    "createdWhy": "Built to support the local logging industry and supply guards with weapons.",
+    "builtWho": "Founded by Ralph, a master smith from the capital.",
+    "majorEvents": "Smelted the iron ore that reinforced the Oakhaven stockade.",
+    "whyExists": "Provides tools, weapons, and armor repair for the entire foothill settlement.",
+    "currentConflicts": "Supply lines of quality coal have been disrupted by goblin activity."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Sweltering hot indoors, smoky air",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "ralph",
+        "name": "Ralph the Smith",
+        "role": "Forge Master",
+        "dialogue": [
+          "You call that a weapon? It's more toothpick than iron.",
+          "Bring me copper ore and birch wood, and we'll forge you something real.",
+          "Keep your equipment repaired. A broken shield is a death sentence."
+        ]
+      }
+    ],
+    "factions": ["Oakhaven Artisans"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_04_underworld"],
+    "secrets": []
+  },
+  "connections": ["oakhaven_square"]
+}

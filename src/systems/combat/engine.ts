@@ -1,4 +1,17 @@
-import { rollChance, rollBetween } from '../../utils/random.js';
+import { rollChance } from '../../utils/random.js';
+import {
+  calculateDamage,
+  calculateDodgeChance,
+  isFleeSuccessful,
+  getStatModifier
+} from './formulas.js';
+
+export {
+  calculateDamage,
+  calculateDodgeChance,
+  isFleeSuccessful,
+  getStatModifier
+};
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -111,84 +124,6 @@ export function createCombatState(
   };
 }
 
-// ─── Damage Calculation ──────────────────────────────────────────────
-
-/**
- * Calculates damage dealt from an attacker to a defender.
- * Formula: baseDmg = max(1, atk - def/2) * randomVariance(0.85–1.15)
- * If crit rolls, multiply by critDmg / 100.
- *
- * At equal-ish stats (10 atk vs 5 def), base damage ≈ 7–9.
- */
-export function calculateDamage(
-  attackerAtk: number,
-  defenderDef: number,
-  critChance: number,
-  critDmg: number,
-): { damage: number; isCrit: boolean } {
-  // Base damage: attack minus half of defense, minimum 1
-  const rawBase = Math.max(1, attackerAtk - defenderDef / 2);
-
-  // Random variance between 0.85 and 1.15 (inclusive range mapped to float)
-  const varianceRoll = rollBetween(85, 115);
-  const variance = varianceRoll / 100;
-
-  let damage = Math.round(rawBase * variance);
-
-  // Crit check
-  const isCrit = rollChance(critChance);
-  if (isCrit) {
-    damage = Math.round(damage * (critDmg / 100));
-  }
-
-  // Ensure at least 1 damage
-  damage = Math.max(1, damage);
-
-  return { damage, isCrit };
-}
-
-// ─── Dodge Calculation ───────────────────────────────────────────────
-
-/**
- * Calculates dodge chance based on speed differential.
- * Base 5% + (defenderSpeed - attackerSpeed) * 0.5, clamped 0–30%.
- */
-export function calculateDodgeChance(
-  attackerSpeed: number,
-  defenderSpeed: number,
-): number {
-  const raw = 5 + (defenderSpeed - attackerSpeed) * 0.5;
-  return Math.min(30, Math.max(0, raw));
-}
-
-// ─── Flee Check ──────────────────────────────────────────────────────
-
-/**
- * Determines if a flee attempt is successful.
- * Chance = 30% + (playerSpeed * 0.5)%, so faster characters escape easier.
- */
-export function isFleeSuccessful(
-  playerSpeed: number,
-  _enemySpeed: number,
-): boolean {
-  const chance = 30 + playerSpeed * 0.5;
-  return rollChance(Math.min(chance, 90)); // Cap at 90% max flee chance
-}
-
-// ─── Status Effects Processing ───────────────────────────────────────
-
-/**
- * Returns the total flat modifier for a given stat from active buffs/debuffs.
- */
-export function getStatModifier(effects: StatusEffect[], stat: keyof CombatStats): number {
-  let total = 0;
-  for (const eff of effects) {
-    if (eff.stat === stat && eff.value !== undefined) {
-      total += eff.type === 'buff' ? eff.value : -eff.value;
-    }
-  }
-  return total;
-}
 
 /**
  * Processes status effects (DoTs, HoTs) at the start of a turn, decrements
@@ -400,157 +335,5 @@ export function processPlayerTurn(
 
 // ─── Enemy Turn Processing ───────────────────────────────────────────
 
-/**
- * Processes the enemy's turn. The enemy AI picks abilities based on chance
- * weights; otherwise it performs a basic attack. Returns updated state.
- */
-export function processEnemyTurn(
-  state: CombatState,
-  playerStats: CombatStats,
-  enemyStats: EnemyStats,
-  enemyAbilities: EnemyAbility[],
-): TurnResult {
-  let enemyDamageDealt = 0;
-  let enemyAction = '';
+export { processEnemyTurn } from './enemyTurn.js';
 
-  // Process enemy status effects at the start of their turn
-  const enemyEffectLogs = processStatusEffects(state, 'enemy');
-  state.combatLog.push(...enemyEffectLogs);
-
-  // Check if enemy died from DoTs
-  if (state.enemyHp <= 0) {
-    state.isOver = true;
-    state.playerWon = true;
-    state.combatLog.push('🎉 The enemy succumbed to its wounds!');
-    return {
-      state,
-      playerDamageDealt: 0,
-      enemyDamageDealt: 0,
-      playerAction: '',
-      enemyAction: '💀 The enemy has been defeated!',
-    };
-  }
-
-  // Apply stat modifiers from buffs/debuffs
-  const atkMod = getStatModifier(state.enemyBuffs, 'attack');
-  const defMod = getStatModifier(state.enemyBuffs, 'defense');
-
-  const effectiveAtk = Math.max(1, enemyStats.attack + atkMod);
-  const effectiveDef = Math.max(0, enemyStats.defense + defMod);
-
-  // Try to use an ability
-  let usedAbility = false;
-
-  if (enemyAbilities.length > 0) {
-    // Shuffle and try each ability by its chance
-    for (const ability of enemyAbilities) {
-      if (rollChance(ability.chance)) {
-        // Use this ability
-        if (ability.damage && ability.damage > 0) {
-          let dmg = ability.damage;
-
-          // Apply defend reduction
-          if (state.isPlayerDefending) {
-            dmg = Math.round(dmg * 0.5);
-          }
-
-          enemyDamageDealt = dmg;
-          state.playerHp = Math.max(0, state.playerHp - dmg);
-          enemyAction = `🔮 Enemy used ${ability.name} and dealt ${dmg} damage!`;
-        } else if (ability.healing && ability.healing > 0) {
-          const maxHeal = state.enemyMaxHp - state.enemyHp;
-          const healed = Math.min(ability.healing, maxHeal);
-          state.enemyHp += healed;
-          enemyAction = `💚 Enemy used ${ability.name} and healed ${healed} HP!`;
-        } else {
-          enemyAction = `🔮 Enemy used ${ability.name}!`;
-        }
-
-        // Apply ability status effect if it has one
-        if (ability.effect) {
-          const statusEffect: StatusEffect = {
-            id: ability.effect.id,
-            name: ability.effect.name,
-            type: ability.effect.type,
-            stat: ability.effect.stat,
-            value: ability.effect.value,
-            percentValue: ability.effect.percentValue,
-            damagePerTurn: ability.effect.damagePerTurn,
-            healPerTurn: ability.effect.healPerTurn,
-            turnsRemaining: ability.effect.duration,
-          };
-
-          if (ability.effect.target === 'self') {
-            state.enemyBuffs.push(statusEffect);
-            enemyAction += ` (${statusEffect.name} applied!)`;
-          } else {
-            state.playerBuffs.push(statusEffect);
-            enemyAction += ` (${statusEffect.name} applied to you!)`;
-          }
-        }
-
-        state.combatLog.push(enemyAction);
-        usedAbility = true;
-        break;
-      }
-    }
-  }
-
-  // Basic attack if no ability was used
-  if (!usedAbility) {
-    // Check if player dodges
-    const playerDefMod = getStatModifier(state.playerBuffs, 'speed');
-    const effectivePlayerSpeed = Math.max(0, playerStats.speed + playerDefMod);
-    const dodgeChance = calculateDodgeChance(enemyStats.speed, effectivePlayerSpeed);
-
-    if (rollChance(dodgeChance)) {
-      enemyAction = '💨 You dodged the enemy\'s attack!';
-      state.combatLog.push(enemyAction);
-    } else {
-      const { damage, isCrit } = calculateDamage(
-        effectiveAtk,
-        playerStats.defense + getStatModifier(state.playerBuffs, 'defense'),
-        5, // enemies have a flat 5% crit chance
-        150, // enemies have 150% crit damage
-      );
-
-      let finalDmg = damage;
-
-      // Apply defend reduction
-      if (state.isPlayerDefending) {
-        finalDmg = Math.round(finalDmg * 0.5);
-      }
-
-      enemyDamageDealt = finalDmg;
-      state.playerHp = Math.max(0, state.playerHp - finalDmg);
-
-      if (isCrit) {
-        enemyAction = `⚡ Enemy CRITICAL HIT! Dealt ${finalDmg} damage to you!`;
-      } else {
-        enemyAction = `👊 Enemy attacks and deals ${finalDmg} damage!`;
-      }
-      state.combatLog.push(enemyAction);
-    }
-  }
-
-  // Check if player is dead after enemy's action
-  if (state.playerHp <= 0) {
-    state.isOver = true;
-    state.playerWon = false;
-    state.combatLog.push('💀 You have been defeated...');
-  }
-
-  // Increment round after both turns
-  state.round += 1;
-
-  // Reset defend flag at the end of the round
-  state.isPlayerDefending = false;
-
-  return {
-    state,
-    playerDamageDealt: 0,
-    enemyDamageDealt,
-    playerAction: '',
-    enemyAction,
-  };
-}

@@ -1,0 +1,10 @@
+{
+  "id": "crop_wheat",
+  "name": "Golden Wheat",
+  "description": "Fresh wheat crop, can be used for cooking or sold.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 12,
+  "sellPrice": 4,
+  "levelReq": 1
+}

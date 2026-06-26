@@ -1,0 +1,47 @@
+{
+  "id": "oakhaven_square",
+  "name": "Oakhaven Town Square",
+  "description": "The bustling center of Oakhaven Hamlet. Captain Vaelen stands here near the Daily Quest Board, directing newcomers and organizing defenses.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "settlement",
+  "hasRestBed": false,
+  "visualTheme": "A vibrant cobblestone plaza centered around a large mossy fountain, with colorful merchant tents and a tall wooden quest board.",
+  "history": {
+    "createdWhy": "Built as the town center when Oakhaven was officially incorporated.",
+    "builtWho": "Constructed by the initial Silverbrook pioneer guilds.",
+    "majorEvents": "Hosted the treaty negotiations with local wood-sprite emissaries.",
+    "whyExists": "Acts as the social, political, and defensive heart of the foothills region.",
+    "currentConflicts": "Caravans arriving from the hills report goblin scouts observing the plaza from the cliffs."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Warm and sunny with a light breeze",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "vaelen",
+        "name": "Guard Captain Vaelen",
+        "role": "Outpost Commander",
+        "dialogue": [
+          "Eyes sharp, novice. The Oakhaven guards can't protect everyone.",
+          "If you want to survive outside these gates, you'd better learn to swing that sword.",
+          "The road east to the Whispering Canopy is closed until we deal with the goblin threat."
+        ]
+      }
+    ],
+    "factions": ["Eldorian Vanguard"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_01_supply", "story_03_goblin_raids", "story_05_chieftain", "tutorial_04_world"],
+    "secrets": []
+  },
+  "connections": ["cozy_tavern", "river_docks", "oakhaven_forge", "apothecary", "glittering_meadows"]
+}

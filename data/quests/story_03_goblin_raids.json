@@ -1,0 +1,19 @@
+{
+  "id": "story_03_goblin_raids",
+  "name": "Goblin Raids",
+  "description": "Defeat 8 Wood Goblins at the Goblin Outpost.",
+  "type": "story",
+  "levelReq": 6,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "wood_goblin",
+      "required": 8
+    }
+  ],
+  "rewards": {
+    "exp": 750,
+    "gold": 250
+  }
+}

@@ -16,25 +16,15 @@ import { getXpForLevel } from './leveling.js';
 import { successEmbed } from '../../utils/embeds.js';
 
 export const STORY_QUEST_ORDER = [
-  'story_01_begin',
-  'story_02_meadows_clear',
-  'story_03_forest_enter',
-  'story_04_stalker_slay',
-  'story_05_witch_hex',
-  'story_06_caverns_enter',
-  'story_07_golem_slay',
-  'story_08_troll_hunt',
-  'story_09_colossus_defeat',
-  'story_10_wastes_enter',
-  'story_11_hound_slay',
-  'story_12_wraith_hunt',
-  'story_13_scorpion_slay',
-  'story_14_titan_defeat',
-  'story_15_depths_enter',
-  'story_16_walker_slay',
-  'story_17_lurker_hunt',
-  'story_18_kraken_defeat',
-  'story_19_nameless_defeat'
+  'tutorial_01_hearth',
+  'tutorial_02_stew',
+  'tutorial_03_slimes',
+  'tutorial_04_world',
+  'story_01_supply',
+  'story_02_river_king',
+  'story_03_goblin_raids',
+  'story_04_underworld',
+  'story_05_chieftain'
 ];
 
 /**

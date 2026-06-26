@@ -1,0 +1,10 @@
+{
+  "id": "fish_cavefish",
+  "name": "Blind Cavefish",
+  "description": "A pale, blind fish adapted to subterranean pools, glowing slightly.",
+  "type": "material",
+  "rarity": "rare",
+  "buyPrice": 75,
+  "sellPrice": 25,
+  "levelReq": 1
+}

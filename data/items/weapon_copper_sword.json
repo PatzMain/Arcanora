@@ -1,0 +1,14 @@
+{
+  "id": "weapon_copper_sword",
+  "name": "Copper Sword",
+  "description": "A forged copper blade, significantly sharper than wooden training weapons.",
+  "type": "weapon",
+  "rarity": "common",
+  "stats": {
+    "attack": 15
+  },
+  "buyPrice": 120,
+  "sellPrice": 40,
+  "levelReq": 2,
+  "maxDurability": 60
+}

@@ -1,0 +1,10 @@
+{
+  "id": "crop_flax",
+  "name": "Harvested Flax",
+  "description": "Flax stalks ready to be spun into linen fibers.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 25,
+  "sellPrice": 8,
+  "levelReq": 1
+}

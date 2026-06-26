@@ -1,0 +1,18 @@
+{
+  "id": "river_crab",
+  "name": "River Crab",
+  "description": "A hard-shelled crab walking along the Silverbrook shore.",
+  "zone": "silverbrook_river",
+  "rarity": "normal",
+  "level": 3,
+  "stats": {
+    "hp": 70,
+    "attack": 12,
+    "defense": 25,
+    "speed": 8
+  },
+  "abilities": [],
+  "lootTable": [],
+  "expReward": 20,
+  "goldReward": 10
+}

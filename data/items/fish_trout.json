@@ -1,0 +1,10 @@
+{
+  "id": "fish_trout",
+  "name": "River Trout",
+  "description": "A common freshwater fish found in the Oakhaven rivers, great for cooking.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 15,
+  "sellPrice": 5,
+  "levelReq": 1
+}

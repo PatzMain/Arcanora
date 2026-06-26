@@ -1,0 +1,20 @@
+{
+  "id": "tutorial_04_world",
+  "name": "Captain's Call",
+  "description": "Report to Captain Vaelen and explore the Glittering Meadows once.",
+  "type": "story",
+  "levelReq": 1,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "glittering_meadows",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 200,
+    "itemId": "seed_wheat",
+    "itemQty": 5
+  }
+}

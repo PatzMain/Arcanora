@@ -1,0 +1,10 @@
+{
+  "id": "mat_coal",
+  "name": "Coal Chunk",
+  "description": "A combustible mineral chunk used as fuel for forging and smelting.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 10,
+  "sellPrice": 3,
+  "levelReq": 1
+}

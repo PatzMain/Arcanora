@@ -162,7 +162,7 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
 
     // Discover starting locations
     await discoverLocation(player.id, 'cozy_tavern');
-    await discoverLocation(player.id, 'verdant_meadows');
+    await discoverLocation(player.id, 'oakhaven_square');
 
     // 2. Set chosen class
     await db
@@ -192,7 +192,7 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
     await equipItem(player.id, chestRow.id, 'chest');
 
     // Auto-accept the first story quest
-    await startQuest(player.id, 'story_01_begin');
+    await startQuest(player.id, 'tutorial_01_hearth');
 
     // Grant 2 skills at level 1: Basic Attack + Class starter skill
     const classStarterSkills: Record<string, string> = {

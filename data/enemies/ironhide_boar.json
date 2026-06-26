@@ -1,0 +1,25 @@
+{
+  "id": "ironhide_boar",
+  "name": "Ironhide Boar",
+  "description": "A massive wild boar whose skin has hardened from rubbing against iron deposits.",
+  "zone": "forgotten_ironmine",
+  "rarity": "normal",
+  "level": 9,
+  "stats": {
+    "hp": 220,
+    "attack": 45,
+    "defense": 35,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "tackle",
+      "name": "Gore",
+      "damage": 55,
+      "chance": 30
+    }
+  ],
+  "lootTable": [],
+  "expReward": 100,
+  "goldReward": 50
+}

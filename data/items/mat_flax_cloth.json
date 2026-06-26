@@ -1,0 +1,10 @@
+{
+  "id": "mat_flax_cloth",
+  "name": "Flaxen Cloth",
+  "description": "Woven linen fabric, used to tailor light armors and robes.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 40,
+  "sellPrice": 12,
+  "levelReq": 1
+}

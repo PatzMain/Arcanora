@@ -1,0 +1,43 @@
+{
+  "id": "goblin_outpost",
+  "name": "Goblin Outpost",
+  "description": "A crude wooden palisade erected by the local goblin clan. Goblins guard their stolen goods here.",
+  "minLevel": 6,
+  "maxLevel": 8,
+  "explorationCooldown": 90,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "combat",
+  "hasRestBed": false,
+  "visualTheme": "A messy encampment of skins and wood, with spikes, campfires roasting questionable meat, and standard flags.",
+  "history": {
+    "createdWhy": "Built by goblin scouts as a staging ground for village raids.",
+    "builtWho": "Constructed by the Blood-Club goblin clan.",
+    "majorEvents": "Surprised a guard vanguard patrol, setting up local tensions.",
+    "whyExists": "Serves as the frontline fort of Grak'Zul's forces in the foothills.",
+    "currentConflicts": "Wood Goblins are actively raiding loggers passing the thicket connection."
+  },
+  "ecosystem": {
+    "creatures": ["wood_goblin", "wild_boar"],
+    "resources": ["mat_birch_logs"],
+    "weather": "Cold winds and campfire smoke",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["birch_thicket", "forgotten_ironmine"],
+  "enemies": ["wood_goblin", "wild_boar"],
+  "encounters": [
+    { "type": "normal_mob", "weight": 75 },
+    { "type": "empty", "weight": 10 },
+    { "type": "treasure", "weight": 10 },
+    { "type": "rare_mob", "weight": 5 }
+  ]
+}

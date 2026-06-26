@@ -1,0 +1,25 @@
+{
+  "id": "goblin_miner",
+  "name": "Goblin Miner",
+  "description": "A goblin wearing a copper mining helmet, swinging a rusty pickaxe.",
+  "zone": "forgotten_ironmine",
+  "rarity": "normal",
+  "level": 8,
+  "stats": {
+    "hp": 160,
+    "attack": 35,
+    "defense": 20,
+    "speed": 12
+  },
+  "abilities": [],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 70,
+  "goldReward": 40
+}

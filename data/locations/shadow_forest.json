@@ -55,7 +55,7 @@
       }
     ]
   },
-  "connections": ["verdant_meadows", "goblin_sanctuary", "crystal_caverns"],
+  "connections": ["forgotten_ironmine", "goblin_sanctuary", "crystal_caverns"],
   "enemies": [
     "shadow_stalker",
     "dark_treant",

@@ -1,0 +1,19 @@
+{
+  "id": "story_02_river_king",
+  "name": "The River King",
+  "description": "Catch 1 Silver Carp downstream at the Silverbrook River.",
+  "type": "story",
+  "levelReq": 4,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "gather",
+      "target": "fish_carp",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 500,
+    "gold": 150
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "wood_goblin",
+  "name": "Wood Goblin",
+  "description": "A green-skinned bandit armed with crude daggers, lurking in the thicket.",
+  "zone": "birch_thicket",
+  "rarity": "normal",
+  "level": 5,
+  "stats": {
+    "hp": 110,
+    "attack": 25,
+    "defense": 15,
+    "speed": 16
+  },
+  "abilities": [
+    {
+      "id": "backstab",
+      "name": "Stab",
+      "damage": 30,
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 25,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 45,
+  "goldReward": 25
+}

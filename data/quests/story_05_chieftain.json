@@ -1,0 +1,19 @@
+{
+  "id": "story_05_chieftain",
+  "name": "Grak'Zul's Fall",
+  "description": "Defeat Goblin Chieftain, Grak'Zul in the depths of the Forgotten Ironmine.",
+  "type": "story",
+  "levelReq": 10,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "kill",
+      "target": "grak_zul",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 2000,
+    "gold": 500
+  }
+}

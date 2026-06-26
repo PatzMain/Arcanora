@@ -1,0 +1,12 @@
+{
+  "id": "seed_flax",
+  "name": "Flax Seeds",
+  "description": "Seeds for planting flax on your private farm plot.",
+  "type": "seed",
+  "rarity": "common",
+  "buyPrice": 20,
+  "sellPrice": 4,
+  "levelReq": 1,
+  "cropId": "crop_flax",
+  "growthTimeSec": 10800
+}

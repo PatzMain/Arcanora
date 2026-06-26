@@ -1,0 +1,47 @@
+{
+  "id": "river_docks",
+  "name": "River Docks",
+  "description": "The wooden docks on the edge of Oakhaven. Fisherman Barnaby sits here mending nets and selling bait.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "settlement",
+  "hasRestBed": false,
+  "visualTheme": "A weathered wooden pier stretching into a slow-moving river, with fishing baskets, drying racks, and seagulls overhead.",
+  "history": {
+    "createdWhy": "Built to access the river for fishing and transporting timber logs upstream.",
+    "builtWho": "Constructed by Silverbrook shipwrights.",
+    "majorEvents": "Surrendered to a flood five years ago, since rebuilt sturdier.",
+    "whyExists": "Serves as the hamlet's direct link to the river's resources and trade path.",
+    "currentConflicts": "River crabs have grown abnormally large and aggressive, threatening the docks."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Cool mist rising from the water, soft breeze",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "barnaby",
+        "name": "Fisherman Barnaby",
+        "role": "Docks Keeper",
+        "dialogue": [
+          "A quiet day on the water beats a noisy day in the town.",
+          "Mending these nets takes patience, just like catching the big ones.",
+          "The River King lurks in the deep waters downstream. Watch your lines."
+        ]
+      }
+    ],
+    "factions": ["Silverbrook Citizens"],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": ["story_02_river_king"],
+    "secrets": []
+  },
+  "connections": ["oakhaven_square"]
+}

@@ -78,9 +78,13 @@ export async function travelToNode(playerId: string, targetLocationId: string) {
  * Explores the current node for resources, chests, and discoveries.
  * Never triggers combat. Costs 2 stamina.
  */
-export async function exploreNode(playerId: string): Promise<ExploreResult> {
+export async function exploreNode(playerId: string, expectedLocationId?: string): Promise<ExploreResult> {
   const player = await getAndUpdatePlayerStamina(playerId);
   if (!player) throw new Error('Player not found.');
+
+  if (expectedLocationId && player.currentZoneId !== expectedLocationId) {
+    throw new Error('Location mismatch. You are not at the expected location.');
+  }
 
   if (player.stamina < 2) {
     throw new Error('You need at least 2 Stamina to explore.');
@@ -170,9 +174,13 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
  * Hunts the current zone for enemies. Always triggers a combat encounter.
  * Costs 5 stamina. Fails if the zone has no enemies.
  */
-export async function huntNode(playerId: string): Promise<ExploreResult> {
+export async function huntNode(playerId: string, expectedLocationId?: string): Promise<ExploreResult> {
   const player = await getAndUpdatePlayerStamina(playerId);
   if (!player) throw new Error('Player not found.');
+
+  if (expectedLocationId && player.currentZoneId !== expectedLocationId) {
+    throw new Error('Location mismatch. You are not at the expected location.');
+  }
 
   if (player.stamina < 5) {
     throw new Error('You need at least 5 Stamina to hunt.');
@@ -180,6 +188,11 @@ export async function huntNode(playerId: string): Promise<ExploreResult> {
 
   const currentLocation = zonesCatalog.find(z => z.id === player.currentZoneId);
   if (!currentLocation) throw new Error('Current location not found.');
+
+  const TOWN_SAFE_ZONES = ['cozy_tavern', 'oakhaven_square', 'oakhaven_forge', 'apothecary', 'river_docks'];
+  if (TOWN_SAFE_ZONES.includes(currentLocation.id)) {
+    throw new Error("You cannot hunt in the starter town safe zone. Walk out of the town's gate first!");
+  }
 
   const enemies = currentLocation.enemies || [];
   if (enemies.length === 0) {

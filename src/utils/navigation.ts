@@ -88,7 +88,7 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
       // Came from a /map Hunt button — show Hunt Again + Map + Bag
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('combat_hunt', userId))
+          .setCustomId(buildNavId('combat_hunt', userId, extra))
           .setLabel('Hunt Again')
           .setStyle(ButtonStyle.Danger)
           .setEmoji('⚔️'),
@@ -321,7 +321,7 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
           if (!player) {
             throw new Error('Player profile not found. Please complete the /tutorial first.');
           }
-          await huntNode(player.id);
+          await huntNode(player.id, extra || undefined);
           await runFight(interaction);
         } catch (err: any) {
           console.error('Error in combat_hunt navigation:', err);

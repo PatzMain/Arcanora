@@ -1,0 +1,10 @@
+{
+  "id": "crop_potato",
+  "name": "Hearty Potato",
+  "description": "A dense, nutritious root vegetable used in tavern stews.",
+  "type": "material",
+  "rarity": "common",
+  "buyPrice": 20,
+  "sellPrice": 6,
+  "levelReq": 1
+}

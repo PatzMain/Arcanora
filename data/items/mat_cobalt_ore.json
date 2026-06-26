@@ -1,0 +1,10 @@
+{
+  "id": "mat_cobalt_ore",
+  "name": "Cobalt Ore",
+  "description": "A rare blue metal ore found in deep mines, used for high-grade smithing.",
+  "type": "material",
+  "rarity": "rare",
+  "buyPrice": 100,
+  "sellPrice": 35,
+  "levelReq": 5
+}

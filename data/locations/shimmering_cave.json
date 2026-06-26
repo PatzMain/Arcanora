@@ -1,0 +1,43 @@
+{
+  "id": "shimmering_cave",
+  "name": "Shimmering Cave",
+  "description": "A damp cavern rich in iron ore and glowing fungi. Cave bats flutter in the darkness.",
+  "minLevel": 5,
+  "maxLevel": 7,
+  "explorationCooldown": 60,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "combat",
+  "hasRestBed": false,
+  "visualTheme": "A cool, dark cave lit by patches of phosphorescent blue moss, with dripping water and mineral veins glittering on the walls.",
+  "history": {
+    "createdWhy": "Formed by sub-surface water channels eroding the limestone deposits.",
+    "builtWho": "Natural cave system.",
+    "majorEvents": "Discovered by Ralph Senior during an early mineral expedition.",
+    "whyExists": "Acts as the primary iron and coal mining shaft for the settlement.",
+    "currentConflicts": "Infested with aggressive stone golems blocking the lower tunnels."
+  },
+  "ecosystem": {
+    "creatures": ["cave_bat", "stone_golem"],
+    "resources": ["mat_iron_ore", "mat_coal", "fish_cavefish"],
+    "weather": "Damp and cold air",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["silverbrook_river", "forgotten_ironmine"],
+  "enemies": ["cave_bat", "stone_golem"],
+  "encounters": [
+    { "type": "normal_mob", "weight": 70 },
+    { "type": "empty", "weight": 10 },
+    { "type": "treasure", "weight": 15 },
+    { "type": "rare_mob", "weight": 5 }
+  ]
+}

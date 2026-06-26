@@ -1,0 +1,15 @@
+{
+  "id": "boots_copper_greaves",
+  "name": "Copper Greaves",
+  "description": "Leg protection forged from copper, helping you travel securely.",
+  "type": "boots",
+  "rarity": "common",
+  "stats": {
+    "defense": 10,
+    "speed": 5
+  },
+  "buyPrice": 100,
+  "sellPrice": 30,
+  "levelReq": 2,
+  "maxDurability": 50
+}

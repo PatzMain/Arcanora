@@ -1,0 +1,19 @@
+{
+  "id": "story_04_underworld",
+  "name": "Underworld Entry",
+  "description": "Enter the Forgotten Ironmine and explore it at least once.",
+  "type": "story",
+  "levelReq": 8,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "forgotten_ironmine",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 1000,
+    "gold": 300
+  }
+}
