@@ -33,13 +33,17 @@ export async function handlePlayerTurnAction(
 
   if (interaction.isButton()) {
     if (interaction.customId === 'combat_attack') {
+      state.activePresetSlot = undefined;
       action = { type: 'attack' };
     } else if (interaction.customId === 'combat_defend') {
+      state.activePresetSlot = undefined;
       action = { type: 'defend' };
     } else if (interaction.customId === 'combat_flee') {
+      state.activePresetSlot = undefined;
       action = { type: 'flee' };
     } else if (interaction.customId.startsWith('combat_preset_')) {
       const slotNum = parseInt(interaction.customId.split('_')[2] || '1', 10);
+      state.activePresetSlot = slotNum;
       const presets = parsePresets(player.presets);
       const slot = presets[slotNum - 1];
       if (!slot || !slot.actions || slot.actions.length === 0) {
@@ -149,6 +153,7 @@ export async function handlePlayerTurnAction(
       }
     }
   } else if (interaction.isStringSelectMenu()) {
+    state.activePresetSlot = undefined;
     if (interaction.customId === 'combat_use_skill') {
       const skillId = interaction.values[0]!;
       const skillDef = getSkillById(skillId);

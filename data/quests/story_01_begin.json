@@ -1,14 +1,14 @@
 {
   "id": "story_01_begin",
   "name": "The Journey Begins",
-  "description": "Explore the Verdant Outpost once to get your bearings.",
+  "description": "Travel to the Glittering Meadows to begin your adventure.",
   "type": "story",
   "levelReq": 1,
   "repeatable": false,
   "conditions": [
     {
       "type": "explore",
-      "target": "verdant_meadows",
+      "target": "glittering_meadows",
       "required": 1
     }
   ],

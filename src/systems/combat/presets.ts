@@ -107,6 +107,14 @@ export function buildPresetButtons(presets: PlayerPresets, prefix: string): Acti
     buttons.push(button);
   }
 
+  if (prefix === 'combat') {
+    const setupButton = new ButtonBuilder()
+      .setCustomId('combat_preset_configure')
+      .setLabel('⚙️ Setup')
+      .setStyle(ButtonStyle.Secondary);
+    buttons.push(setupButton);
+  }
+
   return new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
 }
 

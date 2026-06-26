@@ -12,13 +12,14 @@ import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { getPlayerWithClampedStats } from '../../database/queries/player.js';
-import { zonesCatalog, itemsCatalog, enemiesCatalog } from '../../utils/catalog.js';
+import { zonesCatalog, itemsCatalog, enemiesCatalog, questsCatalog } from '../../utils/catalog.js';
 import { errorEmbed } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
 import {
   discoverLocation,
   getPlayerDiscoveredLocations
 } from '../../database/queries/worldQueries.js';
+import { getActiveQuests } from '../../database/queries/quest.js';
 import { travelToNode, exploreNode, huntNode } from './worldExplorer.js';
 import { executeRest } from './restService.js';
 import { createExplorationSession } from '../../database/queries/exploration.js';
@@ -43,6 +44,18 @@ export async function renderWorldMapScreen(
   }
 
   const currentLoc = zonesCatalog.find((z) => z.id === player.currentZoneId) || zonesCatalog.find((z) => z.id === 'cozy_tavern')!;
+
+  // Auto-discover current location and its connections to prevent any travel locking
+  if (!discoveredLocIds.includes(currentLoc.id)) {
+    await discoverLocation(player.id, currentLoc.id);
+    discoveredLocIds.push(currentLoc.id);
+  }
+  for (const connId of currentLoc.connections || []) {
+    if (!discoveredLocIds.includes(connId)) {
+      await discoverLocation(player.id, connId);
+      discoveredLocIds.push(connId);
+    }
+  }
 
   // Build destination lines for the "Where to Go" section
   let destinationsText = '';
@@ -100,12 +113,93 @@ export async function renderWorldMapScreen(
     activities.push('• 💤 **Rest**: Sleep at the Cozy Tavern to fully restore vitals');
   }
 
+  // Build advice / guide text dynamically
+  let adviceText = '';
+
+  const hpPct = player.hpCurrent / stats.hpMax;
+  if (hpPct < 0.3 || player.stamina < 5) {
+    adviceText += `• 💤 **Vitals Low**: You are low on HP or Stamina! Travel to the **Cozy Tavern** and click the **Rest** button to fully recover your vitals.\n`;
+  }
+
+  const activeQuests = await getActiveQuests(player.id);
+  if (activeQuests.length > 0) {
+    for (const q of activeQuests) {
+      const qDef = questsCatalog.find((qc) => qc.id === q.questId);
+      if (!qDef) continue;
+
+      const progressObj = q.progress as Record<string, number> || {};
+      
+      for (const cond of qDef.conditions || []) {
+        const currentCount = progressObj[cond.target] || 0;
+        const needed = cond.required;
+        if (currentCount >= needed) continue;
+
+        if (cond.type === 'kill') {
+          const zonesWithCreature = zonesCatalog.filter((z) => (z.enemies || []).includes(cond.target));
+          const enemyName = enemiesCatalog.find((e) => e.id === cond.target)?.name || cond.target;
+          
+          if (zonesWithCreature.some((z) => z.id === currentLoc.id)) {
+            adviceText += `• ⚔️ **Quest: ${qDef.name}**: Defeat **${enemyName}** (${currentCount}/${needed}). (Tip: Hunt directly in this area using the **Hunt** button!).\n`;
+          } else if (zonesWithCreature.length > 0) {
+            adviceText += `• ⚔️ **Quest: ${qDef.name}**: Defeat **${enemyName}** (${currentCount}/${needed}). (Go to: **${zonesWithCreature[0].name}**).\n`;
+          } else {
+            adviceText += `• ⚔️ **Quest: ${qDef.name}**: Defeat **${enemyName}** (${currentCount}/${needed}).\n`;
+          }
+        } else if (cond.type === 'gather') {
+          const itemDef = itemsCatalog.find((i) => i.id === cond.target);
+          const itemName = itemDef?.name || cond.target;
+          const zonesWithResource = zonesCatalog.filter((z) => (z.ecosystem?.resources || []).includes(cond.target));
+          if (zonesWithResource.some((z) => z.id === currentLoc.id)) {
+            adviceText += `• ⛏️ **Quest: ${qDef.name}**: Gather **${itemName}** (${currentCount}/${needed}). (Tip: Gather directly in this area using the **Gather** button!).\n`;
+          } else if (zonesWithResource.length > 0) {
+            adviceText += `• ⛏️ **Quest: ${qDef.name}**: Gather **${itemName}** (${currentCount}/${needed}). (Go to: **${zonesWithResource[0].name}**).\n`;
+          } else {
+            adviceText += `• ⛏️ **Quest: ${qDef.name}**: Gather **${itemName}** (${currentCount}/${needed}).\n`;
+          }
+        } else if (cond.type === 'explore') {
+          const targetLoc = zonesCatalog.find((z) => z.id === cond.target);
+          if (targetLoc) {
+            adviceText += `• 🗺️ **Quest: ${qDef.name}**: Travel to **${targetLoc.name}** to discover it (${currentCount}/${needed}).\n`;
+          } else {
+            adviceText += `• 🗺️ **Quest: ${qDef.name}**: Travel to location (${currentCount}/${needed}).\n`;
+          }
+        }
+      }
+    }
+  } else {
+    adviceText += `• 📜 **No Active Quests**: Visit the Quest Board (click the **Quests** button below) to accept new quests for XP and gold!\n`;
+  }
+
+  const levelLockedConns = [];
+  for (const connId of currentLoc.connections || []) {
+    const connLoc = zonesCatalog.find((z) => z.id === connId);
+    if (connLoc && player.level < connLoc.minLevel) {
+      levelLockedConns.push(connLoc);
+    }
+  }
+  if (levelLockedConns.length > 0) {
+    const lockedNames = levelLockedConns.map((c) => `${c.name} (Requires Lv.${c.minLevel})`).join(', ');
+    adviceText += `• 💪 **Level Up**: Adjacent zones locked by level: ${lockedNames}. (Tip: Grind XP by fighting in the **Oakhaven Sewers** dungeon or **Glittering Meadows**!).\n`;
+  } else if (player.level === 1 && currentLoc.id === 'cozy_tavern') {
+    adviceText += `• 🗺️ **First Steps**: Travel to the **Town Square** using the Travel menu, then check the Quest Board!\n`;
+  }
+
+  if (!adviceText) {
+    adviceText = `• 🧭 Travel to new zones, take on quests, and hunt monsters to grow stronger!`;
+  }
+
   const embed = new EmbedBuilder()
     .setColor(0x7C3AED)
     .setTitle(`🗺️ ${currentLoc.name}`)
     .setDescription(descriptionText)
-    .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: Free' })
+    .setFooter({ text: 'Arcanora — ⚔️ Hunt: 5 Stamina  🚶 Travel: Free' })
     .setTimestamp();
+
+  embed.addFields({
+    name: '🧭 Next Steps & Advice',
+    value: adviceText,
+    inline: false
+  });
 
   if (activities.length > 0) {
     embed.addFields({
@@ -119,16 +213,6 @@ export async function renderWorldMapScreen(
 
   // Row 1: Exploration & Action buttons
   const actionRow = new ActionRowBuilder<ButtonBuilder>();
-
-  // Explore button (items only, 2 stamina)
-  actionRow.addComponents(
-    new ButtonBuilder()
-      .setCustomId(`map_world_explore_${currentLoc.id}_${player.discordId}`)
-      .setLabel('Explore')
-      .setStyle(ButtonStyle.Success)
-      .setEmoji('🔎')
-      .setDisabled(player.stamina < 2)
-  );
 
   // Hunt button (combat only, 5 stamina) — only show in zones with enemies
   const hasEnemies = (currentLoc.enemies || []).length > 0;

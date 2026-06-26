@@ -3,13 +3,13 @@ import {
   type StringSelectMenuInteraction,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle,
+  ButtonStyle
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { combatSessions, players } from '../../database/schema.js';
+import { combatSessions, players, playerSkills } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { getEnemyById, scaleEnemyStats } from './enemy.js';
-import { processPlayerTurn, processEnemyTurn, type CombatStats } from './engine.js';
+import { processPlayerTurn, processEnemyTurn, getStatModifier, type CombatStats, type CombatAction } from './engine.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems } from '../../database/queries/inventory.js';
@@ -19,12 +19,19 @@ import { getNavButtons } from '../../utils/navigation.js';
 import { parsePresets, buildPresetButtons } from './presets.js';
 import { getCombatSkillsRow, getCombatItemsRow } from './uiHelpers.js';
 import { handlePlayerTurnAction, resolveCombatEnd } from './combatResolver.js';
+import { getSkillById, executeSkill } from './skills.js';
 
 export async function handleCombatInteraction(
   interaction: ButtonInteraction | StringSelectMenuInteraction
 ) {
   try {
     await interaction.deferUpdate();
+
+    if (interaction.customId === 'combat_preset_configure') {
+      const { runPreset } = await import('../../commands/player/presets.js');
+      await runPreset(interaction);
+      return;
+    }
 
     const discordId = interaction.user.id;
     const username = interaction.user.username;
@@ -205,6 +212,10 @@ export async function handleCombatInteraction(
       components: components as any[]
     });
 
+    if (!state.isOver && state.activePresetSlot !== undefined) {
+      queueAutoplayStep(player.id, activeSession.id, interaction.client, state.round, state.activePresetSlot);
+    }
+
   } catch (error) {
     console.error('Failed to handle combat interaction:', error);
     try {
@@ -214,4 +225,249 @@ export async function handleCombatInteraction(
       });
     } catch {}
   }
+}
+
+function queueAutoplayStep(
+  playerId: string,
+  sessionId: string,
+  client: any,
+  expectedRound: number,
+  activeSlot: number
+) {
+  setTimeout(async () => {
+    try {
+      await runAutoplayStep(playerId, sessionId, client, expectedRound, activeSlot);
+    } catch (err) {
+      console.error('Error in autoplay step:', err);
+    }
+  }, 5000);
+}
+
+export async function runAutoplayStep(
+  playerId: string,
+  sessionId: string,
+  client: any,
+  expectedRound: number,
+  activeSlot: number
+) {
+  const activeSession = await db.query.combatSessions.findFirst({
+    where: eq(combatSessions.id, sessionId)
+  });
+
+  if (!activeSession) return;
+
+  const state = activeSession.state as any;
+
+  if (state.activePresetSlot !== activeSlot || state.round !== expectedRound || state.isOver) {
+    return;
+  }
+
+  const player = await db.query.players.findFirst({
+    where: eq(players.id, playerId)
+  });
+  if (!player) return;
+
+  const enemyDef = getEnemyById(activeSession.enemyId);
+  if (!enemyDef) return;
+
+  const equippedDbItems = await getEquippedItems(player.id);
+  const equippedItemsList = equippedDbItems.map((dbItem) => {
+    const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+    return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
+  });
+  const playerStats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
+
+  const combatStats: CombatStats = {
+    hp: player.hpCurrent,
+    maxHp: playerStats.hpMax,
+    mana: player.manaCurrent,
+    maxMana: playerStats.manaMax,
+    attack: playerStats.attack,
+    defense: playerStats.defense,
+    speed: playerStats.speed,
+    critChance: playerStats.critChance,
+    critDmg: playerStats.critDmg,
+    luck: playerStats.luck
+  };
+
+  const scaledEnemyStats = scaleEnemyStats(enemyDef, player.level);
+
+  const presets = parsePresets(player.presets);
+  const slot = presets[activeSlot - 1];
+  if (!slot || !slot.actions || slot.actions.length === 0) {
+    state.activePresetSlot = undefined;
+    await db.update(combatSessions).set({ state }).where(eq(combatSessions.id, sessionId));
+    return;
+  }
+
+  const learnedSkillsDb = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
+  const learnedSkillIds = learnedSkillsDb.map((s) => s.skillId);
+
+  const actionIndex = (state.round - 1) % slot.actions.length;
+  const actionId = slot.actions[actionIndex] || 'attack';
+
+  let action: CombatAction = { type: 'attack' };
+  
+  if (actionId === 'attack') {
+    action = { type: 'attack' };
+  } else {
+    const skillDef = getSkillById(actionId);
+    if (!skillDef || !learnedSkillIds.includes(actionId) || state.playerMana < skillDef.manaCost) {
+      state.activePresetSlot = undefined;
+      state.combatLog.push(`❌ Autoplay interrupted: Cannot cast ${skillDef?.name || actionId} (Out of mana or not learned).`);
+      await db.update(combatSessions).set({ state }).where(eq(combatSessions.id, sessionId));
+      await updateCombatMessage(client, activeSession, state, player, playerStats, enemyDef);
+      return;
+    }
+
+    state.playerMana -= skillDef.manaCost;
+
+    const atkMod = getStatModifier(state.playerBuffs, 'attack');
+    const defMod = getStatModifier(state.playerBuffs, 'defense');
+    const spdMod = getStatModifier(state.playerBuffs, 'speed');
+    const critMod = getStatModifier(state.playerBuffs, 'critChance');
+
+    const currentStats = {
+      ...combatStats,
+      attack: Math.max(1, combatStats.attack + atkMod),
+      defense: Math.max(1, combatStats.defense + defMod),
+      speed: Math.max(0, combatStats.speed + spdMod),
+      critChance: Math.max(0, combatStats.critChance + critMod),
+    };
+
+    const enemyCombatStats: CombatStats = {
+      hp: state.enemyHp,
+      maxHp: state.enemyMaxHp,
+      mana: 0,
+      maxMana: 0,
+      attack: scaledEnemyStats.attack,
+      defense: scaledEnemyStats.defense,
+      speed: scaledEnemyStats.speed,
+      critChance: 0,
+      critDmg: 150,
+      luck: 0,
+    };
+
+    const result = executeSkill(skillDef, currentStats, enemyCombatStats);
+
+    if (skillDef.id === 'healer_purify') {
+      state.playerBuffs = state.playerBuffs.filter((b: any) => b.type !== 'debuff');
+    }
+
+    if (skillDef.id === 'mage_mana_surge') {
+      state.playerMana = Math.min(state.playerMaxMana, state.playerMana + result.healing);
+    } else {
+      state.playerHp = Math.min(state.playerMaxHp, state.playerHp + result.healing);
+    }
+
+    state.enemyHp = Math.max(0, state.enemyHp - result.damage);
+
+    for (const eff of result.effects) {
+      if (eff.stat) {
+        const effectTarget = skillDef.effects.find((e) => e.stat === eff.stat)?.target;
+        if (effectTarget === 'self') {
+          state.playerBuffs.push(eff);
+        } else {
+          state.enemyBuffs.push(eff);
+        }
+      } else {
+        const effectType = skillDef.effects.find((e) => e.type === 'dot' || e.type === 'hot')?.type;
+        if (effectType === 'hot') {
+          state.playerBuffs.push(eff);
+        } else {
+          state.enemyBuffs.push(eff);
+        }
+      }
+    }
+
+    state.combatLog.push(`⚡ Preset **${slot.name}** (Step ${actionIndex + 1}/${slot.actions.length}):`);
+    state.combatLog.push(result.description);
+    action = { type: 'skill', skillId: skillDef.name };
+  }
+
+  processPlayerTurn(state, action, combatStats, scaledEnemyStats);
+
+  const channel = await client.channels.fetch(activeSession.channelId).catch(() => null);
+  if (!channel) return;
+  const message = await channel.messages.fetch(activeSession.messageId).catch(() => null);
+  if (!message) return;
+
+  const wrappedInteraction: any = {
+    user: { id: player.discordId, username: player.username },
+    channelId: activeSession.channelId,
+    deferred: true,
+    replied: true,
+    editReply: async (payload: any) => {
+      return message.edit(payload);
+    },
+    followUp: async (payload: any) => {
+      if ('send' in channel) {
+        return (channel as any).send(payload);
+      }
+    }
+  };
+
+  if (state.isOver && !state.playerWon && action.type === 'flee') {
+    await db.delete(combatSessions).where(eq(combatSessions.id, activeSession.id));
+    await db.update(players).set({ hpCurrent: state.playerHp, manaCurrent: state.playerMana }).where(eq(players.id, player.id));
+    const embed = successEmbed('Fled Battle', `💨 You successfully fled.`);
+    await message.edit({ embeds: [embed], components: [] });
+    return;
+  }
+
+  if (!state.isOver) {
+    processEnemyTurn(state, combatStats, scaledEnemyStats, enemyDef.abilities as any[]);
+  }
+
+  if (state.isOver) {
+    await resolveCombatEnd(wrappedInteraction, player, state, activeSession, playerStats, enemyDef);
+    return;
+  }
+
+  await db.update(combatSessions).set({ state }).where(eq(combatSessions.id, activeSession.id));
+  await db.update(players).set({ hpCurrent: state.playerHp, manaCurrent: state.playerMana }).where(eq(players.id, player.id));
+
+  await updateCombatMessage(client, activeSession, state, player, playerStats, enemyDef, message);
+
+  queueAutoplayStep(player.id, activeSession.id, client, state.round, activeSlot);
+}
+
+async function updateCombatMessage(client: any, activeSession: any, state: any, player: any, playerStats: any, enemyDef: any, message?: any) {
+  if (!message) {
+    const channel = await client.channels.fetch(activeSession.channelId).catch(() => null);
+    if (!channel) return;
+    message = await channel.messages.fetch(activeSession.messageId).catch(() => null);
+    if (!message) return;
+  }
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+  );
+
+  const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
+  const itemsRow = await getCombatItemsRow(player.id);
+  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat');
+  const components: any[] = [row, presetsRow];
+  if (selectMenuRow) components.push(selectMenuRow);
+  if (itemsRow) components.push(itemsRow);
+
+  const embed = combatEmbed(
+    player.username,
+    state.playerHp,
+    playerStats.hpMax,
+    state.playerMana,
+    playerStats.manaMax,
+    { name: enemyDef.name, level: enemyDef.level },
+    state.enemyHp,
+    state.enemyMaxHp,
+    state.round,
+    state.combatLog
+  );
+
+  await message.edit({
+    embeds: [embed],
+    components: components as any[]
+  });
 }

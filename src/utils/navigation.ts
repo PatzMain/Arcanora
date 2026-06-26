@@ -49,10 +49,10 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
           .setStyle(ButtonStyle.Primary)
           .setEmoji('⚔️'),
         new ButtonBuilder()
-          .setCustomId(buildNavId('combat_explore', userId, extra))
-          .setLabel('Explore Again')
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji('🔄'),
+          .setCustomId(buildNavId('combat_hunt', userId, extra))
+          .setLabel('Hunt Again')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('⚔️'),
         new ButtonBuilder()
           .setCustomId(buildNavId('inventory_bag', userId))
           .setLabel('View Bag')
@@ -66,10 +66,10 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
       // extra is the last zone — came from a regular explore/fight
       row.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('combat_explore', userId, extra))
-          .setLabel('Explore Again')
-          .setStyle(ButtonStyle.Primary)
-          .setEmoji('🔄'),
+          .setCustomId(buildNavId('combat_hunt', userId, extra))
+          .setLabel('Hunt Again')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('⚔️'),
         new ButtonBuilder()
           .setCustomId(buildNavId('player_map', userId))
           .setLabel('Map')

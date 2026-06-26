@@ -10,11 +10,11 @@ import {
   type ButtonInteraction
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { players, playerSkills } from '../../database/schema.js';
+import { players, playerSkills, combatSessions } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { errorEmbed } from '../../utils/embeds.js';
-import { getNavButtons } from '../../utils/navigation.js';
+import { getNavButtons, buildNavId } from '../../utils/navigation.js';
 import { SKILLS } from '../../systems/combat/skills.js';
 import { parsePresets, getPresetActionSummary } from '../../systems/combat/presets.js';
 
@@ -67,7 +67,21 @@ export async function runPreset(
     );
 
     // Row 2: Navigation buttons
-    const navButtons = getNavButtons('player_prestige_result', player.discordId);
+    const activeSession = await db.query.combatSessions.findFirst({
+      where: eq(combatSessions.playerId, player.id)
+    });
+
+    let navButtons;
+    if (activeSession) {
+      navButtons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(buildNavId('combat_fight', player.discordId))
+          .setLabel('⚔️ Back to Fight')
+          .setStyle(ButtonStyle.Primary)
+      );
+    } else {
+      navButtons = getNavButtons('player_prestige_result', player.discordId);
+    }
 
     const components = [rowConfig];
     if (navButtons) {

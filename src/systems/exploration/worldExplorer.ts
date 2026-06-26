@@ -18,6 +18,8 @@ import { createCombatState } from '../combat/engine.js';
 import { computeStats } from '../progression/stats.js';
 import { awardGold } from '../../economy/currency.js';
 
+import { advanceQuestProgress } from '../progression/questSystem.js';
+
 export interface ExploreResult {
   type: 'combat' | 'resource' | 'chest' | 'discovery' | 'empty';
   message: string;
@@ -32,7 +34,7 @@ export interface ExploreResult {
 /**
  * Handles node-to-node travel.
  */
-export async function travelToNode(playerId: string, targetLocationId: string) {
+export async function travelToNode(playerId: string, targetLocationId: string, interaction?: any) {
   const player = await getAndUpdatePlayerStamina(playerId);
   if (!player) throw new Error('Player not found.');
 
@@ -57,17 +59,23 @@ export async function travelToNode(playerId: string, targetLocationId: string) {
     throw new Error(`Your level is too low. Required: Level ${targetLocation.minLevel}.`);
   }
 
-  // Discovery check
-  const discovered = await isLocationDiscovered(playerId, targetLocationId);
-  if (!discovered) {
-    throw new Error('This location is hidden. You must discover it first.');
-  }
-
   // Update current zone
   await db
     .update(players)
     .set({ currentZoneId: targetLocationId })
     .where(eq(players.id, playerId));
+
+  // Auto-discover the target location and all its adjacent connections
+  await discoverLocation(playerId, targetLocationId);
+  const targetLoc = zonesCatalog.find(z => z.id === targetLocationId);
+  if (targetLoc) {
+    for (const connId of targetLoc.connections || []) {
+      await discoverLocation(playerId, connId);
+    }
+  }
+
+  // Advance quests that require exploring this location
+  await advanceQuestProgress(playerId, 'explore', targetLocationId, 1, interaction);
 
   return targetLocation;
 }
