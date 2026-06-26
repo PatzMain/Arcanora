@@ -94,7 +94,7 @@ export async function renderDungeonScreen(
         `**Leader:** **${party.members[0]?.username || 'Unknown'}**\n\n` +
         `**Party Members (${party.members.length}/4):**\n` +
         party.members.map((m: any, i: number) => `${i + 1}. **${m.username}** (Lv.${m.level})`).join('\n') +
-        `\n\n🔋 *All players must have at least 15 Stamina to start the run.*`
+        `\n\n🔋 *All players must have at least 10 Stamina to start the run.*`
       )
       .setFooter({ text: 'Arcanora — Co-op Adventures' })
       .setTimestamp();
@@ -158,7 +158,7 @@ export async function renderDungeonScreen(
       `── **Paths Ahead** ──\n` +
       `${drawDungeonMapVisual(mapState, currentNodeId, session.previousNodeId)}`
     )
-    .setFooter({ text: '🧭 Each room movement costs 10 Stamina' })
+    .setFooter({ text: '🧭 Entry costs 10 Stamina. Movement is free!' })
     .setTimestamp();
 
   const components: any[] = [];
@@ -181,7 +181,7 @@ export async function renderDungeonScreen(
         .setCustomId(`dungeon_move_${connId}_${player.discordId}`)
         .setLabel(label)
         .setStyle(ButtonStyle.Secondary)
-        .setDisabled(mustFight || player.stamina < 10);
+        .setDisabled(mustFight);
       moveRow.addComponents(moveBtn);
     }
   });
@@ -240,7 +240,7 @@ export async function renderDungeonScreen(
         .setCustomId(`dungeon_nextfloor_${player.discordId}`)
         .setLabel('🪜 Next Floor')
         .setStyle(ButtonStyle.Success)
-        .setDisabled(player.stamina < 15),
+        .setDisabled(false),
       new ButtonBuilder()
         .setCustomId(`dungeon_claimvictory_${player.discordId}`)
         .setLabel('🏆 Claim Victory')
@@ -412,14 +412,14 @@ export async function handleDungeonInteraction(
         const missingStamina: string[] = [];
         for (const member of party.members) {
           const mPlayer = await getPlayerWithClampedStats(member.playerId);
-          if (!mPlayer || mPlayer.stamina < 15) {
+          if (!mPlayer || mPlayer.stamina < 10) {
             missingStamina.push(member.username);
           }
         }
 
         if (missingStamina.length > 0) {
           await interaction.reply({
-            content: `❌ Cannot start. The following members need at least 15 Stamina: **${missingStamina.join(', ')}**`,
+            content: `❌ Cannot start. The following members need at least 10 Stamina: **${missingStamina.join(', ')}**`,
             flags: [MessageFlags.Ephemeral]
           });
           return;
@@ -427,7 +427,7 @@ export async function handleDungeonInteraction(
 
         // Deduct stamina from all members
         for (const member of party.members) {
-          await deductPlayerStamina(member.playerId, 15);
+          await deductPlayerStamina(member.playerId, 10);
         }
 
         // Generate map using average level
@@ -462,9 +462,9 @@ export async function handleDungeonInteraction(
       }
 
       // Deduct stamina
-      const deducted = await deductPlayerStamina(player.id, 15);
+      const deducted = await deductPlayerStamina(player.id, 10);
       if (!deducted) {
-        await interaction.reply({ content: '❌ Insufficient Stamina! Entering a dungeon costs 15 Stamina.', flags: [MessageFlags.Ephemeral] });
+        await interaction.reply({ content: '❌ Insufficient Stamina! Entering a dungeon costs 10 Stamina.', flags: [MessageFlags.Ephemeral] });
         return;
       }
 
@@ -496,12 +496,7 @@ export async function handleDungeonInteraction(
     if (action === 'move') {
       const targetNodeId = parts.slice(2, -1).join('_');
 
-      // Deduct stamina
-      const deducted = await deductPlayerStamina(player.id, 10);
-      if (!deducted) {
-        await interaction.reply({ content: '❌ Insufficient Stamina! Moving costs 10 Stamina.', flags: [MessageFlags.Ephemeral] });
-        return;
-      }
+      // Movement is free in dungeons now
 
       // Update session
       const mapState = session.mapState as any;
@@ -519,12 +514,7 @@ export async function handleDungeonInteraction(
     }
 
     if (action === 'nextfloor') {
-      // Deduct stamina
-      const deducted = await deductPlayerStamina(player.id, 15);
-      if (!deducted) {
-        await interaction.reply({ content: '❌ Insufficient Stamina! Descending to the next floor costs 15 Stamina.', flags: [MessageFlags.Ephemeral] });
-        return;
-      }
+      // Descending floors is free in dungeons now
 
       // Generate next floor map
       const mapState = session.mapState as any;
