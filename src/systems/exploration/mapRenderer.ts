@@ -106,7 +106,10 @@ export async function renderWorldMapScreen(
   const resources = currentLoc.ecosystem?.resources || [];
   if (resources.length > 0) {
     const resourceNames = resources.map((rId: string) => itemsCatalog.find((i) => i.id === rId)?.name || rId).join(', ');
-    activities.push(`• ⛏️ **Gather** (2 Stamina): Harvest ${resourceNames}`);
+    const isWoodOnly = resources.length === 1 && resources[0] === 'mat_wood';
+    const isWoodPrimary = resources.includes('mat_wood') && !resources.some((r: string) => r.includes('ore'));
+    const gatherEmoji = (isWoodOnly || isWoodPrimary) ? '🪓' : '⛏️';
+    activities.push(`• ${gatherEmoji} **Gather** (2 Stamina): Harvest ${resourceNames}`);
   }
   const isDocks = currentLoc.id === 'river_docks';
   const isRiver = currentLoc.id === 'silverbrook_river';
@@ -234,12 +237,15 @@ export async function renderWorldMapScreen(
 
   // Gather button — only show if zone has resources
   if (resources.length > 0) {
+    const isWoodOnly = resources.length === 1 && resources[0] === 'mat_wood';
+    const isWoodPrimary = resources.includes('mat_wood') && !resources.some((r: string) => r.includes('ore'));
+    const gatherEmoji = (isWoodOnly || isWoodPrimary) ? '🪓' : '⛏️';
     actionRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`map_world_gather_${currentLoc.id}_${player.discordId}`)
         .setLabel('Gather')
         .setStyle(ButtonStyle.Success)
-        .setEmoji('⛏️')
+        .setEmoji(gatherEmoji)
         .setDisabled(player.stamina < 2)
     );
   }
@@ -326,14 +332,10 @@ export async function renderWorldMapScreen(
         const targetLoc = zonesCatalog.find((z) => z.id === opt.value)!;
         const isLocked = player.level < targetLoc.minLevel;
         
-        let typeEmoji = '🌲';
-        if (targetLoc.type === 'settlement') typeEmoji = '🏠';
-        else if (targetLoc.isDungeon) typeEmoji = '🏰';
-        
         const button = new ButtonBuilder()
           .setCustomId(`map_world_travel_${opt.value}_${player.discordId}`)
-          .setLabel(`Travel to ${targetLoc.name}`)
-          .setEmoji(typeEmoji)
+          .setLabel(targetLoc.name)
+          .setEmoji('🚶')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(isLocked);
         travelButtonsRow.addComponents(button);

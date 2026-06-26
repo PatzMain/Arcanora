@@ -16,10 +16,23 @@ export interface RestResult {
   locationName?: string;
 }
 
-export async function executeRest(playerId: string): Promise<RestResult> {
-  const player = await getAndUpdatePlayerStamina(playerId);
+export async function executeRest(playerIdOrDiscordId: string): Promise<RestResult> {
+  let player = await db.query.players.findFirst({
+    where: eq(players.id, playerIdOrDiscordId)
+  });
+  if (!player) {
+    player = await db.query.players.findFirst({
+      where: eq(players.discordId, playerIdOrDiscordId)
+    });
+  }
+
   if (!player) {
     return { success: false, error: 'Player profile not found. Please complete the /tutorial first.' };
+  }
+
+  const playerWithStamina = await getAndUpdatePlayerStamina(player.id);
+  if (!playerWithStamina) {
+    return { success: false, error: 'Player profile not found.' };
   }
 
   // Check current zone has a rest bed
