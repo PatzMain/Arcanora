@@ -17,10 +17,13 @@ export interface RestResult {
 }
 
 export async function executeRest(playerIdOrDiscordId: string): Promise<RestResult> {
-  let player = await db.query.players.findFirst({
-    where: eq(players.id, playerIdOrDiscordId)
-  });
-  if (!player) {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(playerIdOrDiscordId);
+  let player;
+  if (isUuid) {
+    player = await db.query.players.findFirst({
+      where: eq(players.id, playerIdOrDiscordId)
+    });
+  } else {
     player = await db.query.players.findFirst({
       where: eq(players.discordId, playerIdOrDiscordId)
     });
