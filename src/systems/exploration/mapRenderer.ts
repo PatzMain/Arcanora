@@ -77,7 +77,10 @@ export async function renderWorldMapScreen(
     } else if (levelLocked) {
       destinationsText += `• 🔒 ~~*${targetLoc.name}*~~  ·  *(Requires Level ${targetLoc.minLevel})*\n`;
     } else {
-      destinationsText += `• ${typeIcon} **${targetLoc.name}**  ·  Lv.${targetLoc.minLevel}+  ·  ${capitalize(targetLoc.type)}\n`;
+      let typeLabel = capitalize(targetLoc.type);
+      if (targetLoc.type === 'settlement') typeLabel = 'Town';
+      else if (targetLoc.type === 'combat') typeLabel = 'Wilderness';
+      destinationsText += `• ${typeIcon} **${targetLoc.name}**  ·  Lv.${targetLoc.minLevel}+  ·  ${typeLabel}\n`;
     }
   }
   if (!destinationsText) destinationsText = '*No connections available.*';
@@ -316,7 +319,10 @@ export async function renderWorldMapScreen(
     
     const statusIcon = isLocked ? '🔒' : '➡️';
     const label = `${statusIcon} ${targetLoc.name}`;
-    const description = `${typeEmoji} ${targetLoc.type.toUpperCase()} · Lv.${targetLoc.minLevel}+ ${isDiscovered ? '' : '(Undiscovered)'}`;
+    let typeLabel = targetLoc.type.toUpperCase();
+    if (targetLoc.type === 'settlement') typeLabel = 'TOWN';
+    else if (targetLoc.type === 'combat') typeLabel = 'WILDERNESS';
+    const description = `${typeEmoji} ${typeLabel} · Lv.${targetLoc.minLevel}+ ${isDiscovered ? '' : '(Undiscovered)'}`;
     
     travelOptions.push({
       label,
@@ -332,10 +338,14 @@ export async function renderWorldMapScreen(
         const targetLoc = zonesCatalog.find((z) => z.id === opt.value)!;
         const isLocked = player.level < targetLoc.minLevel;
         
+        let typeEmoji = '🌲';
+        if (targetLoc.type === 'settlement') typeEmoji = '🏠';
+        else if (targetLoc.isDungeon) typeEmoji = '🏰';
+        
         const button = new ButtonBuilder()
           .setCustomId(`map_world_travel_${opt.value}_${player.discordId}`)
-          .setLabel(targetLoc.name)
-          .setEmoji('🚶')
+          .setLabel(`Travel to ${targetLoc.name}`)
+          .setEmoji(typeEmoji)
           .setStyle(ButtonStyle.Primary)
           .setDisabled(isLocked);
         travelButtonsRow.addComponents(button);
