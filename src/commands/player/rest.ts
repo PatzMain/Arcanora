@@ -1,13 +1,12 @@
 import {
   SlashCommandBuilder,
   EmbedBuilder,
-  MessageFlags,
   type ChatInputCommandInteraction
 } from 'discord.js';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../../database/client.js';
 import { players, cooldowns } from '../../database/schema.js';
-import { getPlayerWithClampedStats, getAndUpdatePlayerStamina } from '../../database/queries/player.js';
+import { getAndUpdatePlayerStamina } from '../../database/queries/player.js';
 import { getEquippedItems } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { zonesCatalog, itemsCatalog } from '../../utils/catalog.js';
@@ -31,7 +30,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     // Check current zone has a rest bed
-    const currentLoc = zonesCatalog.find(z => z.id === player.currentZoneId);
+    const currentLoc = zonesCatalog.find((z: any) => z.id === player.currentZoneId);
     if (!currentLoc || !currentLoc.hasRestBed) {
       const err = errorEmbed(
         'No Rest Bed Here',
@@ -64,8 +63,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // Get player stats for full restore
     const equippedDbItems = await getEquippedItems(player.id);
-    const equippedItemsList = equippedDbItems.map((dbItem) => {
-      const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+    const equippedItemsList = equippedDbItems.map((dbItem: any) => {
+      const def = itemsCatalog.find((i: any) => i.id === dbItem.itemId);
       return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
     });
     const stats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
@@ -103,7 +102,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         `Mana restored to **${stats.manaMax}/${stats.manaMax}**\n` +
         `Stamina restored to **${player.staminaMax}/${player.staminaMax}**`
       )
-      .setFooter({ text: 'Arcanora — You can rest again in 2 minutes' })
+      .setFooter({ text: 'Arcanora â€” You can rest again in 2 minutes' })
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
