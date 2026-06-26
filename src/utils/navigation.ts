@@ -312,11 +312,24 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
         // Trigger a hunt from the map system — spawn combat then go to fight screen
         const { huntNode } = await import('../systems/exploration/worldExplorer.js');
         const { runFight } = await import('../commands/combat/combat.js');
+        const { getPlayerWithClampedStats } = await import('../database/queries/player.js');
         try {
-          await huntNode(interaction.user.id);
+          if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferUpdate();
+          }
+          const player = await getPlayerWithClampedStats(interaction.user.id);
+          if (!player) {
+            throw new Error('Player profile not found. Please complete the /tutorial first.');
+          }
+          await huntNode(player.id);
           await runFight(interaction);
         } catch (err: any) {
-          await interaction.reply({ content: `❌ ${err.message || 'Hunt failed.'}`, flags: [MessageFlags.Ephemeral] });
+          console.error('Error in combat_hunt navigation:', err);
+          if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ content: `❌ ${err.message || 'Hunt failed.'}`, flags: [MessageFlags.Ephemeral] });
+          } else {
+            await interaction.reply({ content: `❌ ${err.message || 'Hunt failed.'}`, flags: [MessageFlags.Ephemeral] });
+          }
         }
         break;
       }
