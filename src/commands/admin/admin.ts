@@ -2,7 +2,12 @@ import {
   SlashCommandBuilder,
   PermissionFlagsBits,
   EmbedBuilder,
-  type ChatInputCommandInteraction
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  MessageFlags,
+  type ChatInputCommandInteraction,
+  type ButtonInteraction
 } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { addItem } from '../../database/queries/inventory.js';
@@ -372,103 +377,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const type = interaction.options.getString('type', true);
       const filter = interaction.options.getString('filter', true);
       const page = interaction.options.getInteger('page') || 1;
-      const pageSize = 15;
-
-      // Collect all entities of this type
-      let allEntities: { id: string; name: string }[] = [];
-
-      if (type === 'item') {
-        allEntities = itemsCatalog.map((i) => ({ id: i.id, name: i.name }));
-      } else if (type === 'class') {
-        allEntities = [
-          { id: 'novice', name: 'Novice' },
-          ...classesCatalog.map((c) => ({ id: c.id, name: c.name }))
-        ];
-      } else if (type === 'pet') {
-        allEntities = petsCatalog.map((p) => ({ id: p.id, name: p.name }));
-      } else if (type === 'achievement') {
-        allEntities = achievementsCatalog.map((a) => ({ id: a.id, name: a.name }));
-      } else if (type === 'currency') {
-        allEntities = [
-          { id: 'gold', name: 'Gold' },
-          { id: 'gems', name: 'Gems' }
-        ];
-      }
-
-      // Filter by configuration status
-      const filteredEntities = allEntities.filter((entity) => {
-        const hasAsset = emojiCache.has(entity.id);
-        if (filter === 'configured') return hasAsset;
-        if (filter === 'unconfigured') return !hasAsset;
-        return true;
-      });
-
-      const totalItems = filteredEntities.length;
-      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-      const activePage = Math.min(page, totalPages);
-      const startIndex = (activePage - 1) * pageSize;
-      const paginatedEntities = filteredEntities.slice(startIndex, startIndex + pageSize);
-
-      const listLines = paginatedEntities.map((entity, idx) => {
-        const num = (startIndex + idx + 1).toString().padStart(2, '0');
-        const asset = emojiCache.get(entity.id);
-        const assetDisplay = asset ? asset.emoji : '*(No custom asset)*';
-        return `\`${num}\` **${entity.name}** \`(${entity.id})\` — ${assetDisplay}`;
-      }).join('\n');
-
-      const filterTitle = filter === 'configured' ? 'Configured' : filter === 'unconfigured' ? 'Unconfigured' : 'All';
-      const description = `### Listing: ${filterTitle} ${type.toUpperCase()} Assets (${totalItems} total)\n\n` +
-        (listLines || '*No entities found matching these criteria.*');
-
-      const embed = new EmbedBuilder()
-        .setTitle(`${type.toUpperCase()} Asset List`)
-        .setDescription(description)
-        .setColor(0x7C3AED) // Purple
-        .setFooter({ text: `Arcanora Assets • Page ${activePage}/${totalPages}` });
-
-      await interaction.editReply({ embeds: [embed] });
+      await runAssetList(interaction, type, filter, page);
     } else if (subcommand === 'feedback-list') {
       const statusFilter = interaction.options.getString('status') || 'open';
       const page = interaction.options.getInteger('page') || 1;
-      const pageSize = 5;
-
-      let queryConditions;
-      if (statusFilter !== 'all') {
-        queryConditions = eq(feedbacks.status, statusFilter);
-      }
-
-      const allFeedbacks = await db.query.feedbacks.findMany({
-        where: queryConditions,
-        orderBy: [desc(feedbacks.createdAt)],
-      });
-
-      const totalItems = allFeedbacks.length;
-      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-      const activePage = Math.min(page, totalPages);
-      const startIndex = (activePage - 1) * pageSize;
-      const paginatedFeedbacks = allFeedbacks.slice(startIndex, startIndex + pageSize);
-
-      const embed = new EmbedBuilder()
-        .setTitle(`📝 Player Feedback List`)
-        .setColor(0x7C3AED)
-        .setFooter({ text: `Arcanora Feedback • Page ${activePage}/${totalPages} • Total: ${totalItems}` });
-
-      if (paginatedFeedbacks.length === 0) {
-        embed.setDescription(`*No feedback entries found with status "${statusFilter}".*`);
-      } else {
-        const descriptionLines = paginatedFeedbacks.map((f) => {
-          const dateStr = f.createdAt.toLocaleDateString();
-          const statusEmoji = f.status === 'resolved' ? '✅' : '⏳';
-          return `**ID**: \`${f.id}\`\n` +
-                 `👤 **Player**: ${f.username} (${statusEmoji} *${f.status}*)\n` +
-                 `🏷️ **Category**: \`${f.category}\` • 📅 **Date**: ${dateStr}\n` +
-                 `💬 **Feedback**:\n> ${f.content.replace(/\n/g, '\n> ')}\n` +
-                 `───────────────────`;
-        });
-        embed.setDescription(`### Status: ${statusFilter.toUpperCase()}\n\n` + descriptionLines.join('\n\n'));
-      }
-
-      await interaction.editReply({ embeds: [embed] });
+      await runFeedbackList(interaction, statusFilter, page);
     } else if (subcommand === 'feedback-resolve') {
       const feedbackId = interaction.options.getString('id', true).trim();
 
@@ -503,5 +416,176 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     console.error('Admin command error:', error);
     const embed = errorEmbed('Admin Error', 'Failed to execute admin command.');
     await interaction.editReply({ embeds: [embed] });
+  }
+}
+
+export async function runAssetList(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  type: string,
+  filter: string,
+  page: number
+) {
+  const userId = interaction.user.id;
+  const pageSize = 15;
+
+  let allEntities: { id: string; name: string }[] = [];
+
+  if (type === 'item') {
+    allEntities = itemsCatalog.map((i) => ({ id: i.id, name: i.name }));
+  } else if (type === 'class') {
+    allEntities = [
+      { id: 'novice', name: 'Novice' },
+      ...classesCatalog.map((c) => ({ id: c.id, name: c.name }))
+    ];
+  } else if (type === 'pet') {
+    allEntities = petsCatalog.map((p) => ({ id: p.id, name: p.name }));
+  } else if (type === 'achievement') {
+    allEntities = achievementsCatalog.map((a) => ({ id: a.id, name: a.name }));
+  } else if (type === 'currency') {
+    allEntities = [
+      { id: 'gold', name: 'Gold' },
+      { id: 'gems', name: 'Gems' }
+    ];
+  }
+
+  const filteredEntities = allEntities.filter((entity) => {
+    const hasAsset = emojiCache.has(entity.id);
+    if (filter === 'configured') return hasAsset;
+    if (filter === 'unconfigured') return !hasAsset;
+    return true;
+  });
+
+  const totalItems = filteredEntities.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const activePage = Math.min(page, totalPages);
+  const startIndex = (activePage - 1) * pageSize;
+  const paginatedEntities = filteredEntities.slice(startIndex, startIndex + pageSize);
+
+  const listLines = paginatedEntities.map((entity, idx) => {
+    const num = (startIndex + idx + 1).toString().padStart(2, '0');
+    const asset = emojiCache.get(entity.id);
+    const assetDisplay = asset ? asset.emoji : '*(No custom asset)*';
+    return `\`${num}\` **${entity.name}** \`(${entity.id})\` — ${assetDisplay}`;
+  }).join('\n');
+
+  const filterTitle = filter === 'configured' ? 'Configured' : filter === 'unconfigured' ? 'Unconfigured' : 'All';
+  const description = `### Listing: ${filterTitle} ${type.toUpperCase()} Assets (${totalItems} total)\n\n` +
+    (listLines || '*No entities found matching these criteria.*');
+
+  const embed = new EmbedBuilder()
+    .setTitle(`${type.toUpperCase()} Asset List`)
+    .setDescription(description)
+    .setColor(0x7C3AED)
+    .setFooter({ text: `Arcanora Assets • Page ${activePage}/${totalPages}` });
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`admin_assetlist_prev_${userId}_${type}_${filter}_${activePage - 1}`)
+      .setLabel('Previous')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(activePage <= 1),
+    new ButtonBuilder()
+      .setCustomId(`admin_assetlist_next_${userId}_${type}_${filter}_${activePage + 1}`)
+      .setLabel('Next')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(activePage >= totalPages)
+  );
+
+  await interaction.editReply({
+    embeds: [embed],
+    components: totalPages > 1 ? [row] : []
+  });
+}
+
+export async function runFeedbackList(
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
+  statusFilter: string,
+  page: number
+) {
+  const userId = interaction.user.id;
+  const pageSize = 5;
+
+  let queryConditions;
+  if (statusFilter !== 'all') {
+    queryConditions = eq(feedbacks.status, statusFilter);
+  }
+
+  const allFeedbacks = await db.query.feedbacks.findMany({
+    where: queryConditions,
+    orderBy: [desc(feedbacks.createdAt)],
+  });
+
+  const totalItems = allFeedbacks.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const activePage = Math.min(page, totalPages);
+  const startIndex = (activePage - 1) * pageSize;
+  const paginatedFeedbacks = allFeedbacks.slice(startIndex, startIndex + pageSize);
+
+  const embed = new EmbedBuilder()
+    .setTitle(`📝 Player Feedback List`)
+    .setColor(0x7C3AED)
+    .setFooter({ text: `Arcanora Feedback • Page ${activePage}/${totalPages} • Total: ${totalItems}` });
+
+  if (paginatedFeedbacks.length === 0) {
+    embed.setDescription(`*No feedback entries found with status "${statusFilter}".*`);
+  } else {
+    const descriptionLines = paginatedFeedbacks.map((f) => {
+      const dateStr = f.createdAt.toLocaleDateString();
+      const statusEmoji = f.status === 'resolved' ? '✅' : '⏳';
+      return `**ID**: \`${f.id}\`\n` +
+             `👤 **Player**: ${f.username} (${statusEmoji} *${f.status}*)\n` +
+             `🏷️ **Category**: \`${f.category}\` • 📅 **Date**: ${dateStr}\n` +
+             `💬 **Feedback**:\n> ${f.content.replace(/\n/g, '\n> ')}\n` +
+             `───────────────────`;
+    });
+    embed.setDescription(`### Status: ${statusFilter.toUpperCase()}\n\n` + descriptionLines.join('\n\n'));
+  }
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`admin_feedbacklist_prev_${userId}_${statusFilter}_${activePage - 1}`)
+      .setLabel('Previous')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(activePage <= 1),
+    new ButtonBuilder()
+      .setCustomId(`admin_feedbacklist_next_${userId}_${statusFilter}_${activePage + 1}`)
+      .setLabel('Next')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(activePage >= totalPages)
+  );
+
+  await interaction.editReply({
+    embeds: [embed],
+    components: totalPages > 1 ? [row] : []
+  });
+}
+
+export async function handleAdminInteraction(interaction: ButtonInteraction) {
+  const customId = interaction.customId;
+  if (!customId.startsWith('admin_')) return;
+
+  const parts = customId.split('_');
+  const type = parts[1];
+  const userId = parts[3];
+
+  if (interaction.user.id !== userId) {
+    await interaction.reply({
+      content: '❌ This admin list menu is not yours!',
+      flags: [MessageFlags.Ephemeral]
+    });
+    return;
+  }
+
+  await interaction.deferUpdate();
+
+  if (type === 'assetlist') {
+    const assetType = parts[4]!;
+    const filter = parts[5]!;
+    const targetPage = parseInt(parts[6] || '1', 10);
+    await runAssetList(interaction, assetType, filter, targetPage);
+  } else if (type === 'feedbacklist') {
+    const statusFilter = parts[4]!;
+    const targetPage = parseInt(parts[5] || '1', 10);
+    await runFeedbackList(interaction, statusFilter, targetPage);
   }
 }

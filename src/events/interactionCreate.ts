@@ -10,6 +10,7 @@ import { handlePrestigeInteraction, handlePresetInteraction } from '../commands/
 import { handleMapTravelInteraction } from '../commands/player/map.js';
 import { handleFeedbackModal } from '../commands/player/feedback.js';
 import { handleGuildInteraction, handleLeaderboardInteraction } from '../commands/guilds/guild.js';
+import { handleAdminInteraction } from '../commands/admin/admin.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
 import { getPlayerWithClampedStats } from '../database/queries/player.js';
@@ -106,6 +107,8 @@ export async function execute(interaction: Interaction) {
         await handleDungeonInteraction(interaction as any);
       } else if (customId.startsWith('player_preset_')) {
         await handlePresetInteraction(interaction as any);
+      } else if (customId.startsWith('admin_')) {
+        await handleAdminInteraction(interaction as any);
       }
     } catch (error) {
       logger.error({ error, customId }, 'Error processing component interaction');
