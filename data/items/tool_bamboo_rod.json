@@ -1,0 +1,10 @@
+{
+  "id": "tool_bamboo_rod",
+  "name": "Bamboo Fishing Rod",
+  "description": "A flexible bamboo fishing rod. Grants a 25% chance of a double catch when fishing.",
+  "type": "tool",
+  "rarity": "common",
+  "buyPrice": 150,
+  "sellPrice": 50,
+  "levelReq": 1
+}

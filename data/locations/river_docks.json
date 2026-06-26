@@ -19,7 +19,7 @@
   },
   "ecosystem": {
     "creatures": [],
-    "resources": [],
+    "resources": ["fish_trout", "fish_carp"],
     "weather": "Cool mist rising from the water, soft breeze",
     "hazards": []
   },

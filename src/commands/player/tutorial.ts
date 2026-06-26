@@ -161,7 +161,7 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
     const player = await findOrCreatePlayer(discordId, username);
 
     // Discover starting locations
-    const starterTownLocs = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary'];
+    const starterTownLocs = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary', 'glittering_meadows'];
     for (const locId of starterTownLocs) {
       await discoverLocation(player.id, locId);
     }

@@ -33,7 +33,7 @@ export async function renderWorldMapScreen(
 ) {
   // Load player's discovered location IDs and auto-discover all starter town locations
   const starterTownLocs = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary'];
-  let discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
+  const discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
   const missingStarterLocs = starterTownLocs.filter((locId) => !discoveredLocIds.includes(locId));
   if (missingStarterLocs.length > 0) {
     for (const locId of missingStarterLocs) {
@@ -80,12 +80,36 @@ export async function renderWorldMapScreen(
     `── **Where to Go** ──\n` +
     destinationsText;
 
+  const activities = [];
+  const resources = currentLoc.ecosystem?.resources || [];
+  if (resources.length > 0) {
+    const resourceNames = resources.map((rId: string) => itemsCatalog.find((i) => i.id === rId)?.name || rId).join(', ');
+    activities.push(`• ⛏️ **Gather** (2 Stamina): Harvest ${resourceNames}`);
+  }
+  const isDocks = currentLoc.id === 'river_docks';
+  const isRiver = currentLoc.id === 'silverbrook_river';
+  const hasFish = resources.some((r: string) => r.startsWith('fish_'));
+  if (isDocks || isRiver || hasFish) {
+    activities.push('• 🎣 **Fish** (3 Stamina): Cast a line into the water');
+  }
+  if (currentLoc.hasRestBed) {
+    activities.push('• 💤 **Rest**: Sleep at the Cozy Tavern to fully restore vitals');
+  }
+
   const embed = new EmbedBuilder()
     .setColor(0x7C3AED)
     .setTitle(`🗺️ ${currentLoc.name}`)
     .setDescription(descriptionText)
     .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: 1 Stamina' })
     .setTimestamp();
+
+  if (activities.length > 0) {
+    embed.addFields({
+      name: '⛏️ Available Activities',
+      value: activities.join('\n'),
+      inline: false
+    });
+  }
 
   const components: any[] = [];
 
@@ -112,6 +136,30 @@ export async function renderWorldMapScreen(
         .setStyle(ButtonStyle.Danger)
         .setEmoji('⚔️')
         .setDisabled(player.stamina < 5)
+    );
+  }
+
+  // Gather button — only show if zone has resources
+  if (resources.length > 0) {
+    actionRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`map_world_gather_${currentLoc.id}_${player.discordId}`)
+        .setLabel('Gather')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji('⛏️')
+        .setDisabled(player.stamina < 2)
+    );
+  }
+
+  // Fish button — only show if zone is river_docks, silverbrook_river, or has fish resources
+  if (isDocks || isRiver || hasFish) {
+    actionRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`map_world_fish_${currentLoc.id}_${player.discordId}`)
+        .setLabel('Fish')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('🎣')
+        .setDisabled(player.stamina < 3)
     );
   }
 
@@ -461,6 +509,30 @@ export async function handleWorldMapInteraction(
       try {
         const locationId = parts.slice(3, -1).join('_');
         const result = await exploreNode(player.id, locationId);
+        await runMap(interaction as any, result.message);
+      } catch (err: any) {
+        await interaction.followUp({ content: `❌ ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
+        await runMap(interaction as any);
+      }
+      return;
+    }
+
+    if (customId.startsWith('map_world_gather_')) {
+      try {
+        const { executeGather } = await import('../../commands/combat/gather.js');
+        const result = await executeGather(player.id, interaction);
+        await runMap(interaction as any, result.message);
+      } catch (err: any) {
+        await interaction.followUp({ content: `❌ ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
+        await runMap(interaction as any);
+      }
+      return;
+    }
+
+    if (customId.startsWith('map_world_fish_')) {
+      try {
+        const { executeFish } = await import('../../commands/combat/fish.js');
+        const result = await executeFish(player.id, interaction);
         await runMap(interaction as any, result.message);
       } catch (err: any) {
         await interaction.followUp({ content: `❌ ${err.message || err}`, flags: [MessageFlags.Ephemeral] });

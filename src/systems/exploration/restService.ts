@@ -27,7 +27,7 @@ export async function executeRest(playerId: string): Promise<RestResult> {
   if (!currentLoc || !currentLoc.hasRestBed) {
     return {
       success: false,
-      error: `There is nowhere to rest in **${currentLoc?.name || 'this area'}**.\n\nTravel to a **settlement or inn** to find a rest bed.\n\n*Settlements with rest beds: Cozy Tavern, Verdant Outpost*`
+      error: `There is nowhere to rest in **${currentLoc?.name || 'this area'}**.\n\nTravel to the **Cozy Tavern** to find a rest bed.`
     };
   }
 

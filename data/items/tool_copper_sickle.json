@@ -1,0 +1,10 @@
+{
+  "id": "tool_copper_sickle",
+  "name": "Copper Sickle",
+  "description": "A curved copper harvesting blade. Grants +1 extra resource when gathering fibers, herbs, or fungi.",
+  "type": "tool",
+  "rarity": "common",
+  "buyPrice": 150,
+  "sellPrice": 50,
+  "levelReq": 1
+}

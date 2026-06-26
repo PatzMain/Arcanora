@@ -1,0 +1,10 @@
+{
+  "id": "tool_copper_axe",
+  "name": "Copper Axe",
+  "description": "A sharp copper axe. Grants +1 extra resource when gathering logs or wood.",
+  "type": "tool",
+  "rarity": "common",
+  "buyPrice": 150,
+  "sellPrice": 50,
+  "levelReq": 1
+}
