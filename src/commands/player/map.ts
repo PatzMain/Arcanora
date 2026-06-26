@@ -32,7 +32,7 @@ import {
   discoverLocation,
   getPlayerDiscoveredLocations
 } from '../../database/queries/worldQueries.js';
-import { travelToNode, exploreNode } from '../../systems/exploration/worldExplorer.js';
+import { travelToNode, exploreNode, huntNode } from '../../systems/exploration/worldExplorer.js';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -369,7 +369,7 @@ export async function runMap(
       .setColor(0x7C3AED)
       .setTitle(`🗺️ ${currentLoc.name}`)
       .setDescription(descriptionText)
-      .setFooter({ text: 'Arcanora — World Exploration' })
+      .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: 10 Stamina' })
       .setTimestamp();
 
     const components: any[] = [];
@@ -377,24 +377,26 @@ export async function runMap(
     // Row 1: Exploration & Action buttons
     const actionRow = new ActionRowBuilder<ButtonBuilder>();
     
-    // Explore button
+    // Explore button (items only, 2 stamina)
     actionRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`map_world_explore_${player.discordId}`)
-        .setLabel('Explore Node')
+        .setLabel('Explore')
         .setStyle(ButtonStyle.Success)
         .setEmoji('🔎')
-        .setDisabled(player.stamina < 10)
+        .setDisabled(player.stamina < 2)
     );
 
-    // Rest button (if Cozy Tavern)
-    if (currentLoc.id === 'cozy_tavern') {
+    // Hunt button (combat only, 5 stamina) — only show in zones with enemies
+    const hasEnemies = (currentLoc.enemies || []).length > 0;
+    if (hasEnemies) {
       actionRow.addComponents(
         new ButtonBuilder()
-          .setCustomId(`map_world_rest_${player.discordId}`)
-          .setLabel('Rest at Tavern')
-          .setStyle(ButtonStyle.Primary)
-          .setEmoji('🛌')
+          .setCustomId(`map_world_hunt_${player.discordId}`)
+          .setLabel('Hunt')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('⚔️')
+          .setDisabled(player.stamina < 5)
       );
     }
 
@@ -1246,24 +1248,29 @@ export async function handleWorldMapInteraction(
     }
 
     if (customId.startsWith('map_world_explore_')) {
-      const result = await exploreNode(player.id);
-      
-      if (result.type === 'combat') {
-        // Direct transition to combat screen!
-        const { runFight } = await import('../combat/combat.js');
-        // Let's call runFight to display active combat panel
-        await runFight(interaction as any);
-        return;
+      try {
+        const result = await exploreNode(player.id);
+        // Explore never returns combat — always show map with result message
+        await runMap(interaction as any, result.message);
+      } catch (err: any) {
+        await interaction.followUp({ content: `❌ ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
+        await runMap(interaction as any);
       }
-      
-      // Riddle puzzle check removed
-
-      // Other types (resource, chest, discovery, empty, etc.) yield text messages
-      await runMap(interaction as any, result.message);
       return;
     }
 
-    // Riddle world solve block removed
+    if (customId.startsWith('map_world_hunt_')) {
+      try {
+        const result = await huntNode(player.id);
+        // Hunt always triggers combat — transition to fight screen
+        const { runFight } = await import('../combat/combat.js');
+        await runFight(interaction as any);
+      } catch (err: any) {
+        await interaction.followUp({ content: `❌ ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
+        await runMap(interaction as any);
+      }
+      return;
+    }
 
     if (customId.startsWith('map_world_npc_')) {
       const selectMenu = interaction as StringSelectMenuInteraction;

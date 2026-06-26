@@ -75,52 +75,41 @@ export async function travelToNode(playerId: string, targetLocationId: string) {
 }
 
 /**
- * Explores the current node.
+ * Explores the current node for resources, chests, and discoveries.
+ * Never triggers combat. Costs 2 stamina.
  */
 export async function exploreNode(playerId: string): Promise<ExploreResult> {
   const player = await getAndUpdatePlayerStamina(playerId);
   if (!player) throw new Error('Player not found.');
 
-  if (player.stamina < 10) {
-    throw new Error('You need at least 10 Stamina to explore.');
+  if (player.stamina < 2) {
+    throw new Error('You need at least 2 Stamina to explore.');
   }
 
   const currentLocation = zonesCatalog.find(z => z.id === player.currentZoneId);
   if (!currentLocation) throw new Error('Current location not found.');
 
-  // Deduct stamina
-  await deductPlayerStamina(playerId, 10);
+  // Deduct stamina (2 for exploring)
+  await deductPlayerStamina(playerId, 2);
 
-  // Determine outcome table based on location type
-  const isSettlement = currentLocation.type === 'settlement' || currentLocation.type === 'landmark';
-  
-  // Weights: combat, resource, puzzle, chest, discovery
-  const roll = Math.random() * 100;
-  let type: ExploreResult['type'] = 'empty';
-
-  if (isSettlement) {
-    // Settlements: lower combat, higher resource/chest/discovery
-    if (roll < 10) type = 'combat';
-    else if (roll < 60) type = 'resource';
-    else if (roll < 85) type = 'chest';
-    else type = 'discovery';
-  } else {
-    // Combat / Dungeon zones: higher combat, lower others
-    if (roll < 55) type = 'combat';
-    else if (roll < 75) type = 'resource';
-    else if (roll < 90) type = 'chest';
-    else type = 'discovery';
-  }
-
-  // Double check if there are no connections to discover
+  // Check for undiscovered connections (for discovery outcome)
   const discoveredLocs = await getPlayerDiscoveredLocations(playerId);
   const undiscoveredConnections = (currentLocation.connections || []).filter(
     (id: string) => !discoveredLocs.includes(id)
   );
 
-  // If discovery rolled but no undiscovered connections exist, fallback to chest or resource
-  if (type === 'discovery' && undiscoveredConnections.length === 0) {
-    type = Math.random() < 0.5 ? 'resource' : 'chest';
+  // Weighted outcome: discovery (if available), resource, chest, empty
+  const roll = Math.random() * 100;
+  let type: 'resource' | 'chest' | 'discovery' | 'empty' = 'empty';
+
+  if (undiscoveredConnections.length > 0 && roll < 20) {
+    type = 'discovery';
+  } else if (roll < 55) {
+    type = 'resource';
+  } else if (roll < 85) {
+    type = 'chest';
+  } else {
+    type = 'empty';
   }
 
   // 1. PATH DISCOVERY
@@ -154,13 +143,11 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
         };
       }
     }
-    // Fallback to empty if no resources configured
-    type = 'empty';
+    // Fallback to chest if no resources configured
+    type = 'chest';
   }
 
-  // 3. PUZZLE / RIDDLE - Removed
-
-  // 4. CHEST / GOLD
+  // 3. CHEST / GOLD
   if (type === 'chest') {
     const goldGained = Math.floor(Math.random() * 150) + 50; // 50-200 gold
     await awardGold(playerId, goldGained, `Explored and found a chest at ${currentLocation.name}`);
@@ -171,66 +158,86 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
     };
   }
 
-  // 5. COMBAT
-  if (type === 'combat') {
-    const enemies = currentLocation.enemies || [];
-    if (enemies.length > 0) {
-      const enemyId = enemies[Math.floor(Math.random() * enemies.length)]!;
-      const enemyDef = enemiesCatalog.find(e => e.id === enemyId);
-      
-      if (enemyDef) {
-        // Build combat session
-        const equippedDbItems = await getEquippedItems(playerId);
-        const equippedItemsList = equippedDbItems.map((dbItem) => {
-          const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
-          return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
-        });
-        const playerStats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
 
-        const scaledEnemyStats = scaleEnemyStats(enemyDef, player.level);
-        const combatStatsInput = {
-          hp: player.hpCurrent,
-          maxHp: playerStats.hpMax,
-          mana: player.manaCurrent,
-          maxMana: playerStats.manaMax,
-          attack: playerStats.attack,
-          defense: playerStats.defense,
-          speed: playerStats.speed,
-          critChance: playerStats.critChance,
-          critDmg: playerStats.critDmg,
-          luck: playerStats.luck
-        };
-
-        const initialCombatState = createCombatState(combatStatsInput, scaledEnemyStats);
-        initialCombatState.combatLog = [
-          `⚔️ You were ambushed by a Lv.${enemyDef.level} **${enemyDef.name}** while exploring!`,
-          `💪 Prepare for battle!`
-        ];
-
-        const sessionExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-        await db
-          .insert(combatSessions)
-          .values({
-            playerId: player.id,
-            enemyId: enemyDef.id,
-            zoneId: currentLocation.id,
-            state: initialCombatState,
-            expiresAt: sessionExpiresAt
-          });
-
-        return {
-          type: 'combat',
-          message: `⚔️ **Ambushed!**\nA wild **${enemyDef.name}** jumps out from the shadows!`,
-          combatEnemy: enemyDef
-        };
-      }
-    }
-    type = 'empty';
-  }
-
-  // 6. EMPTY
+  // 4. EMPTY
   return {
     type: 'empty',
     message: `💨 **Quiet Scouting**\nYou scout around **${currentLocation.name}**, but find nothing of interest this time.`
+  };
+}
+
+/**
+ * Hunts the current zone for enemies. Always triggers a combat encounter.
+ * Costs 5 stamina. Fails if the zone has no enemies.
+ */
+export async function huntNode(playerId: string): Promise<ExploreResult> {
+  const player = await getAndUpdatePlayerStamina(playerId);
+  if (!player) throw new Error('Player not found.');
+
+  if (player.stamina < 5) {
+    throw new Error('You need at least 5 Stamina to hunt.');
+  }
+
+  const currentLocation = zonesCatalog.find(z => z.id === player.currentZoneId);
+  if (!currentLocation) throw new Error('Current location not found.');
+
+  const enemies = currentLocation.enemies || [];
+  if (enemies.length === 0) {
+    throw new Error('There are no enemies to hunt in this area. Travel to a combat zone.');
+  }
+
+  // Deduct stamina (5 for hunting)
+  await deductPlayerStamina(playerId, 5);
+
+  const enemyId = enemies[Math.floor(Math.random() * enemies.length)]!;
+  const enemyDef = enemiesCatalog.find(e => e.id === enemyId);
+
+  if (!enemyDef) {
+    throw new Error('Enemy definition not found.');
+  }
+
+  // Build combat session
+  const equippedDbItems = await getEquippedItems(playerId);
+  const equippedItemsList = equippedDbItems.map((dbItem) => {
+    const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+    return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
+  });
+  const playerStats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
+
+  const scaledEnemyStats = scaleEnemyStats(enemyDef, player.level);
+  const combatStatsInput = {
+    hp: player.hpCurrent,
+    maxHp: playerStats.hpMax,
+    mana: player.manaCurrent,
+    maxMana: playerStats.manaMax,
+    attack: playerStats.attack,
+    defense: playerStats.defense,
+    speed: playerStats.speed,
+    critChance: playerStats.critChance,
+    critDmg: playerStats.critDmg,
+    luck: playerStats.luck
+  };
+
+  const initialCombatState = createCombatState(combatStatsInput, scaledEnemyStats);
+  initialCombatState.combatLog = [
+    `⚔️ You tracked down a Lv.${enemyDef.level} **${enemyDef.name}** while hunting!`,
+    `💪 Prepare for battle!`
+  ];
+
+  const sessionExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  await db
+    .insert(combatSessions)
+    .values({
+      playerId: player.id,
+      enemyId: enemyDef.id,
+      zoneId: currentLocation.id,
+      state: initialCombatState,
+      expiresAt: sessionExpiresAt
+    });
+
+  return {
+    type: 'combat',
+    message: `⚔️ **Enemy Found!**\nYou track down a **${enemyDef.name}** lurking in **${currentLocation.name}**!`,
+    combatEnemy: enemyDef
   };
 }

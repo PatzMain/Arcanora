@@ -18,6 +18,7 @@ import * as adminCmd from '../commands/admin/admin.js';
 import * as mapCmd from '../commands/player/map.js';
 import * as resetCmd from '../commands/player/reset.js';
 import * as feedbackCmd from '../commands/player/feedback.js';
+import * as restCmd from '../commands/player/rest.js';
 import { initEmojis } from '../utils/emojis.js';
 
 export const data = {}; // keep index metadata or dummy placeholder if index references it
@@ -38,7 +39,8 @@ export const commandsList = [
   adminCmd,
   mapCmd,
   resetCmd,
-  feedbackCmd
+  feedbackCmd,
+  restCmd
 ];
 
 export async function execute(client: Client) {

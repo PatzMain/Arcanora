@@ -8,6 +8,7 @@
   "region": "Kingdom of Eldoria",
   "area": "Silverbrook Village",
   "type": "settlement",
+  "hasRestBed": true,
   "visualTheme": "A warm, bustling rustic tavern with timber beams, a glowing stone fireplace, and comfortable beds smelling of lavender.",
   "history": {
     "createdWhy": "Built as a resting station along the old trade road between the capital and the forest colonies.",

@@ -8,6 +8,7 @@
   "region": "Kingdom of Eldoria",
   "area": "Whispering Forest",
   "type": "settlement",
+  "hasRestBed": true,
   "visualTheme": "Sun-drenched wooden stockade perched on a grassy ridge, overlooking rolling pastures of wild clover.",
   "history": {
     "createdWhy": "Established as a logging colony and scouting outpost to monitor forest movements.",
