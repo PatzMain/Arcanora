@@ -9,17 +9,14 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsup src/index.ts --format esm --out-dir dist",
+    "build": "tsup src/index.ts --format esm --out-dir dist --target node20 --clean",
     "start": "node dist/index.js",
     "migrate": "drizzle-kit migrate",
     "generate": "drizzle-kit generate",
-    "lint": "eslint src --ext .ts",
-    "test": "npm run lint && tsc --noEmit && npm run build && vitest run"
+    "lint": "eslint src --ext .ts --cache",
+    "test": "npm run lint && tsc --noEmit && vitest run"
   },
   "dependencies": {
-    "@types/node": "^20.17.10",
-    "@types/node-cron": "^3.0.11",
-    "@types/pg": "^8.11.10",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.1",
@@ -28,15 +25,18 @@
     "node-cron": "^3.0.3",
     "pg": "^8.13.1",
     "pino": "^8.21.0",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/node": "^20.17.10",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.11.10",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
     "eslint": "^8.57.1",
+    "tsup": "^8.3.5",
     "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
     "vitest": "^1.6.0"
   },
   "overrides": {

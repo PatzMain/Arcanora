@@ -31,7 +31,7 @@
 
 **Arcanora** is a Discord MMORPG bot. Players interact entirely through Discord slash commands to explore zones, fight enemies, craft items, complete quests, manage guilds, and progress through a class-based RPG system. The bot uses a PostgreSQL database via Drizzle ORM and is deployed on Railway.
 
-**Key gameplay loop**: Onboard via `/tutorial` → Choose class → Explore world via `/map` → Enter node-based dungeon runs → Fight enemies → Loot items → Craft gear → Level up via story quests → Earn achievements → Join guilds → Fight bosses.
+**Key gameplay loop**: Onboard via `/tutorial` → Choose class → Explore world via `/map` → Enter node-based dungeon runs → Fight enemies → Loot items → Craft gear → Level up via EXP (earned from quests & combat) → Earn achievements → Join guilds → Fight bosses.
 
 > **Architecture Philosophy — Modular & Scalable by Design**:
 > Arcanora is built on a **registry-driven, data-first architecture**. Game content (enemies, items, quests, locations, recipes, pets, achievements, classes) lives in `data/` JSON files loaded into registries at startup. Behavior overrides (item use, skills, achievements, shops, dungeon nodes) plug in via Registry singletons. The database schema is Drizzle ORM-driven — new tables/columns are added via migrations. Slash commands are **statically imported** in `src/events/ready.ts` and registered globally on boot. New content should be added as JSON + optional registry hooks, not by editing engine internals.
@@ -92,6 +92,7 @@ Discord Bot/
 ├── .gitignore                # Git exclusions (includes this file)
 ├── CONTEXT_HANDOFF.md        # THIS FILE — AI context handoff
 ├── drizzle.config.ts         # Drizzle ORM configuration
+├── nixpacks.toml             # Nixpacks deployment configuration
 ├── package.json              # Dependencies and scripts
 ├── railway.json              # Railway deployment config
 ├── tsconfig.json             # TypeScript compiler config
@@ -117,15 +118,15 @@ Discord Bot/
 │   │   ├── guilds/           # /guild
 │   │   ├── inventory/        # /inventory
 │   │   ├── pets/             # /pet
-│   │   ├── player/           # /player, /tutorial, /help, /invite, /map, /reset
+│   │   ├── player/           # /player, /tutorial, /help, /invite, /map, /reset, /feedback, /rest
 │   │   └── quests/           # /quest (includes daily rewards)
 │   │
 │   ├── database/
 │   │   ├── client.ts         # pg Pool + Drizzle instance
 │   │   ├── schema.ts         # All table definitions + relations
-│   │   ├── migrations/       # Generated migration SQL (0000–0005)
+│   │   ├── migrations/       # Generated migration SQL (0000–0007)
 │   │   └── queries/
-│   │       ├── player.ts     # Player CRUD, stamina, leaderboard
+│   │       ├── player.ts     # Player CRUD, stamina, leaderboard, EXP
 │   │       ├── inventory.ts  # Inventory & equipment
 │   │       ├── guild.ts      # Guild CRUD
 │   │       ├── quest.ts      # Quest progress
@@ -157,15 +158,15 @@ Discord Bot/
 │   │   │   └── presets.ts    # Preset combo turn execution helpers
 │   │   ├── exploration/
 │   │   │   ├── zones.ts      # Zone loading & random encounters
-│   │   │   ├── worldExplorer.ts # World map travel & discovery
+│   │   │   ├── worldExplorer.ts # World map travel, explore, and hunt actions
 │   │   │   ├── dungeonGenerator.ts # Procedural DAG dungeon maps
 │   │   │   ├── dungeonInteractions.ts # dungeonNodeRegistry + node handlers
 │   │   │   └── loot.ts       # Treasure loot generation
 │   │   ├── items/
 │   │   │   └── itemBehavior.ts # itemBehaviorRegistry
 │   │   └── progression/
-│   │       ├── leveling.ts   # XP tables, stat growth (level-ups via quests only)
-│   │       ├── questSystem.ts # Story quest chain & level-up on completion
+│   │       ├── leveling.ts   # XP tables, stat growth, level-up checks
+│   │       ├── questSystem.ts # Story quest chain & reward validation
 │   │       ├── stats.ts      # computeStats pipeline
 │   │       └── prestige.ts   # Prestige eligibility & bonuses
 │   │
@@ -174,13 +175,14 @@ Discord Bot/
 │       ├── catalog.ts        # JSON loading + registries + backward-compat Proxies
 │       ├── cooldown.ts       # DB-backed per-action cooldowns
 │       ├── embeds.ts         # Discord embed builders (all game UIs)
+│       ├── emojis.ts         # Custom emoji asset manager & cache
 │       ├── logger.ts         # Pino logger instance
 │       ├── navigation.ts     # Pagination, button rows, select menus
 │       ├── random.ts         # Weighted random, roll, shuffle helpers
 │       ├── rateLimit.ts      # Per-user in-memory rate limiting
 │       └── registry.ts       # Generic Registry class
 │
-└── tests/                    # Vitest test files (69 tests total)
+└── tests/                    # Vitest test files (72 tests total)
     ├── combat.test.ts
     ├── dungeon.test.ts
     ├── economy.test.ts
@@ -202,7 +204,7 @@ Discord Bot/
 1. Loads `dotenv/config` for environment variables
 2. Validates `DISCORD_TOKEN` and `DATABASE_URL` before login
 3. Creates Discord `Client` with `Guilds` and `GuildMessages` intents
-4. Binds events: `ready` → registers slash commands; `interactionCreate` → routes commands/components
+4. Binds events: `ready` → registers slash commands & loads custom emojis; `interactionCreate` → routes commands/components
 5. Sets up global error handlers (`errorEvent`, `unhandledRejection`, `uncaughtException`)
 6. Graceful shutdown on `SIGINT`/`SIGTERM` — destroys client, closes DB pool
 7. Calls `client.login(DISCORD_TOKEN)`
@@ -237,6 +239,8 @@ Discord Bot/
 | `playerSkills` | `player_skills` | `id` (uuid) | playerId, skillId, level |
 | `explorationSessions` | `exploration_sessions` | `id` (uuid) | playerId (FK), channelId, zoneId, currentNodeId, previousNodeId, party (JSONB), mapState (JSONB), createdAt, updatedAt |
 | `playerWorldDiscoveries` | `player_world_discoveries` | `id` (uuid) | playerId + locationId (unique), discoveredAt |
+| `customAssets` | `custom_assets` | `id` (varchar) | type, emoji, createdAt, updatedAt (custom emoji overrides) |
+| `feedbacks` | `feedbacks` | `id` (uuid) | playerId (FK), username, category, content, status, createdAt (feedback system) |
 
 **Important schema details**:
 - `players.currentZoneId` defaults to `'verdant_meadows'`
@@ -250,7 +254,7 @@ Discord Bot/
 
 | Module | Key Exports |
 |---|---|
-| `player.ts` | `findOrCreatePlayer`, `getPlayerByDiscordId`, `updatePlayerLevel`, `updateLastSeen`, `getLeaderboard`, `incrementKills`, `incrementQuestsCompleted`, `getPlayerWithClampedStats`, `getAndUpdatePlayerStamina`, `deductPlayerStamina`, `replenishPlayerStamina` |
+| `player.ts` | `findOrCreatePlayer`, `getPlayerByDiscordId`, `updatePlayerLevel`, `updateLastSeen`, `getLeaderboard`, `incrementKills`, `incrementQuestsCompleted`, `getPlayerWithClampedStats`, `getAndUpdatePlayerStamina`, `deductPlayerStamina`, `replenishPlayerStamina`, `awardPlayerExp` |
 | `inventory.ts` | `addItem`, `removeItem`, `getPlayerInventory`, `getEquippedItems`, `equipItem`, `unequipItem`, `updateDurability`, `updateEnhancement` |
 | `guild.ts` | `createGuild`, `getGuildByName`, `getPlayerGuild`, `addMember`, `removeMember`, `getGuildMembers`, `updateTreasury`, `getGuildLeaderboard` |
 | `quest.ts` | `startQuest`, `getActiveQuests`, `updateQuestProgress`, `completeQuest`, `getCompletedQuests` |
@@ -262,6 +266,7 @@ Discord Bot/
 - **Combat sessions**: CRUD done inline in `src/commands/combat/combat.ts`, `src/systems/combat/handler.ts`, `src/systems/exploration/dungeonInteractions.ts`, and `src/systems/exploration/worldExplorer.ts` via direct Drizzle calls on `combatSessions`
 - **Pets**: No dedicated query module — pet data from `petsCatalog`, pet level stored in `inventory.enhancement`, logic in `src/commands/pets/pet.ts` and `src/systems/pets.ts`
 - **Daily login**: Handled inline in `src/commands/quests/quest.ts` using `dailyLogins` table
+- **Custom Assets & Emojis** (`src/utils/emojis.ts`): Centrally handles in-memory preloading of emoji overrides on startup and manages entries inside the `custom_assets` table.
 
 ---
 
@@ -273,8 +278,9 @@ Commands are organized by category folder. Each command file exports:
 
 ### Command Registration (`src/events/ready.ts`)
 
-- Commands are **statically imported** into `commandsList` (15 commands)
-- On `ready`, stale **guild-level** commands are cleared from every guild
+- Commands are **statically imported** into `commandsList` (17 commands)
+- On `ready`, custom asset emojis are preloaded into memory (`initEmojis`)
+- Stale **guild-level** commands are cleared from every guild on startup
 - Global slash commands registered via REST using `client.user.id` (falls back to `DISCORD_CLIENT_ID`)
 - **To add a new command**: create the file under `src/commands/` **and** add a static import + entry in `commandsList` in `ready.ts`
 
@@ -282,13 +288,13 @@ Commands are organized by category folder. Each command file exports:
 
 - Looks up slash commands from `commandsList` by name
 - Enforces **rate limits** globally: 5 actions / 10 seconds per user (`rateLimit.ts`)
-- **Profile guard**: All commands except `/tutorial`, `/invite`, `/help` require an existing player profile (`getPlayerWithClampedStats`)
-- **Action cooldowns** (e.g. explore) are enforced per-command, not in the router (`cooldown.ts` used in `/combat explore`)
+- **Profile guard**: All commands except `/tutorial`, `/invite`, `/help`, and modal routing require an existing player profile (`getPlayerWithClampedStats`)
+- **Action cooldowns** (e.g. rest) are enforced per-command, not in the router (`cooldown.ts` used in `/rest`)
 - Routes component interactions by `customId` prefix:
 
 | `customId` Prefix | Handler | File | Description |
 |---|---|---|---|
-| `combat_` | `handleCombatInteraction` | `systems/combat/handler.ts` | Combat actions, presets, flee |
+| `combat_` | `handleCombatInteraction` | `systems/combat/handler.ts` | Combat actions, presets, flee, hunt |
 | `shop_` | `handleShopInteraction` | `commands/economy/economy.ts` | Shop browse/buy/sell |
 | `tutorial_` | `handleTutorialInteraction` | `commands/player/tutorial.ts` | Class selection (select menu) |
 | `nav_` | `handleNavInteraction` | `utils/navigation.ts` | Generic pagination |
@@ -300,32 +306,34 @@ Commands are organized by category folder. Each command file exports:
 | `prestige_` | `handlePrestigeInteraction` | `commands/player/player.ts` | Prestige confirm/cancel |
 | `guild_` | `handleGuildInteraction` | `commands/guilds/guild.ts` | Guild actions |
 | `leaderboard_` | `handleLeaderboardInteraction` | `commands/guilds/guild.ts` | Leaderboard navigation |
-| `map_travel_` | `handleMapTravelInteraction` | `commands/player/map.ts` | Zone travel & tavern rest |
-| `map_world_` | `handleWorldMapInteraction` | `commands/player/map.ts` | World map fog-of-war UI |
+| `map_travel_` | `handleMapTravelInteraction` | `commands/player/map.ts` | Zone travel confirmation & resting |
+| `map_world_` | `handleWorldMapInteraction` | `commands/player/map.ts` | World map travel, scouting, inspecting |
 | `map_enter_dungeon_` / `dungeon_` | `handleDungeonInteraction` | `commands/player/map.ts` | Dungeon run navigation |
 | `player_preset_` | `handlePresetInteraction` | `commands/player/player.ts` | Preset config (buttons + modals) |
+| `admin_` | `handleAdminInteraction` | `commands/admin/admin.ts` | Admin list page navigation |
+| `feedback_submit_` | `handleFeedbackModal` | `commands/player/feedback.ts` | Saves player feedback modal submission |
 
 ### Command Reference
 
 | Command | Subcommands / Parameters | Description |
 |---|---|---|
-| `/admin` | `give-item`, `spawn-boss`, `spawn-global-boss` | Admin: give items, spawn local/global world bosses |
+| `/admin` | `give-item`, `spawn-boss`, `spawn-global-boss`, `asset-set`, `asset-remove`, `asset-list`, `feedback-list`, `feedback-resolve` | Admin operations: items, boss raids, custom assets, and player feedback |
 | `/boss` | `info`, `fight` | World boss raid combat |
 | `/combat` | `explore`, `fight` | Zone exploration encounters or resume combat |
 | `/craft` | `recipe` (optional) | Crafting menu or craft specific recipe |
 | `/economy` | `balance`, `shop`, `buy` | View currency, browse shop, buy items |
+| `/feedback` | (none) | Submit suggestions, bug reports, or general feedback via modal |
 | `/guild` | `info`, `create`, `join`, `leave`, `kick`, `leaderboard` | Guild management |
 | `/inventory` | `bag`, `equip`, `sell` | View bag, equip gear, sell to shop |
 | `/pet` | `info`, `level`, `release` | Pet stats, training, release |
 | `/help` | (none) | Command & system help |
 | `/invite` | (none) | Bot invite link |
-| `/map` | (none) | World map, travel, dungeon runs, tavern rest |
+| `/map` | (none) | World map: travel, scout (Explore), fight (Hunt), inspect location, and dungeon crawls |
 | `/player` | `profile`, `stats`, `preset`, `prestige` | Character card, attributes, presets, prestige |
 | `/quest` | `active`, `board`, `accept`, `daily` | Quest tracking, board, accept, daily login reward |
 | `/reset` | (none) | Delete character (with confirmation) |
+| `/rest` | (none) | Rest at a nearby inn or settlement (Cozy Tavern / Verdant Outpost) to fully restore HP, Mana, and Stamina |
 | `/tutorial` | (none) | Onboarding, class selection, starter gear |
-
-> **No `/trade` command exists.** Auction/trade fee helpers exist in `antiInflation.ts` but are not wired to player-facing features.
 
 ---
 
@@ -347,7 +355,7 @@ Backward-compatible Array Proxies: `itemsCatalog`, `enemiesCatalog`, `zonesCatal
 2. **Skills** (`skillsRegistry` + `skillBehaviorRegistry` in `systems/combat/skills.ts`): Built-in skills registered at load; custom `execute()` overrides via `skillBehaviorRegistry`.
 3. **Achievements** (`achievementEvaluatorRegistry` in `systems/achievements.ts`): Default evaluators for `kills`, `level`, `gold`, `quests`, `prestige`, `guild`. Register additional types for JSON condition types like `gold_earned`, `items_crafted`, etc.
 4. **Shops** (`shopRegistry` in `economy/shopRegistry.ts`): Override buy/sell prices, level reqs, availability conditions.
-5. **Dungeon Nodes** (`dungeonNodeRegistry` in `systems/exploration/dungeonInteractions.ts`): Handlers for `campsite`, `treasure`, `merchant`, `puzzle`, `event`, `room`, `elite`, `boss`.
+5. **Dungeon Nodes** (`dungeonNodeRegistry` in `systems/exploration/dungeonInteractions.ts`): Handlers for `campsite`, `treasure`, `merchant`, `event`, `room`, `elite`, `boss`. (Note: puzzle/riddle handler has been removed).
 
 ### Scalability Cheatsheet
 
@@ -385,6 +393,7 @@ Backward-compatible Array Proxies: `itemsCatalog`, `enemiesCatalog`, `zonesCatal
 - **Flee**: `30 + playerSpeed * 0.5`%, capped at 90%
 - Sessions stored in `combat_sessions` with 10-minute `expiresAt`
 - Preset combos execute **one action per combat round** (modulo wrapping) via `presets.ts`
+- Combat state tracks combat source (e.g. `hunt`).
 
 ### Enemy System (`src/systems/combat/enemy.ts`)
 
@@ -403,11 +412,13 @@ Backward-compatible Array Proxies: `itemsCatalog`, `enemiesCatalog`, `zonesCatal
 6. Active buffs (flat + percent)
 7. Round all final stats to nearest multiple of 10
 
-### Leveling (`leveling.ts` + `questSystem.ts`)
+### Leveling (`leveling.ts` + `questSystem.ts` + `queries/player.ts`)
 
 - **`MAX_LEVEL = 20`**
-- **Level-ups only via story quests** — completing a story quest in `questSystem.ts` increments level by 1 and auto-starts the next quest in `STORY_QUEST_ORDER` (19 quests: `story_01_begin` → `story_19_nameless_defeat`)
-- Combat victories do **not** level up; crafting awards EXP to the `exp` field but does **not** trigger level-ups
+- **Experience-Based Progression**: Players earn EXP from completing quests and defeating enemies in combat.
+- **Level-Up Processing**: When a player receives EXP, `awardPlayerExp` updates the player's total EXP, checks the `XP_TABLE` (defined as `100 * 1.5^(N-2)` for level N), and processes level-ups.
+- **Full Restoration**: On leveling up, the player's HP and Mana are fully restored.
+- **Story Quests**: Completing a story quest awards a significant amount of EXP (scaling to the amount needed for the next level) and auto-starts the next quest in `STORY_QUEST_ORDER` (19 quests: `story_01_begin` → `story_19_nameless_defeat`).
 - Base stat growth (multiples of 10):
   - `hpMax: 60 + 20 * level` (Lv1: 80, Lv20: 460)
   - `manaMax: 30 + 10 * level` (Lv1: 40, Lv20: 230)
@@ -423,15 +434,20 @@ Backward-compatible Array Proxies: `itemsCatalog`, `enemiesCatalog`, `zonesCatal
 **World Map** (`systems/exploration/worldExplorer.ts` + `worldQueries.ts`):
 - Fog-of-war discovery tracked in `player_world_discoveries`
 - Travel updates `players.currentZoneId`
+- **Travel Stamina Cost**: Traveling between adjacent discovered locations costs **1 stamina** (reduced from 10).
+- **Exploring**: `/map` Explore button costs **2 stamina**. It never triggers combat. Instead, it rolls for path discovery, resource gathering, chest/gold, or empty scouting.
+- **Hunting**: `/map` Hunt button costs **5 stamina**. It always triggers a combat encounter with a random enemy from the zone's enemy list. (Note: riddle/puzzle events have been removed from exploration outcomes).
 
 **Dungeon Runs** (`dungeonGenerator.ts` + `dungeonInteractions.ts` + `map.ts`):
 - Procedural DAG maps; layer count by zone: verdant_meadows=5, shadow_forest=6, crystal_caverns=7, volcanic_wastes=8, abyssal_depths=9
 - Node movement costs **10 stamina**; fog-of-war visibility in `mapState`
-- Node handlers registered in `dungeonNodeRegistry`
+- Node handlers registered in `dungeonNodeRegistry` (puzzle nodes have been removed)
 - Defeat revives player at Cozy Tavern; flee backtracks; victory clears node
 
-**Cozy Tavern** (`cozy_tavern` location):
-- `/map` → Rest & Sleep fully restores HP/mana, clears combat sessions
+**Resting & Cozy Tavern / Outposts**:
+- Cozy Tavern and Verdant Outpost have `hasRestBed: true` in their configuration.
+- Players can use the `/rest` command or rest buttons when in these locations to fully restore HP, Mana, and Stamina.
+- Rest command has a **2-minute cooldown** tracked in the database.
 
 ### Crafting (`src/systems/crafting.ts`)
 
@@ -490,10 +506,10 @@ Helper functions (not all wired to commands yet):
 ## Utility Modules
 
 ### Embeds (`src/utils/embeds.ts`)
-Rich embed factories with HP/mana/progress bars and rarity color templates.
+Rich embed factories with HP/mana/progress bars and rarity color templates. Features customized, themed visual bars (HP: 🟥, Mana: 🟦, Stamina: 🟪, Exp: 🟨, Pet: 🟩) and clean title headers.
 
 ### Navigation (`src/utils/navigation.ts`)
-Pagination buttons, user verification (only command invoker can interact), dynamic command imports for routing.
+Pagination buttons, user verification (only command invoker can interact), dynamic command imports for routing. Offers quick action triggers like "Explore Again" and "Hunt Again".
 
 ### Catalog (`src/utils/catalog.ts`)
 Loads all JSON from `data/` subdirectories at startup; single source of truth for static game data.
@@ -504,14 +520,20 @@ DB-backed per-player action cooldowns (`checkCooldown`, `setCooldown`).
 ### Rate Limit (`src/utils/rateLimit.ts`)
 In-memory 5 actions / 10 seconds per Discord user ID.
 
+### Custom Assets & Emojis (`src/utils/emojis.ts`)
+Facilitates caching database-configured custom emojis for game elements. Provides helper methods (`getItemEmoji`, `getClassEmoji`, `getPetEmoji`, `getAchievementEmoji`, `getCurrencyEmoji`) that automatically fall back to standard emojis if no custom asset is defined.
+
+### Registry (`src/utils/registry.ts`)
+Generic Registry class for behavior hook overrides.
+
 ---
 
 ## Events
 
 | File | Trigger | Purpose |
 |---|---|---|
-| `events/ready.ts` | `client.once('ready')` | Log in, clear stale guild commands, register global slash commands |
-| `events/interactionCreate.ts` | `interactionCreate` | Route slash commands, buttons, select menus, modals |
+| `events/ready.ts` | `client.once('ready')` | Log in, preload custom emojis, clear stale guild commands, register global slash commands |
+| `events/interactionCreate.ts` | `interactionCreate` | Route slash commands, buttons, select menus, modal submissions |
 | `events/error.ts` | `client.on('error')` | Log Discord client errors |
 
 ---
@@ -524,8 +546,8 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 
 | ID | Display Name | Levels | Cooldown | Notes |
 |---|---|---|---|---|
-| `cozy_tavern` | Cozy Tavern | 1–100 | 0s | Rest/recovery hub |
-| `verdant_meadows` | Verdant Outpost | 1–3 | 60s | Starting zone; dungeon depth 5 |
+| `cozy_tavern` | Cozy Tavern | 1–100 | 0s | Rest/recovery hub (`hasRestBed: true`) |
+| `verdant_meadows` | Verdant Outpost | 1–3 | 60s | Starting zone; dungeon depth 5 (`hasRestBed: true`) |
 | `shadow_forest` | Whispering Canopy | 3–6 | 90s | Dungeon depth 6 |
 | `goblin_sanctuary` | Fallen Watchtower | 3–6 | 120s | `isDungeon: true` |
 | `crystal_caverns` | Glittering Depths | 6–10 | 120s | Dungeon depth 7 |
@@ -539,19 +561,19 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 
 ## Tests
 
-10 test files, **69 tests** total. Run via `npm test` (lint → tsc → build → vitest).
+10 test files, **72 tests** total. Run via `npm test` (lint → tsc → vitest).
 
 | File | What It Tests |
 |---|---|
 | `combat.test.ts` | Damage, crit, dodge, flee formulas |
 | `dungeon.test.ts` | Dungeon generator & node logic |
 | `economy.test.ts` | Gold operations, fees |
-| `leveling.test.ts` | XP table, level-up thresholds |
+| `leveling.test.ts` | XP table, level-up thresholds, XP check formulas |
 | `presets.test.ts` | Preset combo turn execution |
 | `progression.test.ts` | Story quest level-up flow |
 | `registry.test.ts` | Registry class & behavior hooks |
 | `stats.test.ts` | Stat growth, computeStats, enemy scaling |
-| `utils.test.ts` | Random helpers, cooldown logic |
+| `utils.test.ts` | Random helpers, cooldown logic, custom progress bar emojis |
 | `worldMap.test.ts` | World map discovery & travel |
 
 ---
@@ -562,6 +584,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Start command**: `npm run migrate && node dist/index.js`
 - **Replicas**: 1
 - **Database**: PostgreSQL via `DATABASE_URL`
+- **Build Cache**: `nixpacks.toml` caches dependency installs unless dependencies change.
 
 ---
 
@@ -576,6 +599,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 7. **Quest progress**: JSONB object keyed by requirement targets.
 8. **New commands**: Add file **and** update `commandsList` in `ready.ts`.
 9. **Achievement types**: JSON `condition.type` must match a registered evaluator key.
+10. **Custom Asset Emojis**: Custom assets are loaded at boot. The visual output systems automatically check for these overrides using helper functions (`getItemEmoji`, etc.).
 
 ---
 
@@ -598,3 +622,14 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Dungeon System**: Stamina, `exploration_sessions`, procedural DAG generator, `dungeonNodeRegistry`
 - **Test Pipeline**: `npm test` runs lint + tsc + build + vitest; 69 tests passing
 - **CONTEXT_HANDOFF.md Audit**: Full rewrite to align with actual codebase (query layer, schema, command registration, locations, tests, known gaps)
+
+### 2026-06-26
+- **Experience-Based Leveling**: Refactored progression so player levels up via standard EXP (from combat and quest completion) rather than strictly hardcoded story quest completions. Fully heals player on level up.
+- **Separate Explore and Hunt**: Split map exploration into a stamina-free (or low cost, 2 stamina) scout option (scouts resources, chests, discovery; never combat) and a hunt option (5 stamina, always spawns combat).
+- **Travel Stamina Tuning**: Reduced node-to-node world map travel stamina cost from 10 to 1.
+- **Rest System**: Added `/rest` command and map rest buttons for Cozy Tavern and Verdant Outpost to restore all HP/Mana/Stamina, subject to a 2-minute database-enforced cooldown.
+- **Feedback System**: Added `/feedback` slash command that launches a Discord modal to capture player bugs and suggestions, saved to a new `feedbacks` table.
+- **Custom Emoji Assets System**: Created `custom_assets` table and `emojis.ts` centralized caching system to allow administrators to map custom emojis to game entities (items, classes, achievements, etc.) via `/admin asset-set` / `/admin asset-remove` / `/admin asset-list`.
+- **Riddle System Removal**: Completely removed the legacy riddle/puzzle system from both exploration outcomes and dungeon run nodes.
+- **Embed Redesign & Aesthetic Upgrades**: Redesigned all main embed outputs (player profile, inventory, shop, combat victory, bosses, help, and guilds) to look cleaner, replacing double-hyphen dividers with polished headers, modern bars, and custom db-configured emoji overrides.
+- **Vitest Suite Updates**: Updated and expanded test coverage (72 tests total passing).
