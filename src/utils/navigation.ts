@@ -63,7 +63,7 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
       break;
 
     case 'combat_fight_victory':
-      // extra is the last zone
+      // extra is the last zone — came from a regular explore/fight
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(buildNavId('combat_explore', userId, extra))
@@ -71,15 +71,37 @@ export function getNavButtons(context: string, userId: string, extra?: string): 
           .setStyle(ButtonStyle.Primary)
           .setEmoji('🔄'),
         new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Map')
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji('🗺️'),
+        new ButtonBuilder()
           .setCustomId(buildNavId('inventory_bag', userId))
           .setLabel('View Bag')
           .setStyle(ButtonStyle.Secondary)
-          .setEmoji('🎒'),
+          .setEmoji('🎒')
+      );
+      hasButtons = true;
+      break;
+
+    case 'combat_fight_victory_hunt':
+      // Came from a /map Hunt button — show Hunt Again + Map + Bag
+      row.addComponents(
         new ButtonBuilder()
-          .setCustomId(buildNavId('quest_board', userId))
-          .setLabel('View Quests')
+          .setCustomId(buildNavId('combat_hunt', userId))
+          .setLabel('Hunt Again')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji('⚔️'),
+        new ButtonBuilder()
+          .setCustomId(buildNavId('player_map', userId))
+          .setLabel('Map')
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji('🗺️'),
+        new ButtonBuilder()
+          .setCustomId(buildNavId('inventory_bag', userId))
+          .setLabel('View Bag')
           .setStyle(ButtonStyle.Secondary)
-          .setEmoji('📜')
+          .setEmoji('🎒')
       );
       hasButtons = true;
       break;
@@ -284,6 +306,18 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
         const { runExplore } = await import('../commands/combat/combat.js');
         // If extra is provided, it's the zoneId. Otherwise, let explore prompt or pick a default/previous one
         await runExplore(interaction, extra || undefined);
+        break;
+      }
+      case 'combat_hunt': {
+        // Trigger a hunt from the map system — spawn combat then go to fight screen
+        const { huntNode } = await import('../systems/exploration/worldExplorer.js');
+        const { runFight } = await import('../commands/combat/combat.js');
+        try {
+          await huntNode(interaction.user.id);
+          await runFight(interaction);
+        } catch (err: any) {
+          await interaction.reply({ content: `❌ ${err.message || 'Hunt failed.'}`, flags: [MessageFlags.Ephemeral] });
+        }
         break;
       }
       case 'combat_fight': {

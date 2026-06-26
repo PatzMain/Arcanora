@@ -47,6 +47,7 @@ export interface CombatState {
   combatLog: string[];
   isOver: boolean;
   playerWon: boolean;
+  source?: 'explore' | 'hunt' | string;
 }
 
 export interface TurnResult {

@@ -219,6 +219,7 @@ export async function huntNode(playerId: string): Promise<ExploreResult> {
   };
 
   const initialCombatState = createCombatState(combatStatsInput, scaledEnemyStats);
+  initialCombatState.source = 'hunt';
   initialCombatState.combatLog = [
     `⚔️ You tracked down a Lv.${enemyDef.level} **${enemyDef.name}** while hunting!`,
     `💪 Prepare for battle!`

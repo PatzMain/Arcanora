@@ -11,7 +11,7 @@ import {
   type StringSelectMenuInteraction
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { players, combatSessions, inventory, explorationSessions } from '../../database/schema.js';
+import { players, combatSessions, inventory, explorationSessions, cooldowns } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getPlayerWithClampedStats, getAndUpdatePlayerStamina, deductPlayerStamina } from '../../database/queries/player.js';
 import { getEquippedItems, removeItem } from '../../database/queries/inventory.js';
@@ -357,8 +357,12 @@ export async function runMap(
     const vitalsText = `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP`;
 
     // Embed Description
+    let msgPrefix = '✅ ';
+    if (travelMsg && (travelMsg.startsWith('❌') || travelMsg.startsWith('⚠️') || travelMsg.startsWith('💤') || travelMsg.startsWith('ℹ️'))) {
+      msgPrefix = '';
+    }
     const descriptionText =
-      (travelMsg ? `✅ **${travelMsg}**\n\n` : '') +
+      (travelMsg ? `${msgPrefix}**${travelMsg}**\n\n` : '') +
       `**Lv.${currentLoc.minLevel}-${currentLoc.maxLevel}  ·  ${capitalize(currentLoc.type)}  ·  ${currentLoc.region}**\n\n` +
       `*"${currentLoc.description}"*\n\n` +
       `${vitalsText}\n\n` +
@@ -376,7 +380,7 @@ export async function runMap(
 
     // Row 1: Exploration & Action buttons
     const actionRow = new ActionRowBuilder<ButtonBuilder>();
-    
+
     // Explore button (items only, 2 stamina)
     actionRow.addComponents(
       new ButtonBuilder()
@@ -397,6 +401,17 @@ export async function runMap(
           .setStyle(ButtonStyle.Danger)
           .setEmoji('⚔️')
           .setDisabled(player.stamina < 5)
+      );
+    }
+
+    // Rest button — only show in zones with a rest bed (settlements/inns)
+    if ((currentLoc as any).hasRestBed) {
+      actionRow.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`map_world_rest_${player.discordId}`)
+          .setLabel('Rest')
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji('🛏️')
       );
     }
 
@@ -553,6 +568,23 @@ export async function runTavernRest(
       return;
     }
 
+    // Enforce 2-minute cooldown
+    const now = new Date();
+    const existingCooldown = await db.query.cooldowns.findFirst({
+      where: and(eq(cooldowns.playerId, player.id), eq(cooldowns.action, 'rest'))
+    });
+
+    if (existingCooldown && existingCooldown.expiresAt > now) {
+      const remainingMs = existingCooldown.expiresAt.getTime() - now.getTime();
+      const remainingSec = Math.ceil(remainingMs / 1000);
+      const minutes = Math.floor(remainingSec / 60);
+      const seconds = remainingSec % 60;
+      const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
+      await runMap(interaction as any, `❌ You recently rested. You can rest again in **${timeStr}**.`);
+      return;
+    }
+
     const equippedDbItems = await getEquippedItems(player.id);
     const equippedItemsList = equippedDbItems.map((dbItem) => {
       const def = itemsCatalog.find((i: any) => i.id === dbItem.itemId);
@@ -568,11 +600,25 @@ export async function runTavernRest(
         hpCurrent: stats.hpMax,
         manaCurrent: stats.manaMax,
         stamina: player.staminaMax,
-        lastStaminaRegen: new Date()
+        lastStaminaRegen: now
       })
       .where(eq(players.id, player.id));
 
     await db.delete(combatSessions).where(eq(combatSessions.playerId, player.id));
+
+    // Upsert 2-minute cooldown
+    const REST_COOLDOWN_MS = 2 * 60 * 1000;
+    const expiresAt = new Date(now.getTime() + REST_COOLDOWN_MS);
+    if (existingCooldown) {
+      await db
+        .update(cooldowns)
+        .set({ expiresAt })
+        .where(and(eq(cooldowns.playerId, player.id), eq(cooldowns.action, 'rest')));
+    } else {
+      await db
+        .insert(cooldowns)
+        .values({ playerId: player.id, action: 'rest', expiresAt });
+    }
 
     await runMap(interaction as any, '💤 You slept peacefully. HP, Mana, and Stamina fully restored!');
   } catch (error) {

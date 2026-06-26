@@ -376,7 +376,8 @@ export async function handleCombatInteraction(
           .setEmoji('➡️');
         components = [new ActionRowBuilder<ButtonBuilder>().addComponents(backBtn)];
       } else {
-        const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+        const victoryContext = state.source === 'hunt' ? 'combat_fight_victory_hunt' : 'combat_fight_victory';
+        const navButtons = getNavButtons(victoryContext, player.discordId, activeSession.zoneId);
         components = navButtons ? [navButtons] : [];
       }
 
@@ -480,7 +481,8 @@ export async function handleCombatInteraction(
             .setEmoji('➡️');
           components = [new ActionRowBuilder<ButtonBuilder>().addComponents(continueBtn)];
         } else {
-          const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+          const victoryContext = state.source === 'hunt' ? 'combat_fight_victory_hunt' : 'combat_fight_victory';
+          const navButtons = getNavButtons(victoryContext, player.discordId, activeSession.zoneId);
           components = navButtons ? [navButtons] : [];
         }
 
@@ -510,7 +512,8 @@ export async function handleCombatInteraction(
           `💀 You were defeated by the **Lv.${enemyDef.level} ${enemyDef.name}**!\n\n` +
           `*You woke up in town, feeling weak. You recovered **${recoveryHp}** HP.*`
         );
-        const navButtons = getNavButtons('combat_fight_victory', player.discordId, activeSession.zoneId);
+        const victoryContext = state.source === 'hunt' ? 'combat_fight_victory_hunt' : 'combat_fight_victory';
+        const navButtons = getNavButtons(victoryContext, player.discordId, activeSession.zoneId);
         await interaction.editReply({ embeds: [embed], components: navButtons ? [navButtons] : [] });
       }
       return;
