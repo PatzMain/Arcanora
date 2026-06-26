@@ -1,0 +1,25 @@
+{
+  "id": "sewer_crab",
+  "name": "Sewer Crab",
+  "description": "A small crab adapted to sewer life with snappy claws.",
+  "zone": "oakhaven_sewers",
+  "rarity": "normal",
+  "level": 1,
+  "stats": {
+    "hp": 40,
+    "attack": 8,
+    "defense": 5,
+    "speed": 7
+  },
+  "abilities": [],
+  "lootTable": [
+    {
+      "itemId": "potion_health_small",
+      "dropRate": 20,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 15,
+  "goldReward": 5
+}

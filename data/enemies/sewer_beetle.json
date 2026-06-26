@@ -1,0 +1,25 @@
+{
+  "id": "sewer_beetle",
+  "name": "Sewer Beetle",
+  "description": "A small armored beetle scurrying in the damp sewers.",
+  "zone": "oakhaven_sewers",
+  "rarity": "normal",
+  "level": 1,
+  "stats": {
+    "hp": 35,
+    "attack": 7,
+    "defense": 4,
+    "speed": 10
+  },
+  "abilities": [],
+  "lootTable": [
+    {
+      "itemId": "potion_health_small",
+      "dropRate": 20,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 15,
+  "goldReward": 5
+}

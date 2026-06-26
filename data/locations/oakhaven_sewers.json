@@ -1,0 +1,42 @@
+{
+  "id": "oakhaven_sewers",
+  "name": "Oakhaven Sewers",
+  "description": "A damp sewer system under the town square. Infested with easy creatures.",
+  "minLevel": 1,
+  "maxLevel": 3,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "dungeon",
+  "isDungeon": true,
+  "hasRestBed": false,
+  "visualTheme": "Damp stone brick walls, dripping pipes, and green sludge channels.",
+  "history": {
+    "createdWhy": "Built to drain wastewater from the growing hamlet.",
+    "builtWho": "Eldorian stonemasons.",
+    "majorEvents": "Infested recently by mutated slimes and beetles.",
+    "whyExists": "Drains sewage from Oakhaven Hamlet.",
+    "currentConflicts": "Mutated slimes threaten Oakhaven's clean water supply."
+  },
+  "ecosystem": {
+    "creatures": ["sewer_slime", "sewer_beetle", "sewer_crab"],
+    "resources": [],
+    "weather": "Humid and smelly",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": ["oakhaven_square"],
+  "enemies": ["sewer_slime", "sewer_beetle", "sewer_crab"],
+  "encounters": [
+    { "type": "normal_mob", "weight": 80 },
+    { "type": "treasure", "weight": 20 }
+  ]
+}

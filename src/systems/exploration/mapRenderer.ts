@@ -52,15 +52,19 @@ export async function renderWorldMapScreen(
     if (!targetLoc) continue;
     
     const isDiscovered = discoveredLocIds.includes(targetId);
+    const levelLocked = player.level < targetLoc.minLevel;
+    
     let typeIcon = '🌲';
     if (targetLoc.type === 'settlement') typeIcon = '🏠';
     else if (targetLoc.isDungeon) typeIcon = '🏰';
     
-    const locDisplay = isDiscovered ? targetLoc.name : 'Unknown Path';
-    const typeDisplay = isDiscovered ? capitalize(targetLoc.type) : 'Scout to unlock';
-    const lvDisplay = `Lv.${targetLoc.minLevel}+`;
-    
-    destinationsText += `• ${typeIcon} **${locDisplay}**  ·  ${lvDisplay}  ·  ${typeDisplay}\n`;
+    if (!isDiscovered) {
+      destinationsText += `• 🔒 ~~*${targetLoc.name}*~~  ·  *(Explore ${currentLoc.name} to discover)*\n`;
+    } else if (levelLocked) {
+      destinationsText += `• 🔒 ~~*${targetLoc.name}*~~  ·  *(Requires Level ${targetLoc.minLevel})*\n`;
+    } else {
+      destinationsText += `• ${typeIcon} **${targetLoc.name}**  ·  Lv.${targetLoc.minLevel}+  ·  ${capitalize(targetLoc.type)}\n`;
+    }
   }
   if (!destinationsText) destinationsText = '*No connections available.*';
 
@@ -100,7 +104,7 @@ export async function renderWorldMapScreen(
     .setColor(0x7C3AED)
     .setTitle(`🗺️ ${currentLoc.name}`)
     .setDescription(descriptionText)
-    .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: 1 Stamina' })
+    .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: Free' })
     .setTimestamp();
 
   if (activities.length > 0) {
@@ -359,78 +363,25 @@ export async function handleWorldMapInteraction(
       const targetLoc = zonesCatalog.find((z) => z.id === targetLocationId);
       if (!targetLoc) return;
 
-      let discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
-      if (discoveredLocIds.length === 0) {
-        discoveredLocIds = ['cozy_tavern', 'oakhaven_square'];
-      }
-
+      const discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
       const isDiscovered = discoveredLocIds.includes(targetLocationId);
       const levelLocked = player.level < targetLoc.minLevel;
-      const lockReason = !isDiscovered 
-        ? 'This location is hidden. You must discover it first by exploring adjacent nodes.' 
-        : levelLocked 
-          ? `Your level is too low. Required: Level ${targetLoc.minLevel}.`
-          : player.stamina < 1
-            ? 'You do not have enough stamina (1 required).'
-            : null;
 
-      const isLocked = !!lockReason;
+      if (!isDiscovered) {
+        await runMap(interaction as any, `⚠️ Travel failed: **${targetLoc.name}** is hidden. Explore adjacent areas to discover it.`);
+        return;
+      }
+      if (levelLocked) {
+        await runMap(interaction as any, `⚠️ Travel failed: You need to be **Level ${targetLoc.minLevel}** to enter **${targetLoc.name}**.`);
+        return;
+      }
 
-      let typeEmoji = '🌲';
-      if (targetLoc.type === 'settlement') typeEmoji = '🏠';
-      else if (targetLoc.isDungeon) typeEmoji = '🏰';
-
-      const previewEmbed = new EmbedBuilder()
-        .setColor(isLocked ? 0xEF4444 : 0x10B981)
-        .setTitle(`🗺️ Travel Preview: ${targetLoc.name}`)
-        .setDescription(
-          `**Type**: ${typeEmoji} ${capitalize(targetLoc.type)}\n` +
-          `**Region**: ${targetLoc.region} | **Area**: ${targetLoc.area}\n` +
-          `**Level Requirement**: Lv.${targetLoc.minLevel}-${targetLoc.maxLevel}\n\n` +
-          `*"${targetLoc.description}"*\n\n` +
-          `🔋 **Stamina Cost**: 1 Stamina\n` +
-          (isLocked ? `\n⚠️ **Cannot Travel**: ${lockReason}` : '')
-        )
-        .setFooter({ text: 'Confirm travel below' })
-        .setTimestamp();
-
-      const confirmRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`map_world_travel_confirm_${targetLocationId}_${player.discordId}`)
-          .setLabel('Confirm Travel')
-          .setStyle(ButtonStyle.Success)
-          .setEmoji('✅')
-          .setDisabled(isLocked),
-        new ButtonBuilder()
-          .setCustomId(`map_world_travel_cancel_${player.discordId}`)
-          .setLabel('Cancel')
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji('❌')
-      );
-
-      await interaction.editReply({
-        embeds: [previewEmbed],
-        components: [confirmRow]
-      });
-      return;
-    }
-
-    if (customId.startsWith('map_world_travel_confirm_')) {
-      const targetLocationId = parts.slice(4, -1).join('_');
-      const targetLoc = zonesCatalog.find(z => z.id === targetLocationId);
-      
       try {
         await travelToNode(player.id, targetLocationId);
-        await runMap(interaction as any, `You traveled to **${targetLoc?.name || targetLocationId}**.`);
+        await runMap(interaction as any, `You traveled to **${targetLoc.name}**.`);
       } catch (err: any) {
-        await interaction.followUp({ content: `❌ Travel failed: ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
-        await runMap(interaction as any);
+        await runMap(interaction as any, `❌ Travel failed: ${err.message || err}`);
       }
-      return;
-    }
-
-    if (customId.startsWith('map_world_travel_cancel_')) {
-      await runMap(interaction as any);
       return;
     }
 

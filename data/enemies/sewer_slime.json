@@ -1,0 +1,25 @@
+{
+  "id": "sewer_slime",
+  "name": "Sewer Slime",
+  "description": "A bubbling glob of sludge and ooze.",
+  "zone": "oakhaven_sewers",
+  "rarity": "normal",
+  "level": 1,
+  "stats": {
+    "hp": 30,
+    "attack": 6,
+    "defense": 2,
+    "speed": 8
+  },
+  "abilities": [],
+  "lootTable": [
+    {
+      "itemId": "potion_health_small",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 15,
+  "goldReward": 5
+}

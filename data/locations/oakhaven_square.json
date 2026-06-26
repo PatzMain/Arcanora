@@ -19,7 +19,7 @@
   },
   "ecosystem": {
     "creatures": [],
-    "resources": [],
+    "resources": ["mat_wood"],
     "weather": "Warm and sunny with a light breeze",
     "hazards": []
   },
@@ -43,5 +43,5 @@
     "quests": ["story_01_supply", "story_03_goblin_raids", "story_05_chieftain", "tutorial_04_world"],
     "secrets": []
   },
-  "connections": ["cozy_tavern", "river_docks", "oakhaven_forge", "apothecary", "glittering_meadows"]
+  "connections": ["cozy_tavern", "river_docks", "oakhaven_forge", "apothecary", "glittering_meadows", "oakhaven_sewers"]
 }

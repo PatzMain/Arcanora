@@ -63,13 +63,6 @@ export async function travelToNode(playerId: string, targetLocationId: string) {
     throw new Error('This location is hidden. You must discover it first.');
   }
 
-  // Stamina check & deduction
-  if (player.stamina < 1) {
-    throw new Error('Not enough stamina. Traveling costs 1 stamina.');
-  }
-
-  await deductPlayerStamina(playerId, 1);
-
   // Update current zone
   await db
     .update(players)

@@ -27,33 +27,12 @@ function getTutorialEmbed(username: string): EmbedBuilder {
     .setColor(0x7C3AED) // Premium purple color
     .setTitle('🌌 Arcanora Adventure Guide')
     .setDescription(
-      `Welcome, **${username}**! Arcanora is an immersive text-based Discord MMORPG.\n\n` +
-      `Your goal is to travel between regions, explore mysterious locations, defeat monsters, collect rare equipment, level up your class, and conquer dungeons.`
-    )
-    .addFields(
-      {
-        name: '⚔️ Core Gameplay Commands',
-        value:
-          '• `/map` — View the world map, travel to unlocked locations, and explore.\n' +
-          '• `/combat explore` — Explore your current location to start battles or find treasures.\n' +
-          '• `/player profile` — Check your level, class, active story quest, and equipment.\n' +
-          '• `/inventory bag` — Browse your bag, equip gear, and manage items.'
-      },
-      {
-        name: '🏪 Economy & Progression',
-        value:
-          '• `/economy shop` — Browse items currently sold by the merchant.\n' +
-          '• `/economy buy` — Purchase consumables, materials, or basic gear.\n' +
-          '• `/inventory sell` — Sell items in your bag to earn gold.\n' +
-          '• `/quest` — View your daily and main quests. Quests are the ONLY way to level up!'
-      },
-      {
-        name: '🛠️ Dungeons & Crafting',
-        value:
-          '• `/craft` — Smelt ores, spin silk, and forge powerful weapons and armor.\n' +
-          '• `/pet` — View or release your companion pets which grant passive bonuses.\n' +
-          '• `/guild` — Form a guild, donate gold, cooperate with others, or view leaderboards.'
-      }
+      `Welcome, **${username}**! Travel the world, explore locations, defeat monsters, gather resources, and conquer dungeons.\n\n` +
+      `**Core Commands:**\n` +
+      `• \`/map\` — View the map, travel instantly, and explore or hunt.\n` +
+      `• \`/player profile\` — Check your level, class, and active quests.\n` +
+      `• \`/inventory bag\` — Manage and equip your gear.\n` +
+      `• \`/quest\` — View your story quests (the only way to level up!).`
     )
     .setFooter({ text: 'Arcanora — Discord MMORPG' })
     .setTimestamp();
@@ -249,14 +228,14 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
         `• ⚔️ Weapon: *${weaponNames[starterWeaponId]}*\n` +
         `• 🛡️ Armor: *Scout's Leather Vest*\n\n` +
         `You also received **🪙 500 starting gold**!\n\n` +
-        `📖 **First Quest Accepted**: *Explore the Verdant Outpost once to get your bearings.*`
+        `📖 **First Quest Accepted**: *A Warm Hearth — Gather 3 Wood in Oakhaven Town Square.*`
       )
       .addFields(
         {
           name: '🚀 What Next?',
           value:
-            'Use the **/map** command to view the world, travel, and start exploring the Verdant Outpost!\n' +
-            'You can view your stats and current story quest anytime with **/player profile**.'
+            'Use **/map** to view the Town Square and start gathering Wood for your first quest!\n' +
+            'Use **/player profile** to view stats, or travel to the **Oakhaven Sewers** to grind combat XP.'
         }
       )
       .setFooter({ text: 'Arcanora — Discord MMORPG' })

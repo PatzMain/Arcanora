@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { zonesCatalog, itemsCatalog } from '../src/utils/catalog.js';
 
 describe('BrownieRPG World Map Design & Adjacency Graph', () => {
-  it('should have all 19 locations loaded in the catalog', () => {
-    expect(zonesCatalog.length).toBe(19);
+  it('should have all 20 locations loaded in the catalog', () => {
+    expect(zonesCatalog.length).toBe(20);
   });
 
   it('should verify every location contains identity, lore, history, and ecosystem details', () => {

@@ -19,7 +19,7 @@
   },
   "ecosystem": {
     "creatures": ["forest_sprite", "wild_rabbit", "young_wolf"],
-    "resources": ["mat_copper_ore", "mat_flax_fiber", "mat_herbs"],
+    "resources": ["mat_copper_ore", "mat_flax_fiber", "mat_herbs", "mat_wood"],
     "weather": "Sunny and calm",
     "hazards": []
   },

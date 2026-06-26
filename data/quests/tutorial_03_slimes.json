@@ -1,14 +1,14 @@
 {
   "id": "tutorial_03_slimes",
-  "name": "Rats in the Dark",
-  "description": "Clear 3 Cellar Slimes in the Cozy Tavern Cellar.",
+  "name": "Sewers in the Dark",
+  "description": "Clear 3 Sewer Slimes in the Oakhaven Sewers.",
   "type": "story",
   "levelReq": 1,
   "repeatable": false,
   "conditions": [
     {
       "type": "kill",
-      "target": "cellar_slime",
+      "target": "sewer_slime",
       "required": 3
     }
   ],
