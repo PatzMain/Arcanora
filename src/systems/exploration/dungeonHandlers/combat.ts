@@ -8,27 +8,76 @@ import { computeStats } from '../../progression/stats.js';
 import { scaleEnemyStats, getEnemyById } from '../../combat/enemy.js';
 import { createCombatState } from '../../combat/engine.js';
 import { itemsCatalog } from '../../../utils/catalog.js';
+import { getCodexEntry } from '../../../database/queries/codex.js';
 import { type NodeInteractionHandler } from '../dungeonInteractions.js';
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const combatNodeHandler: NodeInteractionHandler = {
   async onEnter(context) {
     const enemyId = context.node.encounterData?.enemyId;
     const enemyDef = enemyId ? getEnemyById(enemyId) : null;
-    const name = enemyDef ? enemyDef.name : 'Unknown Monster';
+    if (!enemyDef) {
+      return {
+        embeds: [new EmbedBuilder().setTitle('Unknown Room').setDescription('No enemy found here.')],
+        components: []
+      };
+    }
+
+    const name = enemyDef.name;
+    const floor = (context.dbSession.mapState as any)?.floor || 1;
+    const adjustedEnemyLevel = enemyDef.level + (floor - 1) * 2;
 
     const color = context.node.type === 'boss' ? 0xEF4444 : (context.node.type === 'elite' ? 0xF59E0B : 0x9CA3AF);
-    const title = context.node.type === 'boss' ? `☠️ Boss Chamber — ${name}` : (context.node.type === 'elite' ? `⚔️ Elite Encounter — ${name}` : `🚪 Monster Room — ${name}`);
+    const title = context.node.type === 'boss' 
+      ? `☠️ Boss Chamber — Lv.${adjustedEnemyLevel} ${name}` 
+      : (context.node.type === 'elite' ? `⚔️ Elite Encounter — Lv.${adjustedEnemyLevel} ${name}` : `🚪 Monster Room — Lv.${adjustedEnemyLevel} ${name}`);
+
+    // Check codex discovery
+    const codexEntry = await getCodexEntry(context.playerId, 'enemy', enemyDef.id);
+    const isDiscovered = !!codexEntry;
+
+    // Scale stats
+    const baseScaled = scaleEnemyStats(enemyDef, adjustedEnemyLevel);
+    const floorBonus = (floor - 1) * 0.15;
+    const scaledHp = Math.round(baseScaled.hp * (1 + floorBonus));
+    const scaledAttack = Math.round(baseScaled.attack * (1 + floorBonus));
+    const scaledDefense = Math.round(baseScaled.defense * (1 + floorBonus));
+    const scaledSpeed = Math.round(baseScaled.speed * (1 + floorBonus));
+
+    const rarityBadge = enemyDef.rarity === 'boss' ? '🔴 Boss' : (enemyDef.rarity === 'rare' ? '🟡 Elite' : '⚪ Normal');
+
+    const statsStr = isDiscovered
+      ? `❤️ **HP:** ${scaledHp}  |  ⚔️ **Attack:** ${scaledAttack}  |  🛡️ **Defense:** ${scaledDefense}  |  ⚡ **Speed:** ${scaledSpeed}`
+      : `❤️ **HP:** ???  |  ⚔️ **Attack:** ???  |  🛡️ **Defense:** ???  |  ⚡ **Speed:** ???\n*(Defeat this enemy to unlock bestiary stats)*`;
+
+    // Abilities
+    const abilitiesStr = enemyDef.abilities.length > 0
+      ? enemyDef.abilities.map(a => `• **${a.name}** (${a.chance}% chance)`).join('\n')
+      : '• Basic Attack only';
+
+    // Possible Drops
+    const dropsStr = enemyDef.lootTable.length > 0
+      ? enemyDef.lootTable.map(l => {
+          const item = itemsCatalog.find(i => i.id === l.itemId);
+          return `• **${item ? item.name : capitalize(l.itemId)}** (${l.dropRate}% chance)`;
+        }).join('\n')
+      : '• No drops';
 
     const embed = new EmbedBuilder()
       .setColor(color)
       .setTitle(title)
       .setDescription(
-        `A hostile **${name}** blocks the exit to this room! ` +
-        'You must defeat it in combat to pass through.'
+        `A hostile **${name}** blocks the exit to this room!\n` +
+        `You must defeat it in combat to pass through.\n\n` +
+        `**Rarity:** ${rarityBadge}\n` +
+        `**Stats:**\n${statsStr}\n\n` +
+        `✨ **Abilities:**\n${abilitiesStr}\n\n` +
+        `🎁 **Possible Drops:**\n${dropsStr}`
       );
 
     const engageBtn = new ButtonBuilder()
-      .setCustomId(`dungeon_action_engage_${context.playerId}`)
+      .setCustomId(`dungeon_action_combat_engage_${context.playerId}`)
       .setLabel('Engage in Combat')
       .setStyle(ButtonStyle.Danger)
       .setEmoji('⚔️');
@@ -117,6 +166,8 @@ export const combatNodeHandler: NodeInteractionHandler = {
 
     const initialCombatState = createCombatState(combatStatsInput, scaledEnemyStats) as any;
     initialCombatState.floor = floor;
+    initialCombatState.explorationSessionId = context.dbSession.id;
+    initialCombatState.explorationNodeId = context.node.id;
     initialCombatState.combatLog = [
       `⚔️ Dungeon Combat: You engaged a Lv.${adjustedEnemyLevel} **${enemyDef.name}**!`,
     ];
@@ -134,14 +185,9 @@ export const combatNodeHandler: NodeInteractionHandler = {
         expiresAt: sessionExpiresAt
       });
 
-    const embed = new EmbedBuilder()
-      .setColor(0xEF4444)
-      .setTitle(`⚔️ Combat Initiated vs ${enemyDef.name}`)
-      .setDescription('Use `/combat fight` to engage in this battle!');
-
     return {
       success: true,
-      embeds: [embed],
+      embeds: [],
       components: [],
       log: 'Combat initiated.'
     };

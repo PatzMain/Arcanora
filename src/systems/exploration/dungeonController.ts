@@ -6,11 +6,13 @@ import {
   StringSelectMenuBuilder,
   MessageFlags,
   type ButtonInteraction,
-  type StringSelectMenuInteraction
+  type StringSelectMenuInteraction,
+  type ChatInputCommandInteraction
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { players, inventory, explorationSessions } from '../../database/schema.js';
+import { players, inventory, explorationSessions, combatSessions } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
+import { scaleEnemyStats, getEnemyById } from '../combat/enemy.js';
 import { getPlayerWithClampedStats, deductPlayerStamina } from '../../database/queries/player.js';
 import { getEquippedItems, removeItem } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
@@ -80,6 +82,74 @@ export async function renderDungeonScreen(
   stats: any
 ) {
   let mapState = session.mapState as any;
+
+  // Check if player has an active combat session
+  const activeCombat = await db.query.combatSessions.findFirst({
+    where: eq(combatSessions.playerId, player.id)
+  });
+
+  if (activeCombat) {
+    const enemyDef = getEnemyById(activeCombat.enemyId);
+    if (enemyDef) {
+      const state = activeCombat.state as any;
+      const floor = state.floor || 1;
+      const baseScaled = scaleEnemyStats(enemyDef, player.level + (floor - 1) * 2);
+      const floorBonus = (floor - 1) * 0.15;
+      const scaledEnemyStats = {
+        hp: Math.round(baseScaled.hp * (1 + floorBonus)),
+        attack: Math.round(baseScaled.attack * (1 + floorBonus)),
+        defense: Math.round(baseScaled.defense * (1 + floorBonus)),
+        speed: Math.round(baseScaled.speed * (1 + floorBonus))
+      };
+
+      // Rebuild components
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+      );
+
+      const { getCombatSkillsRow, getCombatItemsRow } = await import('../combat/uiHelpers.js');
+      const { parsePresets, buildPresetButtons } = await import('../combat/presets.js');
+      const { combatEmbed } = await import('../../utils/embeds.js');
+
+      const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
+      const itemsRow = await getCombatItemsRow(player.id);
+      const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
+      const components: any[] = [row, presetsRow];
+      if (selectMenuRow) components.push(selectMenuRow);
+      if (itemsRow) components.push(itemsRow);
+
+      const embed = combatEmbed(
+        player.username,
+        state.playerHp,
+        stats.hpMax,
+        state.playerMana,
+        stats.manaMax,
+        { name: enemyDef.name, level: enemyDef.level + (floor - 1) * 2 },
+        state.enemyHp,
+        scaledEnemyStats.hp,
+        state.round || 1,
+        state.combatLog
+      );
+
+      const message = await interaction.editReply({
+        embeds: [embed],
+        components
+      });
+
+      // Update message ID in session so handler.ts matches it correctly
+      await db
+        .update(combatSessions)
+        .set({
+          messageId: message.id,
+          channelId: interaction.channelId || ''
+        })
+        .where(eq(combatSessions.id, activeCombat.id));
+
+      return;
+    }
+  }
   if (mapState.lobbyOpen) {
     // Render Co-op Lobby Screen
     const party = session.party as any;
@@ -773,6 +843,19 @@ export async function handleDungeonInteraction(
         result = await handler.onAction('choose', context, { outcomeId });
       } else {
         result = await handler.onAction(nodeAction, context);
+      }
+
+      if (nodeType === 'combat' && nodeAction === 'engage') {
+        if (result.success) {
+          await updateExplorationSession(session.id, {
+            mapState: session.mapState
+          });
+          await interaction.deferUpdate();
+          await runMap(interaction as any);
+        } else {
+          await interaction.reply({ content: `❌ Action failed: ${result.log || 'Unknown error'}`, flags: [MessageFlags.Ephemeral] });
+        }
+        return;
       }
 
       if (result.success) {

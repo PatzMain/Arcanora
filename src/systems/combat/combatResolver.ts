@@ -362,21 +362,23 @@ export async function resolveCombatEnd(
     // Advance quest progress for defeating the mob
     await advanceQuestProgress(player.id, 'kill', enemyDef.id, 1, interaction);
 
-    const { getExplorationSessionByPlayerId, updateExplorationSession } = await import('../../database/queries/exploration.js');
+    // Codex discovery
+    const { discoverEnemy } = await import('../../database/queries/codex.js');
+    const codexResult = await discoverEnemy(player.id, enemyDef.id);
+    if (codexResult && codexResult.isNew) {
+      embed.addFields({
+        name: '📖 New Codex Entry!',
+        value: `You have discovered **${enemyDef.name}**! Check it out in the \`/codex enemies\`.`,
+        inline: false
+      });
+    }
+
     const { buildNavId } = await import('../../utils/navigation.js');
-    const { updateFogOfWar } = await import('../exploration/dungeonGenerator.js');
-    const expSession = await getExplorationSessionByPlayerId(player.id);
     
     let components: any[] = [];
-    if (expSession) {
-      const mapState = expSession.mapState as any;
-      const currentNodeId = expSession.currentNodeId;
-      mapState.nodes[currentNodeId].status = 'cleared';
-      mapState.nodes = updateFogOfWar(mapState.nodes, currentNodeId);
-      
-      await updateExplorationSession(expSession.id, {
-        mapState
-      });
+    if (state.explorationSessionId && state.explorationNodeId) {
+      const { markNodeCleared } = await import('../../database/queries/exploration.js');
+      await markNodeCleared(state.explorationSessionId, state.explorationNodeId);
       
       const continueBtn = new ButtonBuilder()
         .setCustomId(buildNavId('player_map', player.discordId))
