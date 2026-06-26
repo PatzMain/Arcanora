@@ -64,6 +64,13 @@
       "when": 1782460536344,
       "tag": "0008_clear_madelyne_pryor",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782463579757,
+      "tag": "0009_jittery_doctor_doom",
+      "breakpoints": true
     }
   ]
 }

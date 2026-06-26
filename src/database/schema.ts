@@ -17,7 +17,7 @@ export const players = pgTable('players', {
   playerClass: varchar('class', { length: 20 }).default('novice').notNull(),
   hpCurrent: integer('hp_current').default(100).notNull(),
   manaCurrent: integer('mana_current').default(50).notNull(),
-  currentZoneId: varchar('current_zone_id', { length: 32 }).default('verdant_meadows').notNull(),
+  currentZoneId: varchar('current_zone_id', { length: 32 }).default('cozy_tavern').notNull(),
   totalKills: integer('total_kills').default(0).notNull(),
   totalQuestsCompleted: integer('total_quests_completed').default(0).notNull(),
   presets: jsonb('presets').default([
