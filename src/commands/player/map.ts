@@ -373,7 +373,7 @@ export async function runMap(
       .setColor(0x7C3AED)
       .setTitle(`🗺️ ${currentLoc.name}`)
       .setDescription(descriptionText)
-      .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: 10 Stamina' })
+      .setFooter({ text: 'Arcanora — 🔎 Explore: 2 Stamina  ⚔️ Hunt: 5 Stamina  🚶 Travel: 1 Stamina' })
       .setTimestamp();
 
     const components: any[] = [];
@@ -1158,8 +1158,8 @@ export async function handleWorldMapInteraction(
         ? 'This location is hidden. You must discover it first by exploring adjacent nodes.' 
         : levelLocked 
           ? `Your level is too low. Required: Level ${targetLoc.minLevel}.`
-          : player.stamina < 10
-            ? 'You do not have enough stamina (10 required).'
+          : player.stamina < 1
+            ? 'You do not have enough stamina (1 required).'
             : null;
 
       const isLocked = !!lockReason;
@@ -1176,7 +1176,7 @@ export async function handleWorldMapInteraction(
           `**Region**: ${targetLoc.region} | **Area**: ${targetLoc.area}\n` +
           `**Level Requirement**: Lv.${targetLoc.minLevel}-${targetLoc.maxLevel}\n\n` +
           `*"${targetLoc.description}"*\n\n` +
-          `🔋 **Stamina Cost**: 10 Stamina\n` +
+          `🔋 **Stamina Cost**: 1 Stamina\n` +
           (isLocked ? `\n⚠️ **Cannot Travel**: ${lockReason}` : '')
         )
         .setFooter({ text: 'Confirm travel below' })

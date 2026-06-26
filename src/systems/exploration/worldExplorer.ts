@@ -59,11 +59,11 @@ export async function travelToNode(playerId: string, targetLocationId: string) {
   }
 
   // Stamina check & deduction
-  if (player.stamina < 10) {
-    throw new Error('Not enough stamina. Traveling costs 10 stamina.');
+  if (player.stamina < 1) {
+    throw new Error('Not enough stamina. Traveling costs 1 stamina.');
   }
 
-  await deductPlayerStamina(playerId, 10);
+  await deductPlayerStamina(playerId, 1);
 
   // Update current zone
   await db
