@@ -1,4 +1,11 @@
 import { EmbedBuilder } from 'discord.js';
+import {
+  getItemEmoji,
+  getClassEmoji,
+  getPetEmoji,
+  getAchievementEmoji,
+  getCurrencyEmoji
+} from './emojis.js';
 
 // ─── Color Palette ───────────────────────────────────────────────────────────
 
@@ -7,14 +14,14 @@ const COLORS = {
   SUCCESS: 0x10B981,    // Green
   DANGER: 0xEF4444,     // Red
   WARNING: 0xF59E0B,    // Amber
-  INFO: 0x3B82F6,       // Blue
-  GOLD: 0xFFD700,       // Gold
-  MYTHIC: 0xFF6B6B,     // Mythic red-pink
+  INFO: 0x06B6D4,       // Neon Cyan/Teal
+  GOLD: 0xFBBF24,       // Gold
+  MYTHIC: 0xF43F5E,     // Cosmic Rose/Pink-Red
   COMMON: 0x9CA3AF,
-  UNCOMMON: 0x34D399,
-  RARE: 0x60A5FA,
-  EPIC: 0xA78BFA,
-  PET: 0x8B5CF6,        // Pet companion purple
+  UNCOMMON: 0x10B981,
+  RARE: 0x3B82F6,
+  EPIC: 0x8B5CF6,
+  PET: 0xA78BFA,        // Pet companion light purple
 } as const;
 
 const RARITY_COLORS: Record<string, number> = {
@@ -26,11 +33,11 @@ const RARITY_COLORS: Record<string, number> = {
 };
 
 const RARITY_EMOJIS: Record<string, string> = {
-  common: '⚪',
-  uncommon: '🟢',
-  rare: '🔵',
-  epic: '🟣',
-  mythic: '🔴',
+  common: '🪨',
+  uncommon: '🌿',
+  rare: '🔷',
+  epic: '🔮',
+  mythic: '👑',
 };
 
 const CLASS_EMOJIS: Record<string, string> = {
@@ -45,23 +52,36 @@ const CLASS_EMOJIS: Record<string, string> = {
 };
 
 const FOOTER_TEXT = 'Arcanora — Discord MMORPG';
-const DIVIDER = '━━━━━━━━━━━━━━━━━━━━━━━━';
-const DIVIDER_SHORT = '━━━━━━━━━━━━';
+const DIVIDER = '❖ ────────── ✦ ────────── ❖';
+const DIVIDER_SHORT = '✦ ────── ✦';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-export function hpBar(current: number, max: number, length = 10): string {
+export function makeProgressBar(current: number, max: number, filledEmoji: string, emptyEmoji: string, length = 10): string {
   const ratio = max <= 0 ? 0 : Math.max(0, Math.min(1, current / max));
   const filled = Math.round(ratio * length);
   const empty = length - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty);
+  return filledEmoji.repeat(filled) + emptyEmoji.repeat(empty);
+}
+
+export function hpBar(current: number, max: number, length = 10): string {
+  return makeProgressBar(current, max, '🟥', '⬛', length);
+}
+
+export function manaBar(current: number, max: number, length = 10): string {
+  return makeProgressBar(current, max, '🟦', '⬛', length);
+}
+
+export function staminaBar(current: number, max: number, length = 10): string {
+  return makeProgressBar(current, max, '🟪', '⬛', length);
 }
 
 export function progressBar(current: number, total: number, length = 10): string {
-  const ratio = total <= 0 ? 0 : Math.max(0, Math.min(1, current / total));
-  const filled = Math.round(ratio * length);
-  const empty = length - filled;
-  return '▓'.repeat(filled) + '░'.repeat(empty);
+  return makeProgressBar(current, total, '🟨', '⬛', length);
+}
+
+export function petBar(current: number, total: number, length = 10): string {
+  return makeProgressBar(current, total, '🟩', '⬛', length);
 }
 
 function capitalize(str: string): string {
@@ -117,39 +137,39 @@ export function profileEmbed(
     speed: number;
     luck: number;
   },
-  equipment: { slot: string; name: string; rarity: string }[],
+  equipment: { slot: string; name: string; rarity: string; id?: string; emoji?: string | null }[],
   guildName?: string,
 ): EmbedBuilder {
-  const classIcon = classEmoji(player.className);
+  const classIcon = getClassEmoji(player.className);
   const classDisplay = player.className ? capitalize(player.className) : 'Novice (unlock at Lv.5)';
   const stars = prestigeStars(player.prestige);
 
   const equipLines = equipment.length > 0
-    ? equipment.map((e) => `${RARITY_EMOJIS[e.rarity] || '⚪'} **${capitalize(e.slot)}**: ${e.name}`).join('\n')
+    ? equipment.map((e) => `${e.emoji || (e.id ? getItemEmoji(e.id, e.rarity) : (RARITY_EMOJIS[e.rarity] || '🪨'))} **${capitalize(e.slot)}**: ${e.name}`).join('\n')
     : '*No equipment*';
 
   const hpBarString = hpBar(player.currentHp, stats.hpMax, 10);
-  const manaBarString = hpBar(player.currentMana, stats.manaMax, 10);
-  const staminaBarString = hpBar(player.stamina, player.staminaMax, 10);
+  const manaBarString = manaBar(player.currentMana, stats.manaMax, 10);
+  const staminaBarString = staminaBar(player.stamina, player.staminaMax, 10);
 
   const statsLine1 = `⚔️ ${stats.attack} ATK  ·  🛡️ ${stats.defense} DEF  ·  💨 ${stats.speed} SPD`;
   const statsLine2 = `⚡ ${stats.critChance}% Crit  ·  💥 ${stats.critDmg}% CritDmg  ·  🍀 ${stats.luck} LUK`;
 
   const embedDescription =
     `${DIVIDER}\n` +
-    `Level ${player.level} ${classDisplay} ${player.prestige > 0 ? `· Prestige ${player.prestige}` : ''}\n` +
+    `Level **${player.level}** ${classDisplay} ${player.prestige > 0 ? `· Prestige ${player.prestige}` : ''}\n` +
     `📍 Location: **${player.currentZoneName}**\n` +
     `📜 Story: **${player.storyQuestName}**\n\n` +
     `❤️ ${hpBarString} \`${player.currentHp}/${stats.hpMax} HP\`\n` +
     `💧 ${manaBarString} \`${player.currentMana}/${stats.manaMax} MP\`\n` +
     `🔋 ${staminaBarString} \`${player.stamina}/${player.staminaMax} Stamina\`\n\n` +
-    `**Combat Stats**\n` +
+    `─── 📊 **Combat Stats** ───\n` +
     `${statsLine1}\n` +
     `${statsLine2}\n\n` +
-    `── **Equipment** ──\n` +
+    `─── 🛡️ **Equipment** ───\n` +
     `${equipLines}\n\n` +
-    `── **Wealth** ──\n` +
-    `🪙 **${player.gold.toLocaleString()}** Gold  ·  💎 **${player.gems.toLocaleString()}** Gems\n` +
+    `─── 💰 **Wealth** ───\n` +
+    `${getCurrencyEmoji('gold')} **${player.gold.toLocaleString()}** Gold  ·  ${getCurrencyEmoji('gems')} **${player.gems.toLocaleString()}** Gems\n` +
     (guildName ? `\n🏰 **Guild**: ${guildName}` : '');
 
   return baseEmbed()
@@ -224,7 +244,7 @@ export function combatEmbed(
         name: `🧙 ${playerName}`,
         value:
           `❤️ ${hpBar(playerHp, playerMaxHp)} \`${playerHp}/${playerMaxHp}\`\n` +
-          `💧 ${hpBar(playerMana, playerMaxMana)} \`${playerMana}/${playerMaxMana}\``,
+          `💧 ${manaBar(playerMana, playerMaxMana)} \`${playerMana}/${playerMaxMana}\``,
         inline: true,
       },
       { name: '⚡ VS ⚡', value: '\u200b', inline: true },
@@ -234,7 +254,7 @@ export function combatEmbed(
         inline: true,
       },
       {
-        name: `📜 ── Combat Log ──`,
+        name: `─── 📜 **Combat Activity** ───`,
         value: `\`\`\`\n${recentLog}\n\`\`\``,
         inline: false,
       },
@@ -245,21 +265,21 @@ export function combatEmbed(
  * Loot summary displayed after combat victory.
  */
 export function lootEmbed(
-  items: { name: string; quantity: number; rarity: string }[],
+  items: { name: string; quantity: number; rarity: string; id?: string; emoji?: string | null }[],
   gold: number,
   exp: number,
 ): EmbedBuilder {
   const itemLines = items.length > 0
-    ? items.map((i) => `${RARITY_EMOJIS[i.rarity] || '⚪'} **${i.name}** ×${i.quantity}`).join('\n')
+    ? items.map((i) => `${i.emoji || (i.id ? getItemEmoji(i.id, i.rarity) : (RARITY_EMOJIS[i.rarity] || '🪨'))} **${i.name}** ×${i.quantity}`).join('\n')
     : '*No items dropped*';
 
   return baseEmbed()
     .setColor(COLORS.GOLD)
-    .setTitle('🎉 ── Victory! ── 🎉')
+    .setTitle('🏆 Victory!')
     .setDescription(`${DIVIDER}\n✨ *The dust settles and spoils await…*`)
     .addFields(
-      { name: '🎁 ── Items ──', value: itemLines, inline: false },
-      { name: '🪙 Gold', value: `+**${gold.toLocaleString()}**`, inline: true },
+      { name: '─── 🎁 **Items Acquired** ───', value: itemLines, inline: false },
+      { name: `${getCurrencyEmoji('gold')} Gold`, value: `+**${gold.toLocaleString()}**`, inline: true },
       { name: '✨ EXP', value: `+**${exp.toLocaleString()}**`, inline: true },
     );
 }
@@ -268,7 +288,7 @@ export function lootEmbed(
  * Paginated inventory display with rarity indicators.
  */
 export function inventoryEmbed(
-  items: { name: string; quantity: number; rarity: string; slot?: string }[],
+  items: { name: string; quantity: number; rarity: string; slot?: string; id?: string; emoji?: string | null }[],
   page: number,
   totalPages: number,
 ): EmbedBuilder {
@@ -277,7 +297,7 @@ export function inventoryEmbed(
         .map(
           (i, idx) =>
             `\`${((page - 1) * items.length + idx + 1).toString().padStart(2, '0')}\` ` +
-            `${RARITY_EMOJIS[i.rarity] || '⚪'} **${i.name}** ×${i.quantity}` +
+            `${i.emoji || (i.id ? getItemEmoji(i.id, i.rarity) : (RARITY_EMOJIS[i.rarity] || '🪨'))} **${i.name}** ×${i.quantity}` +
             (i.slot ? ` *(${i.slot})*` : ''),
         )
         .join('\n')
@@ -285,7 +305,7 @@ export function inventoryEmbed(
 
   return baseEmbed()
     .setColor(COLORS.PRIMARY)
-    .setTitle('🎒 ── Inventory ──')
+    .setTitle('🎒 Inventory')
     .setDescription(`${DIVIDER}\n${itemLines}`)
     .setFooter({ text: `${FOOTER_TEXT} • Page ${page}/${totalPages}` });
 }
@@ -294,7 +314,7 @@ export function inventoryEmbed(
  * Shop display with items available for purchase.
  */
 export function shopEmbed(
-  items: { name: string; price: number; rarity: string; description?: string }[],
+  items: { name: string; price: number; rarity: string; description?: string; id?: string; emoji?: string | null }[],
   page: number,
   totalPages: number,
 ): EmbedBuilder {
@@ -303,7 +323,7 @@ export function shopEmbed(
         .map(
           (i, idx) =>
             `\`${((page - 1) * items.length + idx + 1).toString().padStart(2, '0')}\` ` +
-            `${RARITY_EMOJIS[i.rarity] || '⚪'} **${i.name}** — 🪙 ${i.price.toLocaleString()}` +
+            `${i.emoji || (i.id ? getItemEmoji(i.id, i.rarity) : (RARITY_EMOJIS[i.rarity] || '🪨'))} **${i.name}** — ${getCurrencyEmoji('gold')} ${i.price.toLocaleString()}` +
             (i.description ? `\n   *${i.description}*` : ''),
         )
         .join('\n')
@@ -311,7 +331,7 @@ export function shopEmbed(
 
   return baseEmbed()
     .setColor(COLORS.GOLD)
-    .setTitle('🏪 ── Shop ──')
+    .setTitle('🏪 Shop')
     .setDescription(`${DIVIDER}\n${itemLines}`)
     .setFooter({ text: `${FOOTER_TEXT} • Page ${page}/${totalPages}` });
 }
@@ -352,7 +372,7 @@ export function questEmbed(
 
   return baseEmbed()
     .setColor(COLORS.INFO)
-    .setTitle('📋 ── Active Quests ──')
+    .setTitle('📋 Active Quests')
     .setDescription(`${DIVIDER}\n${questLines}`);
 }
 
@@ -377,7 +397,7 @@ export function leaderboardEmbed(
 
   return baseEmbed()
     .setColor(COLORS.GOLD)
-    .setTitle(`🏆 ── Leaderboard: ${capitalize(category)} ──`)
+    .setTitle(`🏆 Leaderboard: ${capitalize(category)}`)
     .setDescription(`${DIVIDER}\n${lines}`)
     .setFooter({ text: `${FOOTER_TEXT} • Page ${page}` });
 }
@@ -412,7 +432,7 @@ export function guildEmbed(
         inline: true,
       },
       { name: '🎖️ Your Rank', value: capitalize(playerRank), inline: true },
-      { name: `📋 ── Member Roster ──`, value: memberLines || '*No members.*', inline: false },
+      { name: `─── 👥 **Member Roster** ───`, value: memberLines || '*No members.*', inline: false },
     );
 }
 
@@ -426,6 +446,8 @@ export function petEmbed(
     level: number;
     maxLevel: number;
     rarity: string;
+    id?: string;
+    emoji?: string | null;
     ability: { name: string; description: string; cooldown: number };
   },
   passiveStats: {
@@ -435,12 +457,12 @@ export function petEmbed(
     luck: number;
   },
 ): EmbedBuilder {
-  const rarityEmoji = RARITY_EMOJIS[pet.rarity] || '⚪';
-  const levelBar = progressBar(pet.level, pet.maxLevel, 10);
+  const rarityEmoji = pet.emoji || (pet.id ? getPetEmoji(pet.id, pet.rarity) : (RARITY_EMOJIS[pet.rarity] || '🪨'));
+  const levelBar = petBar(pet.level, pet.maxLevel, 10);
 
   return baseEmbed()
     .setColor(COLORS.PET)
-    .setTitle(`🐾 ── ${pet.name} ──`)
+    .setTitle(`🐾 ${pet.name}`)
     .setDescription(
       `${DIVIDER}\n` +
       `*${pet.description}*\n\n` +
@@ -487,7 +509,7 @@ export function helpEmbed(
 
   return baseEmbed()
     .setColor(COLORS.INFO)
-    .setTitle(`${categoryEmoji} ── ${capitalize(category)} Commands ──`)
+    .setTitle(`${categoryEmoji} ${capitalize(category)} Commands`)
     .setDescription(`${DIVIDER}\n${commandLines}\n${DIVIDER_SHORT}`)
     .setFooter({ text: `${FOOTER_TEXT} • Use the menu below to browse categories` });
 }
@@ -498,7 +520,7 @@ export function helpEmbed(
 export function helpOverviewEmbed(): EmbedBuilder {
   return baseEmbed()
     .setColor(COLORS.PRIMARY)
-    .setTitle('📖 ── Arcanora Help Guide ──')
+    .setTitle('📖 Arcanora Help Guide')
     .setDescription(
       `${DIVIDER}\n` +
       `Welcome to **Arcanora**, a Discord MMORPG adventure!\n` +
@@ -541,7 +563,7 @@ export function bossInfoEmbed(
       `*${boss.description}*\n\n` +
       `**Health Pool:**\n` +
       `${hpBar(hpCurrent, hpMax, 15)} \`${hpPercent}% (${hpCurrent.toLocaleString()} / ${hpMax.toLocaleString()})\`\n\n` +
-      `**Top Contributors:**\n` +
+      `─── 🏆 **Top Contributors** ───\n` +
       `${contributorsList}\n\n` +
       `${DIVIDER_SHORT}\n` +
       `*⚔️ Use \`/boss fight\` in this channel to join the raid!*`
@@ -570,8 +592,8 @@ export function bossSkirmishEmbed(
       `${hpBar(bossHpCurrent, bossHpMax, 15)} \`${bossHpCurrent.toLocaleString()} / ${bossHpMax.toLocaleString()} HP\`\n\n` +
       `**Your Status:**\n` +
       `❤️ HP:   ${hpBar(player.hpCurrent, player.hpMax, 10)} \`${player.hpCurrent}/${player.hpMax}\`\n` +
-      `💧 Mana: ${hpBar(player.manaCurrent, player.manaMax, 10)} \`${player.manaCurrent}/${player.manaMax}\`\n\n` +
-      `**Activity Log:**\n` +
+      `💧 Mana: ${manaBar(player.manaCurrent, player.manaMax, 10)} \`${player.manaCurrent}/${player.manaMax}\`\n\n` +
+      `─── 📜 **skirmish Log** ───\n` +
       `${logLines}`
     );
 }
@@ -606,9 +628,9 @@ export function bossVictoryEmbed(
     .setDescription(
       `🎉 **${boss.name} (Lv.${boss.level})** has been defeated!\n\n` +
       `👑 **MVP**: **${mvpUsername}**\n\n` +
-      `**Final Damage Contribution:**\n` +
+      `─── 📊 **Final Damage Contribution** ───\n` +
       `${rankingLines}\n\n` +
-      `**Rewards Distributed:**\n` +
+      `─── 🎁 **Rewards Distributed** ───\n` +
       `${rewardLines}\n\n` +
       `${DIVIDER_SHORT}\n` +
       `*Congratulations to all adventurers!*`

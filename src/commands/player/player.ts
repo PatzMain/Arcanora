@@ -94,6 +94,7 @@ export async function runProfile(
         slot: def?.type || 'accessory',
         name: def ? `${def.name} ${dbItem.enhancement > 0 ? `+${dbItem.enhancement}` : ''}` : dbItem.itemId,
         rarity: def?.rarity || 'common',
+        id: dbItem.itemId,
         stats: def?.stats || {}
       };
     });

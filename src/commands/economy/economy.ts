@@ -18,6 +18,15 @@ import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { itemsCatalog } from '../../utils/catalog.js';
 import { getNavButtons } from '../../utils/navigation.js';
+import { getItemEmoji, getCurrencyEmoji } from '../../utils/emojis.js';
+
+function parseEmojiForSelect(emojiStr: string): string | { id: string; name?: string } {
+  const match = emojiStr.match(/<a?:([a-zA-Z0-9_]+):([0-9]+)>/);
+  if (match && match[1] && match[2]) {
+    return { name: match[1], id: match[2] };
+  }
+  return emojiStr;
+}
 
 export const data = new SlashCommandBuilder()
   .setName('economy')
@@ -65,19 +74,11 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
   const totalPages = Math.max(1, shopData.totalPages);
   const activePage = Math.max(1, Math.min(page, totalPages));
 
-  const RARITY_EMOJIS: Record<string, string> = {
-    common: '⚪',
-    uncommon: '🟢',
-    rare: '🔵',
-    epic: '🟣',
-    mythic: '🔴'
-  };
-
   const itemLines = shopData.items.length > 0
     ? shopData.items.map((i, idx) => {
         const num = ((activePage - 1) * pageSize + idx + 1).toString().padStart(2, '0');
-        const emoji = RARITY_EMOJIS[i.rarity] || '⚪';
-        return `\`${num}\` ${emoji} **${i.name}** — 🪙 **${i.buyPrice.toLocaleString()}**g\n   *${i.description}*`;
+        const emoji = getItemEmoji(i.id, i.rarity);
+        return `\`${num}\` ${emoji} **${i.name}** — ${getCurrencyEmoji('gold')} **${i.buyPrice.toLocaleString()}**g\n   *${i.description}*`;
       }).join('\n')
     : '*No items available.*';
 
@@ -85,7 +86,7 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
     .setColor(0xFBBF24)
     .setTitle('🏪 NPC Merchant Shop')
     .setDescription(
-      `### 💰 Your Balance: 🪙 **${player.gold.toLocaleString()}** Gold\n\n` +
+      `### 💰 Your Balance: ${getCurrencyEmoji('gold')} **${player.gold.toLocaleString()}** Gold\n\n` +
       (statusMsg ? `🔔 **Status**: ${statusMsg}\n\n` : '') +
       itemLines
     )
@@ -114,12 +115,12 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
   // 2. Select menu row for purchasing items
   if (shopData.items.length > 0) {
     const selectOptions = shopData.items.map((i) => {
-      const emoji = RARITY_EMOJIS[i.rarity] || '⚪';
+      const emojiStr = getItemEmoji(i.id, i.rarity);
       return {
         label: i.name.slice(0, 25),
         description: `Price: ${i.buyPrice}g | Level Req: ${i.levelReq}`,
         value: i.id,
-        emoji: emoji
+        emoji: parseEmojiForSelect(emojiStr)
       };
     });
 

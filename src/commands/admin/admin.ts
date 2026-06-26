@@ -1,6 +1,7 @@
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
+  EmbedBuilder,
   type ChatInputCommandInteraction
 } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
@@ -8,9 +9,11 @@ import { addItem } from '../../database/queries/inventory.js';
 import { getEnemyById } from '../../systems/combat/enemy.js';
 import { calculateWorldBossHp } from '../../systems/bosses.js';
 import { db } from '../../database/client.js';
-import { worldBosses } from '../../database/schema.js';
+import { worldBosses, feedbacks } from '../../database/schema.js';
 import { successEmbed, errorEmbed } from '../../utils/embeds.js';
-import { itemsCatalog } from '../../utils/catalog.js';
+import { eq, desc } from 'drizzle-orm';
+import { itemsCatalog, classesCatalog, petsCatalog, achievementsCatalog } from '../../utils/catalog.js';
+import { setCustomAsset, removeCustomAsset, emojiCache } from '../../utils/emojis.js';
 
 export const data = new SlashCommandBuilder()
   .setName('admin')
@@ -74,6 +77,117 @@ export const data = new SlashCommandBuilder()
             { name: 'Infernal Titan (Lv.15)', value: 'infernal_titan' },
             { name: 'The Nameless One (Lv.20)', value: 'the_nameless_one' }
           )
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('asset-set')
+      .setDescription('Admin: Set or update a custom emoji asset.')
+      .addStringOption((option) =>
+        option
+          .setName('type')
+          .setDescription('The type of asset.')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Item', value: 'item' },
+            { name: 'Class', value: 'class' },
+            { name: 'Pet', value: 'pet' },
+            { name: 'Achievement', value: 'achievement' },
+            { name: 'Currency', value: 'currency' }
+          )
+      )
+      .addStringOption((option) =>
+        option
+          .setName('id')
+          .setDescription('The unique ID of the entity (e.g. weapon_wooden_sword, warrior, gold).')
+          .setRequired(true)
+      )
+      .addStringOption((option) =>
+        option
+          .setName('emoji')
+          .setDescription('The custom Discord emoji string (e.g. <:wooden_sword:1234567890>).')
+          .setRequired(true)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('asset-remove')
+      .setDescription('Admin: Remove a custom emoji asset.')
+      .addStringOption((option) =>
+        option
+          .setName('id')
+          .setDescription('The unique ID of the entity.')
+          .setRequired(true)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('asset-list')
+      .setDescription('Admin: List assets by type and configuration status.')
+      .addStringOption((option) =>
+        option
+          .setName('type')
+          .setDescription('The type of assets to list.')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Item', value: 'item' },
+            { name: 'Class', value: 'class' },
+            { name: 'Pet', value: 'pet' },
+            { name: 'Achievement', value: 'achievement' },
+            { name: 'Currency', value: 'currency' }
+          )
+      )
+      .addStringOption((option) =>
+        option
+          .setName('filter')
+          .setDescription('Filter by configuration status.')
+          .setRequired(true)
+          .addChoices(
+            { name: 'All', value: 'all' },
+            { name: 'Configured (With Custom Emoji)', value: 'configured' },
+            { name: 'Unconfigured (Missing Custom Emoji)', value: 'unconfigured' }
+          )
+      )
+      .addIntegerOption((option) =>
+        option
+          .setName('page')
+          .setDescription('Page number.')
+          .setRequired(false)
+          .setMinValue(1)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('feedback-list')
+      .setDescription('Admin: List submitted player feedbacks.')
+      .addStringOption((option) =>
+        option
+          .setName('status')
+          .setDescription('Filter by status (default: open).')
+          .setRequired(false)
+          .addChoices(
+            { name: 'Open (Pending)', value: 'open' },
+            { name: 'Resolved', value: 'resolved' },
+            { name: 'All', value: 'all' }
+          )
+      )
+      .addIntegerOption((option) =>
+        option
+          .setName('page')
+          .setDescription('Page number.')
+          .setRequired(false)
+          .setMinValue(1)
+      )
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('feedback-resolve')
+      .setDescription('Admin: Mark a feedback entry as resolved.')
+      .addStringOption((option) =>
+        option
+          .setName('id')
+          .setDescription('The UUID of the feedback entry.')
+          .setRequired(true)
       )
   );
 
@@ -189,6 +303,201 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
       const replyEmbed = successEmbed('Global Boss Spawned', `Spawned global boss **${enemyDef.name}** with **${computedMaxHp.toLocaleString()}** HP.`);
       await interaction.editReply({ embeds: [replyEmbed] });
+    } else if (subcommand === 'asset-set') {
+      const type = interaction.options.getString('type', true);
+      const id = interaction.options.getString('id', true).trim();
+      const emojiInput = interaction.options.getString('emoji', true).trim();
+
+      // Validate emoji format (custom Discord emoji format or standard Unicode emoji)
+      const emojiRegex = /^(?:<a?:[a-zA-Z0-9_]+:[0-9]+>|[\p{Emoji}\u200d]+)$/u;
+      if (!emojiRegex.test(emojiInput)) {
+        const embed = errorEmbed(
+          'Invalid Emoji Format',
+          'Please provide a valid custom Discord emoji in the format `<:name:id>` or `<a:name:id>`, or a standard Unicode emoji.'
+        );
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      // Check if entity exists in catalogs to prevent typos
+      let exists = false;
+      if (type === 'item') {
+        exists = itemsCatalog.some((i) => i.id === id);
+      } else if (type === 'class') {
+        exists = id === 'novice' || classesCatalog.some((c) => c.id === id);
+      } else if (type === 'pet') {
+        exists = petsCatalog.some((p) => p.id === id);
+      } else if (type === 'achievement') {
+        exists = achievementsCatalog.some((a) => a.id === id);
+      } else if (type === 'currency') {
+        exists = id === 'gold' || id === 'gems';
+      }
+
+      if (!exists) {
+        const embed = errorEmbed(
+          'Entity Not Found',
+          `No **${type}** found with the ID **"${id}"** in the static catalog. Please check your spelling.`
+        );
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      await setCustomAsset(id, type, emojiInput);
+
+      const embed = successEmbed(
+        'Asset Configuration Saved',
+        `Successfully associated **${type}** ID \`${id}\` with custom asset ${emojiInput}.`
+      );
+      await interaction.editReply({ embeds: [embed] });
+
+    } else if (subcommand === 'asset-remove') {
+      const id = interaction.options.getString('id', true).trim();
+
+      const cached = emojiCache.get(id);
+      if (!cached) {
+        const embed = errorEmbed('Asset Not Found', `No custom asset is configured for ID \`${id}\`.`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      await removeCustomAsset(id);
+
+      const embed = successEmbed(
+        'Asset Removed',
+        `Successfully removed custom asset for ID \`${id}\` (was set to \`${cached.emoji}\`).`
+      );
+      await interaction.editReply({ embeds: [embed] });
+
+    } else if (subcommand === 'asset-list') {
+      const type = interaction.options.getString('type', true);
+      const filter = interaction.options.getString('filter', true);
+      const page = interaction.options.getInteger('page') || 1;
+      const pageSize = 15;
+
+      // Collect all entities of this type
+      let allEntities: { id: string; name: string }[] = [];
+
+      if (type === 'item') {
+        allEntities = itemsCatalog.map((i) => ({ id: i.id, name: i.name }));
+      } else if (type === 'class') {
+        allEntities = [
+          { id: 'novice', name: 'Novice' },
+          ...classesCatalog.map((c) => ({ id: c.id, name: c.name }))
+        ];
+      } else if (type === 'pet') {
+        allEntities = petsCatalog.map((p) => ({ id: p.id, name: p.name }));
+      } else if (type === 'achievement') {
+        allEntities = achievementsCatalog.map((a) => ({ id: a.id, name: a.name }));
+      } else if (type === 'currency') {
+        allEntities = [
+          { id: 'gold', name: 'Gold' },
+          { id: 'gems', name: 'Gems' }
+        ];
+      }
+
+      // Filter by configuration status
+      const filteredEntities = allEntities.filter((entity) => {
+        const hasAsset = emojiCache.has(entity.id);
+        if (filter === 'configured') return hasAsset;
+        if (filter === 'unconfigured') return !hasAsset;
+        return true;
+      });
+
+      const totalItems = filteredEntities.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      const activePage = Math.min(page, totalPages);
+      const startIndex = (activePage - 1) * pageSize;
+      const paginatedEntities = filteredEntities.slice(startIndex, startIndex + pageSize);
+
+      const listLines = paginatedEntities.map((entity, idx) => {
+        const num = (startIndex + idx + 1).toString().padStart(2, '0');
+        const asset = emojiCache.get(entity.id);
+        const assetDisplay = asset ? asset.emoji : '*(No custom asset)*';
+        return `\`${num}\` **${entity.name}** \`(${entity.id})\` — ${assetDisplay}`;
+      }).join('\n');
+
+      const filterTitle = filter === 'configured' ? 'Configured' : filter === 'unconfigured' ? 'Unconfigured' : 'All';
+      const description = `### Listing: ${filterTitle} ${type.toUpperCase()} Assets (${totalItems} total)\n\n` +
+        (listLines || '*No entities found matching these criteria.*');
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${type.toUpperCase()} Asset List`)
+        .setDescription(description)
+        .setColor(0x7C3AED) // Purple
+        .setFooter({ text: `Arcanora Assets • Page ${activePage}/${totalPages}` });
+
+      await interaction.editReply({ embeds: [embed] });
+    } else if (subcommand === 'feedback-list') {
+      const statusFilter = interaction.options.getString('status') || 'open';
+      const page = interaction.options.getInteger('page') || 1;
+      const pageSize = 5;
+
+      let queryConditions;
+      if (statusFilter !== 'all') {
+        queryConditions = eq(feedbacks.status, statusFilter);
+      }
+
+      const allFeedbacks = await db.query.feedbacks.findMany({
+        where: queryConditions,
+        orderBy: [desc(feedbacks.createdAt)],
+      });
+
+      const totalItems = allFeedbacks.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+      const activePage = Math.min(page, totalPages);
+      const startIndex = (activePage - 1) * pageSize;
+      const paginatedFeedbacks = allFeedbacks.slice(startIndex, startIndex + pageSize);
+
+      const embed = new EmbedBuilder()
+        .setTitle(`📝 Player Feedback List`)
+        .setColor(0x7C3AED)
+        .setFooter({ text: `Arcanora Feedback • Page ${activePage}/${totalPages} • Total: ${totalItems}` });
+
+      if (paginatedFeedbacks.length === 0) {
+        embed.setDescription(`*No feedback entries found with status "${statusFilter}".*`);
+      } else {
+        const descriptionLines = paginatedFeedbacks.map((f) => {
+          const dateStr = f.createdAt.toLocaleDateString();
+          const statusEmoji = f.status === 'resolved' ? '✅' : '⏳';
+          return `**ID**: \`${f.id}\`\n` +
+                 `👤 **Player**: ${f.username} (${statusEmoji} *${f.status}*)\n` +
+                 `🏷️ **Category**: \`${f.category}\` • 📅 **Date**: ${dateStr}\n` +
+                 `💬 **Feedback**:\n> ${f.content.replace(/\n/g, '\n> ')}\n` +
+                 `───────────────────`;
+        });
+        embed.setDescription(`### Status: ${statusFilter.toUpperCase()}\n\n` + descriptionLines.join('\n\n'));
+      }
+
+      await interaction.editReply({ embeds: [embed] });
+    } else if (subcommand === 'feedback-resolve') {
+      const feedbackId = interaction.options.getString('id', true).trim();
+
+      const feedback = await db.query.feedbacks.findFirst({
+        where: eq(feedbacks.id, feedbackId)
+      });
+
+      if (!feedback) {
+        const embed = errorEmbed('Feedback Not Found', `No feedback entry found with ID \`${feedbackId}\`.`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      if (feedback.status === 'resolved') {
+        const embed = errorEmbed('Already Resolved', `Feedback with ID \`${feedbackId}\` is already resolved.`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      await db.update(feedbacks)
+        .set({ status: 'resolved' })
+        .where(eq(feedbacks.id, feedbackId));
+
+      const embed = successEmbed(
+        'Feedback Resolved',
+        `Successfully marked feedback \`${feedbackId}\` by **${feedback.username}** as **resolved**.`
+      );
+      embed.setColor(0x10B981);
+      await interaction.editReply({ embeds: [embed] });
     }
   } catch (error: any) {
     console.error('Admin command error:', error);

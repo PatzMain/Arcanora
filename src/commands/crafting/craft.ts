@@ -9,6 +9,15 @@ import { inventory } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { successEmbed, errorEmbed } from '../../utils/embeds.js';
 import { itemsCatalog } from '../../utils/catalog.js';
+import { getItemEmoji } from '../../utils/emojis.js';
+
+function parseEmojiForSelect(emojiStr: string): string | { id: string; name?: string } {
+  const match = emojiStr.match(/<a?:([a-zA-Z0-9_]+):([0-9]+)>/);
+  if (match && match[1] && match[2]) {
+    return { name: match[1], id: match[2] };
+  }
+  return emojiStr;
+}
 
 export const data = new SlashCommandBuilder()
   .setName('craft')
@@ -134,11 +143,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         description = available
           .map((r) => {
             const resultItem = catalog.find((i) => i.id === r.resultItemId);
-            const resultName = resultItem ? resultItem.name : r.resultItemId;
+            const resultEmoji = resultItem ? getItemEmoji(resultItem.id, resultItem.rarity) : '🪨';
+            const resultName = resultItem ? `${resultEmoji} ${resultItem.name}` : r.resultItemId;
 
             const materialLines = r.materials.map((m) => {
               const itemDef = catalog.find((i) => i.id === m.itemId);
-              const name = itemDef ? itemDef.name : m.itemId;
+              const emoji = getItemEmoji(m.itemId, itemDef?.rarity);
+              const name = itemDef ? `${emoji} ${itemDef.name}` : m.itemId;
               const owned = dbInventory.filter((inv) => inv.itemId === m.itemId).reduce((sum, inv) => sum + inv.quantity, 0);
               const checkIcon = owned >= m.quantity ? '✅' : '❌';
               return `   ${checkIcon} ${name}: **${owned}/${m.quantity}**`;
@@ -162,10 +173,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       const selectMenuOptions = available.map((r) => {
         const resultItem = catalog.find((i) => i.id === r.resultItemId);
         const resultName = resultItem ? resultItem.name : r.resultItemId;
+        const emojiStr = resultItem ? getItemEmoji(resultItem.id, resultItem.rarity) : '🪨';
         return {
           label: r.name,
           description: `Creates ${resultName} x${r.resultQuantity} (${r.successRate}% Success)`,
-          value: r.id
+          value: r.id,
+          emoji: parseEmojiForSelect(emojiStr)
         };
       });
 

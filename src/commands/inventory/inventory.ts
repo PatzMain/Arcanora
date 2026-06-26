@@ -116,6 +116,7 @@ export async function runBag(
         name,
         quantity: dbItem.quantity,
         rarity: def?.rarity || 'common',
+        id: dbItem.itemId,
         slot: dbItem.equipped ? (def?.type ? capitalize(def.type) : 'Equipped') : undefined
       };
     });

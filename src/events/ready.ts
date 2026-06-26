@@ -17,6 +17,8 @@ import * as petCmd from '../commands/pets/pet.js';
 import * as adminCmd from '../commands/admin/admin.js';
 import * as mapCmd from '../commands/player/map.js';
 import * as resetCmd from '../commands/player/reset.js';
+import * as feedbackCmd from '../commands/player/feedback.js';
+import { initEmojis } from '../utils/emojis.js';
 
 export const data = {}; // keep index metadata or dummy placeholder if index references it
 
@@ -35,11 +37,15 @@ export const commandsList = [
   petCmd,
   adminCmd,
   mapCmd,
-  resetCmd
+  resetCmd,
+  feedbackCmd
 ];
 
 export async function execute(client: Client) {
   logger.info(`🤖 Arcanora Discord Bot logged in as ${client.user?.tag}!`);
+
+  // Initialize custom assets memory cache
+  await initEmojis();
 
   try {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);

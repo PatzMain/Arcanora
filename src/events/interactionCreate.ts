@@ -8,6 +8,7 @@ import { handleBagInteraction, handleEquipInteraction, handleSellInteraction } f
 import { handleQuestsInteraction, handleQuestsBoardSelect } from '../commands/quests/quest.js';
 import { handlePrestigeInteraction, handlePresetInteraction } from '../commands/player/player.js';
 import { handleMapTravelInteraction } from '../commands/player/map.js';
+import { handleFeedbackModal } from '../commands/player/feedback.js';
 import { handleGuildInteraction, handleLeaderboardInteraction } from '../commands/guilds/guild.js';
 import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
@@ -130,6 +131,22 @@ export async function execute(interaction: Interaction) {
       } catch (error) {
         logger.error({ error, customId }, 'Error processing player preset modal interaction');
         const embed = errorEmbed('Modal Submission Error', 'An unexpected error occurred while processing this modal submission.', error);
+        try {
+          if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+          } else {
+            await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+          }
+        } catch (replyErr) {
+          logger.error({ error: replyErr }, 'Failed to send modal error response');
+        }
+      }
+    } else if (customId.startsWith('feedback_submit_')) {
+      try {
+        await handleFeedbackModal(interaction);
+      } catch (error) {
+        logger.error({ error, customId }, 'Error processing feedback modal interaction');
+        const embed = errorEmbed('Modal Submission Error', 'An unexpected error occurred while processing your feedback.', error);
         try {
           if (interaction.deferred || interaction.replied) {
             await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });

@@ -248,6 +248,7 @@ export const playersRelations = relations(players, ({ one, many }) => ({
     references: [explorationSessions.playerId],
   }),
   worldDiscoveries: many(playerWorldDiscoveries),
+  feedbacks: many(feedbacks),
 }));
 
 export const playerWorldDiscoveriesRelations = relations(playerWorldDiscoveries, ({ one }) => ({
@@ -399,6 +400,33 @@ export const playerSkillsRelations = relations(playerSkills, ({ one }) => ({
 export const explorationSessionsRelations = relations(explorationSessions, ({ one }) => ({
   player: one(players, {
     fields: [explorationSessions.playerId],
+    references: [players.id],
+  }),
+}));
+
+// ─── CUSTOM_ASSETS ───
+export const customAssets = pgTable('custom_assets', {
+  id: varchar('id', { length: 128 }).primaryKey(),
+  type: varchar('type', { length: 32 }).notNull(),
+  emoji: varchar('emoji', { length: 128 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── FEEDBACKS ───
+export const feedbacks = pgTable('feedbacks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id, { onDelete: 'cascade' }).notNull(),
+  username: varchar('username', { length: 32 }).notNull(),
+  category: varchar('category', { length: 32 }).notNull(),
+  content: text('content').notNull(),
+  status: varchar('status', { length: 20 }).default('open').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const feedbacksRelations = relations(feedbacks, ({ one }) => ({
+  player: one(players, {
+    fields: [feedbacks.playerId],
     references: [players.id],
   }),
 }));
