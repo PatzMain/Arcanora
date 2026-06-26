@@ -8,10 +8,11 @@ import {
   updateQuestProgress,
   startQuest
 } from '../../database/queries/quest.js';
-import { incrementQuestsCompleted } from '../../database/queries/player.js';
+import { incrementQuestsCompleted, awardPlayerExp } from '../../database/queries/player.js';
 import { awardGold, awardGems } from '../../economy/currency.js';
 import { getEquippedItems, addItem } from '../../database/queries/inventory.js';
 import { computeStats } from './stats.js';
+import { getXpForLevel } from './leveling.js';
 import { successEmbed } from '../../utils/embeds.js';
 
 export const STORY_QUEST_ORDER = [
@@ -112,6 +113,12 @@ async function completeQuestAndCheckNext(
 
   // 3. Award standard rewards
   const rewards = questDef.rewards || {};
+  let expToGain = rewards.exp || 0;
+
+  if (questDef.type === 'story' && player.level < 20) {
+    const nextLevelXp = getXpForLevel(player.level + 1);
+    expToGain = Math.max(expToGain, nextLevelXp);
+  }
   
   if (rewards.gold && rewards.gold > 0) {
     await awardGold(playerId, rewards.gold, `Quest completed: ${questDef.name}`);
@@ -123,36 +130,18 @@ async function completeQuestAndCheckNext(
     await addItem(playerId, rewards.itemId, rewards.itemQty);
   }
 
-  // 4. Handle Level Up if it is a story quest
+  // 4. Handle Level Up and Experience
   let newLevel = player.level;
   let nextQuestId: string | null = null;
+  let leveledUp = false;
+
+  if (expToGain > 0) {
+    const expResult = await awardPlayerExp(playerId, expToGain);
+    newLevel = expResult.newLevel;
+    leveledUp = expResult.leveledUp;
+  }
 
   if (questDef.type === 'story') {
-    newLevel = Math.min(20, player.level + 1);
-    
-    // Update player level
-    await db
-      .update(players)
-      .set({ level: newLevel })
-      .where(eq(players.id, playerId));
-
-    // Clamp current HP/Mana to new maximums
-    const equippedDbItems = await getEquippedItems(playerId);
-    const equippedItemsList = equippedDbItems.map((dbItem) => {
-      const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
-      return { slot: def?.type || 'accessory', rarity: def?.rarity || 'common', stats: def?.stats || {} };
-    });
-    
-    const newStats = computeStats(newLevel, player.prestige, player.playerClass, equippedItemsList, null, []);
-    
-    await db
-      .update(players)
-      .set({
-        hpCurrent: Math.min(newStats.hpMax, player.hpCurrent),
-        manaCurrent: Math.min(newStats.manaMax, player.manaCurrent)
-      })
-      .where(eq(players.id, playerId));
-
     // Determine next story quest to start
     const currentIndex = STORY_QUEST_ORDER.indexOf(questDef.id);
     if (currentIndex !== -1 && currentIndex + 1 < STORY_QUEST_ORDER.length) {
@@ -166,6 +155,7 @@ async function completeQuestAndCheckNext(
     try {
       const rewardLines: string[] = [];
       if (rewards.gold) rewardLines.push(`🪙 +**${rewards.gold.toLocaleString()}** Gold`);
+      if (expToGain > 0) rewardLines.push(`✨ +**${expToGain.toLocaleString()}** EXP`);
       if (rewards.gems) rewardLines.push(`💎 +**${rewards.gems}** Gems`);
       if (rewards.itemId) {
         const itemDef = itemsCatalog.find((i) => i.id === rewards.itemId);
@@ -178,13 +168,15 @@ async function completeQuestAndCheckNext(
         `**Rewards Awarded:**\n${rewardLines.join('\n') || '*None*'}`
       );
 
-      if (questDef.type === 'story') {
+      if (leveledUp) {
         embed.addFields({
           name: '🎉 LEVEL UP!',
-          value: `You reached **Level ${newLevel}**!`,
+          value: `You reached **Level ${newLevel}**! Your HP and Mana have been fully restored.`,
           inline: false
         });
+      }
 
+      if (questDef.type === 'story') {
         if (nextQuestId) {
           const nextDef = questsCatalog.find((q) => q.id === nextQuestId);
           if (nextDef) {

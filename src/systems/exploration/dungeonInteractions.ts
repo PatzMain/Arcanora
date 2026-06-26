@@ -301,112 +301,7 @@ const merchantHandler: NodeInteractionHandler = {
   }
 };
 
-// 4. Puzzle Handler
-const puzzleHandler: NodeInteractionHandler = {
-  async onEnter(context) {
-    const embed = new EmbedBuilder()
-      .setColor(0x8B5CF6) // Purple
-      .setTitle('🧩 Ancient Inscription')
-      .setDescription(
-        'An ancient stone door blocks your path. ' +
-        'Written upon it in glowing runes is a riddle. Solving it will unlock the door and reveal treasure. ' +
-        'Answering incorrectly will trigger a magical trap!'
-      );
-
-    const riddleBtn = new ButtonBuilder()
-      .setCustomId(`dungeon_action_puzzle_${context.playerId}`)
-      .setLabel('Solve Riddle')
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji('🧩');
-
-    if (context.node.status === 'cleared') {
-      riddleBtn.setDisabled(true).setLabel('Riddle Solved');
-    }
-
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(riddleBtn);
-
-    return {
-      embeds: [embed],
-      components: [row]
-    };
-  },
-
-  async onAction(action, context, extraData) {
-    const player = await getPlayerWithClampedStats(context.discordId);
-    if (!player) {
-      return { success: false, embeds: [], components: [], log: 'Player not found.' };
-    }
-
-    if (action === 'submit') {
-      const riddle = context.node.encounterData?.riddle;
-      const answerIdx = extraData?.answerIndex;
-
-      if (!riddle || answerIdx === undefined) {
-        return { success: false, embeds: [], components: [], log: 'Riddle data missing.' };
-      }
-
-      // Mark node as cleared
-      context.dbSession.mapState.nodes[context.node.id].status = 'cleared';
-
-      if (answerIdx === riddle.correctIndex) {
-        // Correct answer!
-        await awardGold(player.id, riddle.rewardGold, 'Solved Riddle');
-        
-        // Give exp (we don't have a simple awardExp helper, let's just update exp directly)
-        const updatedExp = player.exp + riddle.rewardExp;
-        const [updatedPlayer] = await db
-          .update(players)
-          .set({ exp: updatedExp })
-          .where(eq(players.id, player.id))
-          .returning();
-
-        const embed = new EmbedBuilder()
-          .setColor(0x10B981)
-          .setTitle('🧩 Correct Answer!')
-          .setDescription(
-            `The stone door grinds open, revealing a stash of loot!\n\n` +
-            `🪙 **Gold Awarded**: \`+${riddle.rewardGold}\`\n` +
-            `✨ **EXP gained**: \`+${riddle.rewardExp}\``
-          );
-
-        return {
-          success: true,
-          embeds: [embed],
-          components: [],
-          log: 'Solved riddle correctly.',
-          updatedPlayer
-        };
-      } else {
-        // Incorrect answer!
-        const newHp = Math.max(1, player.hpCurrent - riddle.damageOnWrong);
-        const [updatedPlayer] = await db
-          .update(players)
-          .set({ hpCurrent: newHp })
-          .where(eq(players.id, player.id))
-          .returning();
-
-        const embed = new EmbedBuilder()
-          .setColor(0xEF4444) // Red
-          .setTitle('💥 Magical Trap Triggered!')
-          .setDescription(
-            `Incorrect! Runes flash blood-red, discharging a bolt of lightning!\n\n` +
-            `💔 **HP Lost**: \`-${riddle.damageOnWrong}\` (${newHp} HP remaining)\n` +
-            `The correct answer was: **${riddle.options[riddle.correctIndex]}**`
-          );
-
-        return {
-          success: true,
-          embeds: [embed],
-          components: [],
-          log: 'Triggered riddle trap.',
-          updatedPlayer
-        };
-      }
-    }
-
-    return { success: false, embeds: [], components: [], log: 'Invalid action.' };
-  }
-};
+// 4. Puzzle Handler - Removed
 
 // 5. Event Handler
 const eventHandler: NodeInteractionHandler = {
@@ -663,7 +558,6 @@ const combatNodeHandler: NodeInteractionHandler = {
 dungeonNodeRegistry.register('campsite', campsiteHandler);
 dungeonNodeRegistry.register('treasure', treasureHandler);
 dungeonNodeRegistry.register('merchant', merchantHandler);
-dungeonNodeRegistry.register('puzzle', puzzleHandler);
 dungeonNodeRegistry.register('event', eventHandler);
 dungeonNodeRegistry.register('room', combatNodeHandler);
 dungeonNodeRegistry.register('elite', combatNodeHandler);

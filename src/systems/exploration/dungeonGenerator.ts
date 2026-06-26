@@ -3,7 +3,7 @@ import { zonesCatalog, enemiesCatalog } from '../../utils/catalog.js';
 export interface DungeonNode {
   id: string;
   name: string;
-  type: 'campsite' | 'treasure' | 'merchant' | 'puzzle' | 'event' | 'elite' | 'boss' | 'room';
+  type: 'campsite' | 'treasure' | 'merchant' | 'event' | 'elite' | 'boss' | 'room';
   status: 'hidden' | 'revealed' | 'visited' | 'cleared';
   connections: string[];
   encounterData?: any;
@@ -19,49 +19,7 @@ export interface DungeonMap {
   bossNodeId: string;
 }
 
-// Predefined riddles for Puzzle nodes
-export const RIDDLES = [
-  {
-    question: "What has keys but can't open locks?",
-    options: ["Piano", "Map", "Chest", "Clock"],
-    correctIndex: 0,
-    rewardGold: 150,
-    rewardExp: 100,
-    damageOnWrong: 15,
-  },
-  {
-    question: "The more of them you take, the more you leave behind. What are they?",
-    options: ["Breaths", "Coins", "Footsteps", "Secrets"],
-    correctIndex: 2,
-    rewardGold: 150,
-    rewardExp: 100,
-    damageOnWrong: 15,
-  },
-  {
-    question: "I am tall when I am young, and I am short when I am old. What am I?",
-    options: ["Tree", "Candle", "Human", "Mountain"],
-    correctIndex: 1,
-    rewardGold: 150,
-    rewardExp: 100,
-    damageOnWrong: 15,
-  },
-  {
-    question: "What has to be broken before you can use it?",
-    options: ["Promise", "Glass", "Egg", "Heart"],
-    correctIndex: 2,
-    rewardGold: 150,
-    rewardExp: 100,
-    damageOnWrong: 15,
-  },
-  {
-    question: "What is full of holes but still holds water?",
-    options: ["Net", "Sponge", "Bucket", "Sieve"],
-    correctIndex: 1,
-    rewardGold: 150,
-    rewardExp: 100,
-    damageOnWrong: 15,
-  }
-];
+// Riddles array removed
 
 // Predefined random events
 export const EVENTS = [
@@ -203,24 +161,21 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
       const nodeId = `node_${L}_${i}`;
       
       // Select type using weighted weights
-      // room: 40%, treasure: 20%, event: 15%, puzzle: 10%, merchant: 10%, campsite: 5%
+      // room: 50%, treasure: 20%, event: 15%, merchant: 10%, campsite: 5%
       // (Elite is placed dynamically or has 5%)
       const rand = Math.random() * 100;
       let type: DungeonNode['type'] = 'room';
       let name = '🚪 Regular Room';
       
-      if (rand < 40) {
+      if (rand < 50) {
         type = 'room';
         name = '🚪 Regular Room';
-      } else if (rand < 60) {
+      } else if (rand < 70) {
         type = 'treasure';
         name = '🪙 Treasure Chamber';
-      } else if (rand < 75) {
+      } else if (rand < 85) {
         type = 'event';
         name = '✨ Random Event';
-      } else if (rand < 85) {
-        type = 'puzzle';
-        name = '🧩 Ancient Puzzle';
       } else if (rand < 95) {
         type = 'merchant';
         name = '🏪 Dungeon Merchant';
@@ -241,9 +196,6 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
         encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'normal') };
       } else if (type === 'elite') {
         encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'rare') };
-      } else if (type === 'puzzle') {
-        const riddleIdx = Math.floor(Math.random() * RIDDLES.length);
-        encounterData = { riddle: RIDDLES[riddleIdx] };
       } else if (type === 'event') {
         const eventIdx = Math.floor(Math.random() * EVENTS.length);
         encounterData = { event: EVENTS[eventIdx] };

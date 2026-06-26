@@ -8,6 +8,7 @@ import {
 } from '../schema.js';
 import { getEquippedItems } from './inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
+import { checkLevelUp } from '../../systems/progression/leveling.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 
 /**
@@ -290,6 +291,79 @@ export async function replenishPlayerStamina(playerId: string, amount: number) {
       .returning();
 
     return updated;
+  });
+}
+
+/**
+ * Award experience to a player, processing level ups, healing, and recalculating stats.
+ */
+export async function awardPlayerExp(
+  playerId: string,
+  expToGain: number,
+) {
+  return db.transaction(async (tx) => {
+    const player = await tx.query.players.findFirst({
+      where: eq(players.id, playerId),
+    });
+
+    if (!player) {
+      throw new Error(`Player not found: ${playerId}`);
+    }
+
+    const currentLevel = player.level;
+    const currentExp = player.exp;
+    const newTotalExp = currentExp + expToGain;
+
+    const { levelsGained, newLevel, remainingExp } = checkLevelUp(currentLevel, newTotalExp);
+
+    if (levelsGained > 0) {
+      const equippedDbItems = await getEquippedItems(playerId);
+      const equippedItemsList = equippedDbItems.map((dbItem) => {
+        const def = itemsCatalog.find((i) => i.id === dbItem.itemId);
+        return {
+          slot: def?.type || 'accessory',
+          rarity: def?.rarity || 'common',
+          stats: def?.stats || {},
+        };
+      });
+
+      const newStats = computeStats(newLevel, player.prestige, player.playerClass, equippedItemsList, null, []);
+
+      await tx
+        .update(players)
+        .set({
+          level: newLevel,
+          exp: remainingExp,
+          hpCurrent: newStats.hpMax,
+          manaCurrent: newStats.manaMax,
+        })
+        .where(eq(players.id, playerId));
+
+      return {
+        leveledUp: true,
+        oldLevel: currentLevel,
+        newLevel,
+        gainedExp: expToGain,
+        currentExp: remainingExp,
+        hpMax: newStats.hpMax,
+        manaMax: newStats.manaMax,
+      };
+    } else {
+      await tx
+        .update(players)
+        .set({
+          exp: newTotalExp,
+        })
+        .where(eq(players.id, playerId));
+
+      return {
+        leveledUp: false,
+        oldLevel: currentLevel,
+        newLevel: currentLevel,
+        gainedExp: expToGain,
+        currentExp: newTotalExp,
+      };
+    }
   });
 }
 

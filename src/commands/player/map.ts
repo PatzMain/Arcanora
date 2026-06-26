@@ -14,10 +14,10 @@ import { db } from '../../database/client.js';
 import { players, combatSessions, inventory, explorationSessions } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getPlayerWithClampedStats, getAndUpdatePlayerStamina, deductPlayerStamina } from '../../database/queries/player.js';
-import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
+import { getEquippedItems, removeItem } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { zonesCatalog, itemsCatalog, enemiesCatalog } from '../../utils/catalog.js';
-import { errorEmbed, successEmbed } from '../../utils/embeds.js';
+import { errorEmbed } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
 import { generateDungeonMap, updateFogOfWar } from '../../systems/exploration/dungeonGenerator.js';
 import {
@@ -33,7 +33,6 @@ import {
   getPlayerDiscoveredLocations
 } from '../../database/queries/worldQueries.js';
 import { travelToNode, exploreNode } from '../../systems/exploration/worldExplorer.js';
-import { awardGold } from '../../economy/currency.js';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -269,14 +268,6 @@ export async function runMap(
           new ButtonBuilder()
             .setCustomId(`dungeon_action_merchant_browse_${player.discordId}`)
             .setLabel('🏪 Browse Wares')
-            .setStyle(ButtonStyle.Primary)
-        );
-        hasAction = true;
-      } else if (currNode.type === 'puzzle' && !isCleared) {
-        actionRow.addComponents(
-          new ButtonBuilder()
-            .setCustomId(`dungeon_action_puzzle_solve_${player.discordId}`)
-            .setLabel('🧩 Solve Riddle')
             .setStyle(ButtonStyle.Primary)
         );
         hasAction = true;
@@ -994,29 +985,7 @@ export async function handleDungeonInteraction(
         return;
       }
 
-      if (nodeAction === 'puzzle') {
-        // Render puzzle riddle and choices as buttons
-        const riddle = currNode.encounterData?.riddle;
-        if (!riddle) return;
-
-        const riddleEmbed = new EmbedBuilder()
-          .setColor(0x8B5CF6)
-          .setTitle('🧩 Solve the Riddle')
-          .setDescription(`**${riddle.question}**`);
-
-        const answerRow = new ActionRowBuilder<ButtonBuilder>();
-        riddle.options.forEach((opt: string, idx: number) => {
-          answerRow.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`dungeon_action_puzzle_choice_${idx}_${player.discordId}`)
-              .setLabel(opt)
-              .setStyle(ButtonStyle.Secondary)
-          );
-        });
-
-        await interaction.reply({ embeds: [riddleEmbed], components: [answerRow], flags: [MessageFlags.Ephemeral] });
-        return;
-      }
+      // Riddle solver block removed
 
       if (nodeAction === 'event') {
         // Render event choices
@@ -1287,59 +1256,14 @@ export async function handleWorldMapInteraction(
         return;
       }
       
-      if (result.type === 'puzzle') {
-        // Render puzzle riddle
-        const riddle = result.puzzle;
-        const riddleEmbed = new EmbedBuilder()
-          .setColor(0x8B5CF6)
-          .setTitle('🧩 Solve the Riddle')
-          .setDescription(`**${riddle.question}**`);
-        
-        const answerRow = new ActionRowBuilder<ButtonBuilder>();
-        riddle.options.forEach((opt: string, idx: number) => {
-          answerRow.addComponents(
-            new ButtonBuilder()
-              .setCustomId(`map_world_puzzle_solve_${idx === riddle.correctIndex ? 'correct' : 'wrong'}_${idx}_${player.discordId}`)
-              .setLabel(opt)
-              .setStyle(ButtonStyle.Secondary)
-          );
-        });
-        
-        await interaction.followUp({
-          embeds: [riddleEmbed],
-          components: [answerRow],
-          flags: [MessageFlags.Ephemeral]
-        });
-        return;
-      }
+      // Riddle puzzle check removed
 
       // Other types (resource, chest, discovery, empty, etc.) yield text messages
       await runMap(interaction as any, result.message);
       return;
     }
 
-    if (customId.startsWith('map_world_puzzle_solve_')) {
-      const outcome = parts[4]!; // 'correct' or 'wrong'
-      const isCorrect = outcome === 'correct';
-      
-      if (isCorrect) {
-        const goldReward = 150;
-        await awardGold(player.id, goldReward, 'Solved world exploration riddle');
-        const embed = successEmbed(
-          '🧩 Riddle Solved!',
-          `Correct! You solve the riddle and a small cache opens, revealing **${goldReward} Gold**!`
-        );
-        await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
-      } else {
-        const embed = errorEmbed(
-          '🧩 Incorrect Answer',
-          'Incorrect. The obelisk glows red and discharges static shock, but you manage to walk away.'
-        );
-        await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
-      }
-      await runMap(interaction as any);
-      return;
-    }
+    // Riddle world solve block removed
 
     if (customId.startsWith('map_world_npc_')) {
       const selectMenu = interaction as StringSelectMenuInteraction;

@@ -16,11 +16,10 @@ import { zonesCatalog, itemsCatalog, enemiesCatalog } from '../../utils/catalog.
 import { scaleEnemyStats, getEnemyById } from '../combat/enemy.js';
 import { createCombatState } from '../combat/engine.js';
 import { computeStats } from '../progression/stats.js';
-import { RIDDLES } from './dungeonGenerator.js';
 import { awardGold } from '../../economy/currency.js';
 
 export interface ExploreResult {
-  type: 'combat' | 'resource' | 'puzzle' | 'chest' | 'discovery' | 'empty';
+  type: 'combat' | 'resource' | 'chest' | 'discovery' | 'empty';
   message: string;
   combatEnemy?: any;
   resourceItem?: any;
@@ -100,17 +99,15 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
   let type: ExploreResult['type'] = 'empty';
 
   if (isSettlement) {
-    // Settlements: lower combat, higher resource/puzzle/chest/discovery
+    // Settlements: lower combat, higher resource/chest/discovery
     if (roll < 10) type = 'combat';
-    else if (roll < 45) type = 'resource';
-    else if (roll < 70) type = 'puzzle';
+    else if (roll < 60) type = 'resource';
     else if (roll < 85) type = 'chest';
     else type = 'discovery';
   } else {
     // Combat / Dungeon zones: higher combat, lower others
     if (roll < 55) type = 'combat';
-    else if (roll < 70) type = 'resource';
-    else if (roll < 80) type = 'puzzle';
+    else if (roll < 75) type = 'resource';
     else if (roll < 90) type = 'chest';
     else type = 'discovery';
   }
@@ -161,16 +158,7 @@ export async function exploreNode(playerId: string): Promise<ExploreResult> {
     type = 'empty';
   }
 
-  // 3. PUZZLE / RIDDLE
-  if (type === 'puzzle') {
-    const riddleIdx = Math.floor(Math.random() * RIDDLES.length);
-    const riddle = RIDDLES[riddleIdx]!;
-    return {
-      type: 'puzzle',
-      message: `🧩 **Ancient Inscription**\nYou find a strange stone obelisk glowing with rune carvings. A riddle stands before you...`,
-      puzzle: riddle
-    };
-  }
+  // 3. PUZZLE / RIDDLE - Removed
 
   // 4. CHEST / GOLD
   if (type === 'chest') {

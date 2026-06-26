@@ -16,7 +16,7 @@ import { computeStats } from '../../systems/progression/stats.js';
 import { resolveLoot, getItemData } from '../../systems/exploration/loot.js';
 import { awardGold, awardGems } from '../../economy/currency.js';
 import { getPlayerGuild } from '../../database/queries/guild.js';
-import { findOrCreatePlayer } from '../../database/queries/player.js';
+import { findOrCreatePlayer, awardPlayerExp } from '../../database/queries/player.js';
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
 import { combatEmbed, lootEmbed, errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { advanceQuestProgress } from '../progression/questSystem.js';
@@ -428,18 +428,31 @@ export async function handleCombatInteraction(
           }
         }
 
-        // No combat EXP in quest-based progression
-        await db
-          .update(players)
-          .set({
-            hpCurrent: Math.max(10, state.playerHp), // ensure they don't stay dead
-            manaCurrent: state.playerMana
-          })
-          .where(eq(players.id, player.id));
+        // Award experience
+        const expResult = await awardPlayerExp(player.id, expGained);
 
-        const embed = lootEmbed(acquiredItems, goldGained, 0);
+        // If they did not level up, update their HP/Mana post-combat based on final combat state
+        if (!expResult.leveledUp) {
+          await db
+            .update(players)
+            .set({
+              hpCurrent: Math.max(10, state.playerHp), // ensure they don't stay dead
+              manaCurrent: state.playerMana
+            })
+            .where(eq(players.id, player.id));
+        }
+
+        const embed = lootEmbed(acquiredItems, goldGained, expGained);
         embed.setTitle(`🏆 Victory! Defeated ${enemyDef.name}`);
         embed.setDescription(`You successfully defeated the **Lv.${enemyDef.level} ${enemyDef.name}**.`);
+
+        if (expResult.leveledUp) {
+          embed.addFields({
+            name: '🎉 LEVEL UP!',
+            value: `You reached **Level ${expResult.newLevel}**! Your HP and Mana have been fully restored.`,
+            inline: false
+          });
+        }
 
         // Advance quest progress for defeating the mob
         await advanceQuestProgress(player.id, 'kill', enemyDef.id, 1, interaction);
