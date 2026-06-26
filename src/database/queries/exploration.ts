@@ -80,3 +80,21 @@ export async function deleteExplorationSession(sessionId: string) {
     .returning();
   return deleted;
 }
+
+/**
+ * Mark a node as cleared in the exploration session's mapState.
+ */
+export async function markNodeCleared(sessionId: string, nodeId: string) {
+  const session = await db.query.explorationSessions.findFirst({
+    where: eq(explorationSessions.id, sessionId),
+  });
+  if (!session) return null;
+
+  const mapState = session.mapState as any;
+  if (mapState && mapState.nodes && mapState.nodes[nodeId]) {
+    mapState.nodes[nodeId].status = 'cleared';
+    return await updateExplorationSession(sessionId, { mapState });
+  }
+  return null;
+}
+

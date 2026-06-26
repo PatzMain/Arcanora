@@ -217,6 +217,19 @@ export const playerWorldDiscoveries = pgTable('player_world_discoveries', {
   playerLocIdx: uniqueIndex('player_world_discoveries_idx').on(table.playerId, table.locationId),
 }));
 
+// ─── CODEX_ENTRIES ───
+export const codexEntries = pgTable('codex_entries', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id, { onDelete: 'cascade' }).notNull(),
+  type: varchar('type', { length: 16 }).notNull(), // 'enemy' | 'item' | 'location'
+  entityId: varchar('entity_id', { length: 64 }).notNull(),
+  killCount: integer('kill_count').default(0).notNull(),
+  foundCount: integer('found_count').default(0).notNull(),
+  discoveredAt: timestamp('discovered_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  playerIdTypeEntityIdx: uniqueIndex('codex_entries_player_type_entity_idx').on(table.playerId, table.type, table.entityId),
+}));
+
 // ═══════════════════════════════════════════════════════════════
 // ─── RELATIONS ───
 // ═══════════════════════════════════════════════════════════════
@@ -251,6 +264,7 @@ export const playersRelations = relations(players, ({ one, many }) => ({
     references: [explorationSessions.playerId],
   }),
   worldDiscoveries: many(playerWorldDiscoveries),
+  codexEntries: many(codexEntries),
   feedbacks: many(feedbacks),
   farms: many(playerFarms),
   dungeonLeaderboards: many(dungeonLeaderboard),
@@ -259,6 +273,13 @@ export const playersRelations = relations(players, ({ one, many }) => ({
 export const playerWorldDiscoveriesRelations = relations(playerWorldDiscoveries, ({ one }) => ({
   player: one(players, {
     fields: [playerWorldDiscoveries.playerId],
+    references: [players.id],
+  }),
+}));
+
+export const codexEntriesRelations = relations(codexEntries, ({ one }) => ({
+  player: one(players, {
+    fields: [codexEntries.playerId],
     references: [players.id],
   }),
 }));

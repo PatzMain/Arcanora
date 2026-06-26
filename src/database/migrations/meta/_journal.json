@@ -78,6 +78,13 @@
       "when": 1782478679533,
       "tag": "0010_mysterious_sleeper",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782481904638,
+      "tag": "0011_same_thaddeus_ross",
+      "breakpoints": true
     }
   ]
 }
