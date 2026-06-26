@@ -253,6 +253,7 @@ export const playersRelations = relations(players, ({ one, many }) => ({
   worldDiscoveries: many(playerWorldDiscoveries),
   feedbacks: many(feedbacks),
   farms: many(playerFarms),
+  dungeonLeaderboards: many(dungeonLeaderboard),
 }));
 
 export const playerWorldDiscoveriesRelations = relations(playerWorldDiscoveries, ({ one }) => ({
@@ -449,6 +450,25 @@ export const playerFarms = pgTable('player_farms', {
 export const playerFarmsRelations = relations(playerFarms, ({ one }) => ({
   player: one(players, {
     fields: [playerFarms.playerId],
+    references: [players.id],
+  }),
+}));
+
+// ─── DUNGEON_LEADERBOARD ───
+export const dungeonLeaderboard = pgTable('dungeon_leaderboard', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  playerId: uuid('player_id').references(() => players.id, { onDelete: 'cascade' }).notNull(),
+  dungeonId: varchar('dungeon_id', { length: 32 }).notNull(),
+  floor: integer('floor').notNull(),
+  timeTaken: integer('time_taken').notNull(), // in seconds
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  dungeonFloorTimeIdx: index('dungeon_leaderboard_floor_time_idx').on(table.dungeonId, table.floor, table.timeTaken),
+}));
+
+export const dungeonLeaderboardRelations = relations(dungeonLeaderboard, ({ one }) => ({
+  player: one(players, {
+    fields: [dungeonLeaderboard.playerId],
     references: [players.id],
   }),
 }));

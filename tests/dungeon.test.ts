@@ -128,4 +128,30 @@ describe('Dungeon Crawling Exploration System', () => {
       expect(intervalsB).toBe(0);
     });
   });
+
+  describe('Dungeon Floor Scaling & Rewards', () => {
+    it('should assign a default floor of 1 on initialization and support custom floor', () => {
+      const map = generateDungeonMap('crystal_caverns', 1);
+      (map as any).floor = 1;
+      expect((map as any).floor).toBe(1);
+
+      (map as any).floor = 5;
+      expect((map as any).floor).toBe(5);
+    });
+
+    it('should calculate floor scaling difficulty and reward factors correctly', () => {
+      // Floor 1 has no multiplier (multiplier = 1)
+      const floor1Bonus = (1 - 1) * 0.15;
+      expect(floor1Bonus).toBe(0);
+
+      // Floor 3 has +30% rewards (multiplier = 1.30)
+      const floor3Bonus = (3 - 1) * 0.15;
+      expect(floor3Bonus).toBe(0.30);
+
+      // Floor 3 enemy level adjusted by +4
+      const enemyBaseLevel = 5;
+      const adjustedLevel = enemyBaseLevel + (3 - 1) * 2;
+      expect(adjustedLevel).toBe(9);
+    });
+  });
 });

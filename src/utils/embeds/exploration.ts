@@ -52,6 +52,8 @@ export function profileEmbed(
     stamina: number;
     staminaMax: number;
     currentZoneName: string;
+    exp?: number;
+    nextLevelXp?: number;
   },
   stats: {
     hpMax: number;
@@ -69,18 +71,19 @@ export function profileEmbed(
   const classIcon = getClassEmoji(player.className);
   const classDisplay = player.className ? capitalize(player.className) : 'Novice (unlock at Lv.5)';
   const stars = prestigeStars(player.prestige);
-
+ 
   const equipLines = equipment.length > 0
     ? equipment.map((e) => `${e.emoji || (e.id ? getItemEmoji(e.id, e.rarity) : (RARITY_EMOJIS[e.rarity] || '🪨'))} **${capitalize(e.slot)}**: ${e.name}`).join('\n')
     : '*No equipment*';
-
+ 
   const hpBarString = hpBar(player.currentHp, stats.hpMax, 10);
   const manaBarString = manaBar(player.currentMana, stats.manaMax, 10);
   const staminaBarString = staminaBar(player.stamina, player.staminaMax, 10);
-
+  const xpBarString = progressBar(player.exp || 0, player.nextLevelXp || 100, 10);
+ 
   const statsLine1 = `⚔️ ${stats.attack} ATK  ·  🛡️ ${stats.defense} DEF  ·  💨 ${stats.speed} SPD`;
   const statsLine2 = `⚡ ${stats.critChance}% Crit  ·  💥 ${stats.critDmg}% CritDmg  ·  🍀 ${stats.luck} LUK`;
-
+ 
   const embedDescription =
     `${DIVIDER}\n` +
     `Level **${player.level}** ${classDisplay} ${player.prestige > 0 ? `· Prestige ${player.prestige}` : ''}\n` +
@@ -88,7 +91,8 @@ export function profileEmbed(
     `📜 Story: **${player.storyQuestName}**\n\n` +
     `❤️ ${hpBarString} \`${player.currentHp}/${stats.hpMax} HP\`\n` +
     `💧 ${manaBarString} \`${player.currentMana}/${stats.manaMax} MP\`\n` +
-    `🔋 ${staminaBarString} \`${player.stamina}/${player.staminaMax} Stamina\`\n\n` +
+    `🔋 ${staminaBarString} \`${player.stamina}/${player.staminaMax} Stamina\`\n` +
+    `🌟 ${xpBarString} \`${player.exp || 0}/${player.nextLevelXp || 0} XP\`\n\n` +
     `─── 📊 **Combat Stats** ───\n` +
     `${statsLine1}\n` +
     `${statsLine2}\n\n` +

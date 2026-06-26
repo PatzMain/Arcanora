@@ -310,6 +310,13 @@ export async function resolveCombatEnd(
       expGained = expGained * 2;
     }
 
+    // Scale rewards by floor if it is a dungeon combat session
+    const floor = state.floor || 1;
+    if (floor > 1) {
+      goldGained = Math.round(goldGained * (1 + (floor - 1) * 0.15));
+      expGained = Math.round(expGained * (1 + (floor - 1) * 0.15));
+    }
+
     // Award gold
     await awardGold(player.id, goldGained, `Defeated ${enemyDef.name}`);
 

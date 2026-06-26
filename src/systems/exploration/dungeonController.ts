@@ -15,7 +15,7 @@ import { getPlayerWithClampedStats, deductPlayerStamina } from '../../database/q
 import { getEquippedItems, removeItem } from '../../database/queries/inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { zonesCatalog, itemsCatalog } from '../../utils/catalog.js';
-import { errorEmbed } from '../../utils/embeds.js';
+// errorEmbed removed
 import { generateDungeonMap, updateFogOfWar } from './dungeonGenerator.js';
 import {
   createExplorationSession,
@@ -151,7 +151,7 @@ export async function renderDungeonScreen(
   // Build Dungeon Embed
   const embed = new EmbedBuilder()
     .setColor(0x7C3AED) // Premium purple
-    .setTitle(`🏰 ${dungeonName} — Layer ${currNode.layer + 1}/${mapState.layersCount}`)
+    .setTitle(`🏰 ${dungeonName} — Floor ${mapState.floor || 1} (Layer ${currNode.layer + 1}/${mapState.layersCount})`)
     .setDescription(
       `📍 **${currNode.name}** (${roomTypeDisplay} Room)\n` +
       `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP\n\n` +
@@ -232,6 +232,19 @@ export async function renderDungeonScreen(
         .setCustomId(`dungeon_action_combat_engage_${player.discordId}`)
         .setLabel('⚔️ Engage Enemy')
         .setStyle(ButtonStyle.Danger)
+    );
+    hasAction = true;
+  } else if (currNode.id === 'boss' && isCleared) {
+    actionRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`dungeon_nextfloor_${player.discordId}`)
+        .setLabel('🪜 Next Floor')
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(player.stamina < 15),
+      new ButtonBuilder()
+        .setCustomId(`dungeon_claimvictory_${player.discordId}`)
+        .setLabel('🏆 Claim Victory')
+        .setStyle(ButtonStyle.Primary)
     );
     hasAction = true;
   }
@@ -422,6 +435,7 @@ export async function handleDungeonInteraction(
           party.members.reduce((sum: number, m: any) => sum + m.level, 0) / party.members.length
         );
         const mapState = generateDungeonMap(lobbySession.zoneId, avgLevel);
+        (mapState as any).floor = 1;
 
         await db
           .update(explorationSessions)
@@ -456,6 +470,7 @@ export async function handleDungeonInteraction(
 
       // Generate dungeon map
       const mapState = generateDungeonMap(zoneId, player.level);
+      (mapState as any).floor = 1;
       
       // Create session
       await createExplorationSession({
@@ -499,6 +514,82 @@ export async function handleDungeonInteraction(
       });
 
       await interaction.deferUpdate();
+      await runMap(interaction as any);
+      return;
+    }
+
+    if (action === 'nextfloor') {
+      // Deduct stamina
+      const deducted = await deductPlayerStamina(player.id, 15);
+      if (!deducted) {
+        await interaction.reply({ content: '❌ Insufficient Stamina! Descending to the next floor costs 15 Stamina.', flags: [MessageFlags.Ephemeral] });
+        return;
+      }
+
+      // Generate next floor map
+      const mapState = session.mapState as any;
+      const currentFloor = mapState.floor || 1;
+      const nextFloor = currentFloor + 1;
+      const nextMapState = generateDungeonMap(session.zoneId, player.level);
+      (nextMapState as any).floor = nextFloor;
+
+      await updateExplorationSession(session.id, {
+        currentNodeId: 'start',
+        previousNodeId: null,
+        mapState: nextMapState
+      });
+
+      await interaction.reply({ content: `🪜 You descended to Floor **${nextFloor}**!`, flags: [MessageFlags.Ephemeral] });
+      await runMap(interaction as any);
+      return;
+    }
+
+    if (action === 'claimvictory') {
+      const mapState = session.mapState as any;
+      const currentFloor = mapState.floor || 1;
+
+      // Calculate elapsed time
+      const timeTaken = Math.round((Date.now() - new Date(session.createdAt).getTime()) / 1000);
+
+      // Record in leaderboard
+      const { recordDungeonRun } = await import('../../database/queries/dungeon.js');
+      await recordDungeonRun({
+        playerId: player.id,
+        dungeonId: session.zoneId,
+        floor: currentFloor,
+        timeTaken
+      });
+
+      // Award victory bonus
+      const goldBonus = currentFloor * 250;
+      const expBonus = currentFloor * 100;
+
+      const { awardGold } = await import('../../economy/currency.js');
+      const { awardPlayerExp } = await import('../../database/queries/player.js');
+
+      await awardGold(player.id, goldBonus, `Dungeon Victory Bonus`);
+      const expResult = await awardPlayerExp(player.id, expBonus);
+
+      // Delete exploration session
+      await deleteExplorationSession(session.id);
+
+      const zone = zonesCatalog.find((z) => z.id === session.zoneId);
+      const dungeonName = zone ? zone.name : 'Unknown Dungeon';
+
+      // Format time nicely
+      const h = Math.floor(timeTaken / 3600);
+      const m = Math.floor((timeTaken % 3600) / 60);
+      const s = timeTaken % 60;
+      const timeDisplay = h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
+
+      let victoryMsg = `🏆 **Victory Claimed!** You cleared Floor **${currentFloor}** of **${dungeonName}** in **${timeDisplay}**!\n` +
+        `💰 Gained **+${goldBonus} Gold** and 🌟 **+${expBonus} XP**!`;
+
+      if (expResult.leveledUp) {
+        victoryMsg += `\n🎉 **LEVEL UP!** You reached **Level ${expResult.newLevel}**! Your HP and Mana have been fully restored.`;
+      }
+
+      await interaction.reply({ content: victoryMsg, flags: [MessageFlags.Ephemeral] });
       await runMap(interaction as any);
       return;
     }

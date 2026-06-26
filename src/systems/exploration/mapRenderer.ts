@@ -13,7 +13,7 @@ import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { getPlayerWithClampedStats } from '../../database/queries/player.js';
 import { zonesCatalog, itemsCatalog, enemiesCatalog, questsCatalog } from '../../utils/catalog.js';
-import { errorEmbed } from '../../utils/embeds.js';
+import { errorEmbed, progressBar } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
 import {
   discoverLocation,
@@ -23,6 +23,7 @@ import { getActiveQuests } from '../../database/queries/quest.js';
 import { travelToNode, exploreNode, huntNode } from './worldExplorer.js';
 import { executeRest } from './restService.js';
 import { createExplorationSession } from '../../database/queries/exploration.js';
+import { XP_TABLE } from '../progression/leveling.js';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -82,7 +83,11 @@ export async function renderWorldMapScreen(
   if (!destinationsText) destinationsText = '*No connections available.*';
 
   // Vitals block
-  const vitalsText = `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP`;
+  const nextLevelXp = XP_TABLE[player.level + 1] || 0;
+  const xpBarString = progressBar(player.exp, nextLevelXp || 100, 10);
+  const vitalsText =
+    `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP\n` +
+    `🌟 **XP**: ${xpBarString} \`${player.exp}/${nextLevelXp} XP\``;
 
   // Embed Description
   let msgPrefix = '✅ ';
@@ -315,11 +320,32 @@ export async function renderWorldMapScreen(
   }
 
   if (travelOptions.length > 0) {
-    const travelSelect = new StringSelectMenuBuilder()
-      .setCustomId(`map_world_travel_select_${player.discordId}`)
-      .setPlaceholder('🗺️ Travel to another location...')
-      .addOptions(travelOptions);
-    components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(travelSelect));
+    if (travelOptions.length <= 2) {
+      const travelButtonsRow = new ActionRowBuilder<ButtonBuilder>();
+      for (const opt of travelOptions) {
+        const targetLoc = zonesCatalog.find((z) => z.id === opt.value)!;
+        const isLocked = player.level < targetLoc.minLevel;
+        
+        let typeEmoji = '🌲';
+        if (targetLoc.type === 'settlement') typeEmoji = '🏠';
+        else if (targetLoc.isDungeon) typeEmoji = '🏰';
+        
+        const button = new ButtonBuilder()
+          .setCustomId(`map_world_travel_${opt.value}_${player.discordId}`)
+          .setLabel(`Travel to ${targetLoc.name}`)
+          .setEmoji(typeEmoji)
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(isLocked);
+        travelButtonsRow.addComponents(button);
+      }
+      components.push(travelButtonsRow);
+    } else {
+      const travelSelect = new StringSelectMenuBuilder()
+        .setCustomId(`map_world_travel_select_${player.discordId}`)
+        .setPlaceholder('🗺️ Travel to another location...')
+        .addOptions(travelOptions);
+      components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(travelSelect));
+    }
   }
 
   // Row 3: Shortcuts row

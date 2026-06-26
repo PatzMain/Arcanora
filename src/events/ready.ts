@@ -23,6 +23,7 @@ import * as gatherCmd from '../commands/combat/gather.js';
 import * as fishCmd from '../commands/combat/fish.js';
 import * as houseCmd from '../commands/player/house.js';
 import * as farmCmd from '../commands/player/farm.js';
+import * as dungeonCmd from '../commands/combat/dungeon.js';
 import { initEmojis } from '../utils/emojis.js';
 
 export const data = {}; // keep index metadata or dummy placeholder if index references it
@@ -48,7 +49,8 @@ export const commandsList = [
   gatherCmd,
   fishCmd,
   houseCmd,
-  farmCmd
+  farmCmd,
+  dungeonCmd
 ];
 
 export async function execute(client: Client) {

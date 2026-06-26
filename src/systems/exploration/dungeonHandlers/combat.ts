@@ -91,7 +91,17 @@ export const combatNodeHandler: NodeInteractionHandler = {
     const playerStats = computeStats(player.level, player.prestige, player.playerClass, equippedItemsList, null, []);
 
     // Create combat state
-    const scaledEnemyStats = scaleEnemyStats(enemyDef, player.level);
+    const floor = (context.dbSession.mapState as any)?.floor || 1;
+    const adjustedEnemyLevel = enemyDef.level + (floor - 1) * 2;
+    const baseScaled = scaleEnemyStats(enemyDef, player.level + (floor - 1) * 2);
+    const floorBonus = (floor - 1) * 0.15;
+    const scaledEnemyStats = {
+      hp: Math.round(baseScaled.hp * (1 + floorBonus)),
+      attack: Math.round(baseScaled.attack * (1 + floorBonus)),
+      defense: Math.round(baseScaled.defense * (1 + floorBonus)),
+      speed: Math.round(baseScaled.speed * (1 + floorBonus))
+    };
+
     const combatStatsInput = {
       hp: player.hpCurrent,
       maxHp: playerStats.hpMax,
@@ -105,9 +115,10 @@ export const combatNodeHandler: NodeInteractionHandler = {
       luck: playerStats.luck
     };
 
-    const initialCombatState = createCombatState(combatStatsInput, scaledEnemyStats);
+    const initialCombatState = createCombatState(combatStatsInput, scaledEnemyStats) as any;
+    initialCombatState.floor = floor;
     initialCombatState.combatLog = [
-      `⚔️ Dungeon Combat: You engaged a Lv.${enemyDef.level} **${enemyDef.name}**!`,
+      `⚔️ Dungeon Combat: You engaged a Lv.${adjustedEnemyLevel} **${enemyDef.name}**!`,
     ];
 
     // Save session in DB

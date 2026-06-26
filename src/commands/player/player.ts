@@ -13,6 +13,7 @@ import { loadItems } from '../../systems/exploration/loot.js';
 import { getNavButtons } from '../../utils/navigation.js';
 import { runPrestige } from './prestige.js';
 import { runPreset } from './presets.js';
+import { XP_TABLE } from '../../systems/progression/leveling.js';
 
 export const data = new SlashCommandBuilder()
   .setName('player')
@@ -124,7 +125,9 @@ export async function runProfile(
         storyQuestName,
         stamina: player.stamina,
         staminaMax: player.staminaMax,
-        currentZoneName
+        currentZoneName,
+        exp: player.exp,
+        nextLevelXp: XP_TABLE[player.level + 1] || 0
       },
       stats,
       equippedItemsList,
