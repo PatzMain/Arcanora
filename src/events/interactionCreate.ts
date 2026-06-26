@@ -89,10 +89,10 @@ export async function execute(interaction: Interaction) {
         await handleEquipInteraction(interaction as any);
       } else if (customId.startsWith('sell_select_')) {
         await handleSellInteraction(interaction as any);
-      } else if (customId.startsWith('quests_')) {
-        await handleQuestsInteraction(interaction as any);
       } else if (customId.startsWith('quests_board_select_')) {
         await handleQuestsBoardSelect(interaction as any);
+      } else if (customId.startsWith('quests_')) {
+        await handleQuestsInteraction(interaction as any);
       } else if (customId.startsWith('prestige_')) {
         await handlePrestigeInteraction(interaction as any);
       } else if (customId.startsWith('guild_')) {
