@@ -1,5 +1,48 @@
 import { ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
-import { getSkillById, SKILLS } from './skills.js';
+import { getSkillById } from './skills.js';
+
+export const SKILL_EMOJIS: Record<string, string> = {
+  // Warrior Skills
+  warrior_power_strike: '💥',
+  warrior_shield_bash: '🛡️',
+  warrior_battle_cry: '📢',
+  warrior_iron_fortress: '🏰',
+  warrior_berserker_rage: '😡',
+  // Mage Skills
+  mage_fireball: '🔥',
+  mage_frost_nova: '❄️',
+  mage_arcane_shield: '🔮',
+  mage_mana_surge: '⚡',
+  mage_meteor_strike: '☄️',
+  // Rogue Skills
+  rogue_backstab: '🗡️',
+  rogue_poison_strike: '🤢',
+  rogue_smoke_bomb: '💨',
+  rogue_shadow_step: '👤',
+  rogue_assassinate: '💀',
+  // Ranger Skills
+  ranger_quick_shot: '🏹',
+  ranger_poison_arrow: '🏹',
+  ranger_natures_embrace: '🌿',
+  ranger_eagle_eye: '🦅',
+  ranger_volley: '🎯',
+  // Healer Skills
+  healer_holy_light: '✨',
+  healer_blessing: '🙏',
+  healer_purify: '❇️',
+  healer_divine_shield: '🛡️',
+  healer_resurrection: '☀️',
+};
+
+export function getBasicAttackEmoji(className: string = 'novice'): string {
+  const cls = className.toLowerCase();
+  if (cls === 'warrior') return '⚔️';
+  if (cls === 'mage') return '🪄';
+  if (cls === 'rogue') return '🗡️';
+  if (cls === 'ranger') return '🏹';
+  if (cls === 'healer') return '✨';
+  return '👊'; // Novice / fallback
+}
 
 export interface PresetSlot {
   name: string;
@@ -71,16 +114,19 @@ export function getPresetLabel(slot: PresetSlot): string {
 /**
  * Returns a human-readable list of actions in a combo.
  */
-export function getPresetActionSummary(slot: PresetSlot): string {
+export function getPresetActionSummary(slot: PresetSlot, playerClass: string = 'novice'): string {
   if (!slot || !slot.actions || slot.actions.length === 0) {
     return '🔴 *Empty*';
   }
 
+  const basicAttackEmoji = getBasicAttackEmoji(playerClass);
+
   return slot.actions
     .map((action) => {
-      if (action === 'attack') return '⚔️ Attack';
+      if (action === 'attack') return `${basicAttackEmoji} Attack`;
       const skill = getSkillById(action);
-      return skill ? `🌀 ${skill.name}` : '❓ Unknown';
+      const emoji = skill ? (SKILL_EMOJIS[skill.id] || '🌀') : '🌀';
+      return skill ? `${emoji} ${skill.name}` : '❓ Unknown';
     })
     .join(' ➔ ');
 }
@@ -88,8 +134,10 @@ export function getPresetActionSummary(slot: PresetSlot): string {
 /**
  * Builds the ActionRow containing 3 preset buttons for standard combat or boss fights.
  */
-export function buildPresetButtons(presets: PlayerPresets, prefix: string): ActionRowBuilder<ButtonBuilder> {
+export function buildPresetButtons(presets: PlayerPresets, prefix: string, playerClass: string = 'novice'): ActionRowBuilder<ButtonBuilder> {
   const buttons = [];
+
+  const basicAttackEmoji = getBasicAttackEmoji(playerClass);
 
   for (let i = 0; i < 3; i++) {
     const slot = presets[i];
@@ -100,8 +148,16 @@ export function buildPresetButtons(presets: PlayerPresets, prefix: string): Acti
     if (!slot || !slot.actions || slot.actions.length === 0) {
       button.setLabel(`${slot?.name || `Preset ${i + 1}`}: Empty`).setDisabled(true);
     } else {
-      const firstAction = slot.actions[0];
-      const emoji = firstAction === 'attack' ? '⚔️' : '🌀';
+      const firstAction = slot.actions[0] as string;
+      let emoji = '🌀';
+      if (firstAction === 'attack') {
+        emoji = basicAttackEmoji;
+      } else {
+        const skill = getSkillById(firstAction);
+        if (skill && SKILL_EMOJIS[skill.id]) {
+          emoji = SKILL_EMOJIS[skill.id]!;
+        }
+      }
       button.setLabel(`${slot.name} (${slot.actions.length})`).setEmoji(emoji);
     }
     buttons.push(button);

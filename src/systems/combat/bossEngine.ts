@@ -95,7 +95,7 @@ export async function runBossFight(interaction: ChatInputCommandInteraction): Pr
       new ButtonBuilder().setCustomId('boss_leave').setLabel('🏃 Leave').setStyle(ButtonStyle.Danger)
     );
 
-    const presetsRow = buildPresetButtons(parsePresets(playerPresets), 'boss');
+    const presetsRow = buildPresetButtons(parsePresets(playerPresets), 'boss', player.playerClass);
 
     // Fetch learned skills
     const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));

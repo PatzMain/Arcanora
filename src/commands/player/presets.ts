@@ -43,9 +43,9 @@ export async function runPreset(
         'Each preset can hold a combo of up to 3 actions. Click a button below to configure.'
       )
       .addFields(
-        { name: `🎯 ${presets[0].name}`, value: `**Combo:** ${getPresetActionSummary(presets[0])}` },
-        { name: `🎯 ${presets[1].name}`, value: `**Combo:** ${getPresetActionSummary(presets[1])}` },
-        { name: `🎯 ${presets[2].name}`, value: `**Combo:** ${getPresetActionSummary(presets[2])}` }
+        { name: `🎯 ${presets[0].name}`, value: `**Combo:** ${getPresetActionSummary(presets[0], player.playerClass)}` },
+        { name: `🎯 ${presets[1].name}`, value: `**Combo:** ${getPresetActionSummary(presets[1], player.playerClass)}` },
+        { name: `🎯 ${presets[2].name}`, value: `**Combo:** ${getPresetActionSummary(presets[2], player.playerClass)}` }
       )
       .setFooter({ text: 'Arcanora — Quick Presets' })
       .setTimestamp();
@@ -119,9 +119,10 @@ export async function runConfigurePreset(
     }
 
     const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
+    const filteredLearned = learned.filter(l => l.skillId !== 'skill_basic_attack');
     // Sort learned skills alphabetically to make availableActions deterministic
-    learned.sort((a, b) => a.skillId.localeCompare(b.skillId));
-    const availableActions = ['attack', ...learned.map(l => l.skillId)];
+    filteredLearned.sort((a, b) => a.skillId.localeCompare(b.skillId));
+    const availableActions = ['attack', ...filteredLearned.map(l => l.skillId)];
 
     const getActionName = (act: string) => {
       if (act === 'none') return 'Empty';
@@ -180,15 +181,16 @@ export async function runConfigurePreset(
     components.push(stepRow);
 
     // Row 2 & 3: Action Option Buttons for the active step
+    const { getBasicAttackEmoji, SKILL_EMOJIS } = await import('../../systems/combat/presets.js');
     const choices = [];
     if (selectedStep > 1) {
       choices.push({ id: 'none', name: '🏁 End / Empty', emoji: '🏁' });
     }
-    choices.push({ id: 'attack', name: 'Basic Attack', emoji: '⚔️' });
-    learned.forEach(l => {
+    choices.push({ id: 'attack', name: 'Basic Attack', emoji: getBasicAttackEmoji(player.playerClass) });
+    filteredLearned.forEach(l => {
       const skillDef = SKILLS.find(s => s.id === l.skillId);
       if (skillDef) {
-        choices.push({ id: skillDef.id, name: skillDef.name, emoji: '🌀' });
+        choices.push({ id: skillDef.id, name: skillDef.name, emoji: SKILL_EMOJIS[skillDef.id] || '🌀' });
       }
     });
 
@@ -316,9 +318,10 @@ export async function handlePresetInteraction(interaction: ButtonInteraction | a
 
   const player = await findOrCreatePlayer(userId, interaction.user.username);
   const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
+  const filteredLearned = learned.filter(l => l.skillId !== 'skill_basic_attack');
   // Sort learned skills alphabetically to make availableActions deterministic
-  learned.sort((a, b) => a.skillId.localeCompare(b.skillId));
-  const availableActions = ['attack', ...learned.map(l => l.skillId)];
+  filteredLearned.sort((a, b) => a.skillId.localeCompare(b.skillId));
+  const availableActions = ['attack', ...filteredLearned.map(l => l.skillId)];
 
   const mapCodeToAction = (code: string) => {
     if (code === 'x') return 'none';

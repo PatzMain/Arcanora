@@ -189,7 +189,7 @@ export async function handleCombatInteraction(
 
     const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
     const itemsRow = await getCombatItemsRow(player.id);
-    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat');
+    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
     const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);
@@ -448,7 +448,7 @@ async function updateCombatMessage(client: any, activeSession: any, state: any, 
 
   const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
   const itemsRow = await getCombatItemsRow(player.id);
-  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat');
+  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
   const components: any[] = [row, presetsRow];
   if (selectMenuRow) components.push(selectMenuRow);
   if (itemsRow) components.push(itemsRow);
