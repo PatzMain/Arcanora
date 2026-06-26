@@ -31,12 +31,15 @@ export async function renderWorldMapScreen(
   stats: any,
   travelMsg?: string
 ) {
-  // Load player's discovered location IDs
+  // Load player's discovered location IDs and auto-discover all starter town locations
+  const starterTownLocs = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary'];
   let discoveredLocIds = await getPlayerDiscoveredLocations(player.id);
-  if (discoveredLocIds.length === 0) {
-    await discoverLocation(player.id, 'cozy_tavern');
-    await discoverLocation(player.id, 'oakhaven_square');
-    discoveredLocIds = ['cozy_tavern', 'oakhaven_square'];
+  const missingStarterLocs = starterTownLocs.filter((locId) => !discoveredLocIds.includes(locId));
+  if (missingStarterLocs.length > 0) {
+    for (const locId of missingStarterLocs) {
+      await discoverLocation(player.id, locId);
+      discoveredLocIds.push(locId);
+    }
   }
 
   const currentLoc = zonesCatalog.find((z) => z.id === player.currentZoneId) || zonesCatalog.find((z) => z.id === 'cozy_tavern')!;

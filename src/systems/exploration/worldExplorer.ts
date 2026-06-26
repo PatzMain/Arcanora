@@ -41,6 +41,11 @@ export async function travelToNode(playerId: string, targetLocationId: string) {
 
   if (!targetLocation) throw new Error('Target location does not exist.');
 
+  // If already there, return targetLocation immediately (handles double-clicks gracefully)
+  if (player.currentZoneId === targetLocationId) {
+    return targetLocation;
+  }
+
   // Adjacency check
   const connections = currentLocation?.connections || [];
   if (!connections.includes(targetLocationId)) {

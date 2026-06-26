@@ -161,8 +161,10 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
     const player = await findOrCreatePlayer(discordId, username);
 
     // Discover starting locations
-    await discoverLocation(player.id, 'cozy_tavern');
-    await discoverLocation(player.id, 'oakhaven_square');
+    const starterTownLocs = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary'];
+    for (const locId of starterTownLocs) {
+      await discoverLocation(player.id, locId);
+    }
 
     // 2. Set chosen class
     await db

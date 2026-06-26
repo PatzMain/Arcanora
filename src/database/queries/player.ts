@@ -9,7 +9,7 @@ import {
 import { getEquippedItems } from './inventory.js';
 import { computeStats } from '../../systems/progression/stats.js';
 import { checkLevelUp } from '../../systems/progression/leveling.js';
-import { itemsCatalog } from '../../utils/catalog.js';
+import { itemsCatalog, zonesCatalog } from '../../utils/catalog.js';
 
 /**
  * Find an existing player by Discord ID, or create a new one with default
@@ -164,6 +164,16 @@ export async function incrementQuestsCompleted(playerId: string) {
 export async function getPlayerWithClampedStats(discordId: string) {
   const player = await getPlayerByDiscordId(discordId);
   if (!player) return null;
+
+  // Auto-heal/fix invalid or deleted zone IDs (e.g. from old version)
+  const zoneExists = zonesCatalog.some((z) => z.id === player.currentZoneId);
+  if (!zoneExists) {
+    await db
+      .update(players)
+      .set({ currentZoneId: 'cozy_tavern' })
+      .where(eq(players.id, player.id));
+    player.currentZoneId = 'cozy_tavern';
+  }
 
   const equippedDbItems = await getEquippedItems(player.id);
   const equippedItemsList = equippedDbItems.map((dbItem) => {
