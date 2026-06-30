@@ -645,30 +645,36 @@
 
       // 3. Draw Fog of War
       if (options.showFog) {
-        ctx.fillStyle = config.fogColor;
-        ZONES.forEach(z => {
-          const loc = config.locations[z.id];
-        });
-        
-        // Accurate fog cutout rendering:
         ctx.save();
-        ctx.fillStyle = config.fogColor;
         
-        // We create an offscreen path for cutting out
+        // We create an offscreen canvas for cutting out
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.fillStyle = config.fogColor;
+        
+        // Deep dark blue-black shroud covering everything
+        tempCtx.fillStyle = 'rgba(10, 10, 15, 0.85)';
         tempCtx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Cutout circles for placed locations (assuming discovered for preview)
+        // Cutout circles for placed locations (assuming discovered/placed for preview)
         tempCtx.globalCompositeOperation = 'destination-out';
         for (const id in config.locations) {
           const loc = config.locations[id];
           if (loc.x > 0 && loc.y > 0) {
+            const rx = Math.round(loc.x);
+            const ry = Math.round(loc.y);
+            const rRad = Math.round(loc.fogRadius);
+
+            // Radial gradient for smooth cutout edge matching the bot engine
+            const grad = tempCtx.createRadialGradient(rx, ry, rRad * 0.4, rx, ry, rRad);
+            grad.addColorStop(0, 'rgba(0, 0, 0, 1)');     // 100% erased
+            grad.addColorStop(0.8, 'rgba(0, 0, 0, 0.8)'); // Soft feather edge
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');     // Retains full shroud
+
+            tempCtx.fillStyle = grad;
             tempCtx.beginPath();
-            tempCtx.arc(loc.x, loc.y, loc.fogRadius, 0, Math.PI * 2);
+            tempCtx.arc(rx, ry, rRad, 0, Math.PI * 2);
             tempCtx.fill();
           }
         }

@@ -150,19 +150,41 @@ export async function renderMapImage(
     }
     ctx.restore();
 
-    // 5. Draw Fog-of-War for undiscovered locations
+    // 5. Draw Fog-of-War Shroud (covers the entire map, erases circles around discovered zones)
     ctx.save();
-    ctx.fillStyle = mapConfig.fogColor || 'rgba(0, 0, 0, 0.7)';
+    const shroudCanvas = createCanvas(mapConfig.imageWidth, mapConfig.imageHeight);
+    const sCtx = shroudCanvas.getContext('2d');
+    
+    // Deep dark blue-black shroud covering everything
+    sCtx.fillStyle = 'rgba(10, 10, 15, 0.85)';
+    sCtx.fillRect(0, 0, mapConfig.imageWidth, mapConfig.imageHeight);
+    
+    // Use destination-out to erase circular shapes around discovered areas
+    sCtx.globalCompositeOperation = 'destination-out';
     for (const [locId, locConfig] of Object.entries(mapConfig.locations)) {
       if (locConfig.x === 0 && locConfig.y === 0) continue;
 
       const isDiscovered = discoveredLocationIds.includes(locId);
-      if (!isDiscovered) {
-        ctx.beginPath();
-        ctx.arc(Math.round(locConfig.x), Math.round(locConfig.y), Math.round(locConfig.fogRadius), 0, Math.PI * 2);
-        ctx.fill();
+      if (isDiscovered) {
+        const rx = Math.round(locConfig.x);
+        const ry = Math.round(locConfig.y);
+        const rRad = Math.round(locConfig.fogRadius);
+
+        // Soft radial gradient fade out for natural blending
+        const grad = sCtx.createRadialGradient(rx, ry, rRad * 0.4, rx, ry, rRad);
+        grad.addColorStop(0, 'rgba(0, 0, 0, 1)');     // 100% erased
+        grad.addColorStop(0.8, 'rgba(0, 0, 0, 0.8)'); // Soft feather edge
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');     // Retains full shroud
+
+        sCtx.fillStyle = grad;
+        sCtx.beginPath();
+        sCtx.arc(rx, ry, rRad, 0, Math.PI * 2);
+        sCtx.fill();
       }
     }
+
+    // Overlay the shroud back on the main canvas
+    ctx.drawImage(shroudCanvas, 0, 0);
     ctx.restore();
 
     // 6. Draw Markers (only if discovered)
