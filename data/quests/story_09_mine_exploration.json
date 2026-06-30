@@ -1,0 +1,26 @@
+{
+  "id": "story_09_mine_exploration",
+  "displayOrder": 20,
+  "name": "Mine Exploration",
+  "description": "Infiltrate the Forgotten Mines (Ancient Mine) and explore it at least once.",
+  "type": "story",
+  "levelReq": 9,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "ancient_mine",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 1200,
+    "gold": 500,
+    "gems": 10
+  },
+  "narrative": {
+    "accept": "Grim the Prospector looks worried. \"The Forgotten Mines have been overrun with dangerous crystals and golems. Can you map the depths?\"",
+    "complete": "\"You survived the descent! Here is your share of the bounty.\"",
+    "hint": "Travel to Forgotten Mines and explore it."
+  }
+}

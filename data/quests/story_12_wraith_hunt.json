@@ -1,5 +1,6 @@
 {
   "id": "story_12_wraith_hunt",
+  "displayOrder": 26,
   "name": "Magma Spirits",
   "description": "Slay 5 Ash Wraiths hovering above the magma rivers.",
   "type": "story",

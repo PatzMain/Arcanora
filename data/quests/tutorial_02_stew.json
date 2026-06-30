@@ -1,5 +1,6 @@
 {
   "id": "tutorial_02_stew",
+  "displayOrder": 2,
   "name": "The Stew Secret",
   "description": "Gather 3 Birch Logs and catch 1 River Trout for Silas's nightly stew.",
   "type": "story",

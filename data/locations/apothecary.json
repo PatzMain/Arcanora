@@ -36,12 +36,17 @@
         ]
       }
     ],
-    "factions": ["Oakhaven Artisans"],
+    "factions": [
+      "Oakhaven Artisans"
+    ],
     "travelers": []
   },
   "gameplay": {
     "quests": [],
     "secrets": []
   },
-  "connections": ["oakhaven_square"]
+  "connections": [
+    "oakhaven_square"
+  ],
+  "isDungeon": false
 }

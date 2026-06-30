@@ -1,5 +1,6 @@
 {
   "id": "story_02_meadows_clear",
+  "displayOrder": 6,
   "name": "Outpost Security",
   "description": "Cull 5 Wild Boars to help secure the outpost.",
   "type": "story",

@@ -1,5 +1,6 @@
 {
   "id": "story_11_hound_slay",
+  "displayOrder": 25,
   "name": "Fire Hounds",
   "description": "Slay 6 Lava Hounds on the volcanic slopes.",
   "type": "story",

@@ -1,5 +1,6 @@
 {
   "id": "story_05_witch_hex",
+  "displayOrder": 12,
   "name": "Witch of the Woods",
   "description": "Defeat the Nightshade Witch deep inside the Whispering Canopy.",
   "type": "story",

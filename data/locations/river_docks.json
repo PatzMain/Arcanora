@@ -19,7 +19,10 @@
   },
   "ecosystem": {
     "creatures": [],
-    "resources": ["fish_trout", "fish_carp"],
+    "resources": [
+      "fish_trout",
+      "fish_carp"
+    ],
     "weather": "Cool mist rising from the water, soft breeze",
     "hazards": []
   },
@@ -36,12 +39,19 @@
         ]
       }
     ],
-    "factions": ["Silverbrook Citizens"],
+    "factions": [
+      "Silverbrook Citizens"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_02_river_king"],
+    "quests": [
+      "story_02_river_king"
+    ],
     "secrets": []
   },
-  "connections": ["oakhaven_square"]
+  "connections": [
+    "oakhaven_square"
+  ],
+  "isDungeon": false
 }

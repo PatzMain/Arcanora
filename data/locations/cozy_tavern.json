@@ -37,12 +37,24 @@
         ]
       }
     ],
-    "factions": ["Silverbrook Citizens"],
-    "travelers": ["Merchant Joren", "Guard Captain Vaelen"]
+    "factions": [
+      "Silverbrook Citizens"
+    ],
+    "travelers": [
+      "Merchant Joren",
+      "Guard Captain Vaelen"
+    ]
   },
   "gameplay": {
-    "quests": ["tutorial_01_hearth", "tutorial_02_stew", "tutorial_03_slimes"],
+    "quests": [
+      "tutorial_01_hearth",
+      "tutorial_02_stew",
+      "tutorial_03_slimes"
+    ],
     "secrets": []
   },
-  "connections": ["oakhaven_square"]
+  "connections": [
+    "oakhaven_square"
+  ],
+  "isDungeon": false
 }

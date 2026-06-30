@@ -1,5 +1,6 @@
 {
   "id": "tutorial_01_hearth",
+  "displayOrder": 1,
   "name": "A Warm Hearth",
   "description": "Gather 3 logs to keep the tavern hearth burning.",
   "type": "story",

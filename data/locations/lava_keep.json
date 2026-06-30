@@ -23,20 +23,31 @@
       "lava_hound",
       "blaze_weaver"
     ],
-    "resources": ["mat_obsidian_chunk", "mat_gold_ore"],
+    "resources": [
+      "mat_obsidian_chunk",
+      "mat_gold_ore"
+    ],
     "weather": "Extreme heat wave",
-    "hazards": ["Melting Bridges"]
+    "hazards": [
+      "Melting Bridges"
+    ]
   },
   "social": {
     "npcs": [],
-    "factions": ["Lava Legion"],
+    "factions": [
+      "Lava Legion"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_14_keep_siege"],
+    "quests": [
+      "story_14_keep_siege"
+    ],
     "secrets": []
   },
-  "connections": ["volcanic_wastes"],
+  "connections": [
+    "volcanic_wastes"
+  ],
   "isDungeon": true,
   "enemies": [
     "fire_monarch",
@@ -65,5 +76,6 @@
       "type": "boss",
       "weight": 5
     }
-  ]
+  ],
+  "hasRestBed": false
 }

@@ -1,5 +1,6 @@
 {
   "id": "story_03_goblin_raids",
+  "displayOrder": 14,
   "name": "Goblin Raids",
   "description": "Defeat 8 Wood Goblins at the Goblin Outpost.",
   "type": "story",

@@ -1,0 +1,32 @@
+{
+  "id": "deep_cultist",
+  "name": "Deep Cultist",
+  "description": "A zealot of the sea gods, wrapped in barnacle-covered robes and chanting in a forgotten tongue.",
+  "zone": "sunken_temple",
+  "rarity": "normal",
+  "level": 19,
+  "stats": {
+    "hp": 420,
+    "attack": 100,
+    "defense": 50,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "abyssal_curse",
+      "name": "Abyssal Curse",
+      "damage": 130,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 300,
+  "goldReward": 180
+}

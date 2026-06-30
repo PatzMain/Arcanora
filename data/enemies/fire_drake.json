@@ -1,0 +1,38 @@
+{
+  "id": "fire_drake",
+  "name": "Fire Drake",
+  "description": "A minor dragon species with crimson scales, nesting in high basalt volcanic vents.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 15,
+  "stats": {
+    "hp": 380,
+    "attack": 80,
+    "defense": 50,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "damage": 100,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 60,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "mat_gold_ore",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 200,
+  "goldReward": 130
+}

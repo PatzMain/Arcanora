@@ -23,9 +23,14 @@
       "trench_lurker",
       "abyssal_kraken"
     ],
-    "resources": ["mat_void_essence", "mat_spider_silk"],
+    "resources": [
+      "mat_void_essence",
+      "mat_spider_silk"
+    ],
     "weather": "High crushing water pressure and total darkness",
-    "hazards": ["Freezing Whirlpools"]
+    "hazards": [
+      "Freezing Whirlpools"
+    ]
   },
   "social": {
     "npcs": [
@@ -40,11 +45,15 @@
         ]
       }
     ],
-    "factions": ["Deep-Sea Cartographers"],
+    "factions": [
+      "Deep-Sea Cartographers"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_15_ocean_descent"],
+    "quests": [
+      "story_15_ocean_descent"
+    ],
     "secrets": [
       {
         "id": "secret_wreck",
@@ -53,7 +62,10 @@
       }
     ]
   },
-  "connections": ["volcanic_wastes", "sunken_temple"],
+  "connections": [
+    "volcanic_wastes",
+    "sunken_temple"
+  ],
   "enemies": [
     "abyssal_eel",
     "anglerfish_stalker",
@@ -81,5 +93,7 @@
       "type": "boss",
       "weight": 2
     }
-  ]
+  ],
+  "hasRestBed": false,
+  "isDungeon": false
 }

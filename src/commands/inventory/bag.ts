@@ -36,7 +36,7 @@ export async function runBag(
     const invData = await getPlayerInventory(player.id, currentPage, pageSize);
     const mappedItems = invData.items.map((dbItem) => {
       const def = catalog.find((i) => i.id === dbItem.itemId);
-      let name = def ? def.name : dbItem.itemId;
+      const name = def ? def.name : dbItem.itemId;
       return {
         name,
         quantity: dbItem.quantity,

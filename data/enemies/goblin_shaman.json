@@ -1,0 +1,32 @@
+{
+  "id": "goblin_shaman",
+  "name": "Goblin Shaman",
+  "description": "A goblin magic-user who channels unstable elemental forces against foes.",
+  "zone": "goblin_sanctuary",
+  "rarity": "normal",
+  "level": 5,
+  "stats": {
+    "hp": 110,
+    "attack": 30,
+    "defense": 10,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "damage": 35,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "potion_mana_small",
+      "dropRate": 25,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 45,
+  "goldReward": 25
+}

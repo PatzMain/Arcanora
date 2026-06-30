@@ -1,0 +1,26 @@
+{
+  "id": "story_15_ocean_descent",
+  "displayOrder": 31,
+  "name": "Abyssal Descent",
+  "description": "Descend into the Abyssal Depths and explore the ocean trench.",
+  "type": "story",
+  "levelReq": 15,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "abyssal_depths",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 2500,
+    "gold": 1000,
+    "gems": 20
+  },
+  "narrative": {
+    "accept": "The Admiral instructs, \"We need to descend into the Abyssal Depths. The pressure is immense, but the artifacts down there are priceless.\"",
+    "complete": "\"You returned from the darkness. Astounding. The ocean depths hold many secrets.\"",
+    "hint": "Travel to Abyssal Depths and explore it."
+  }
+}

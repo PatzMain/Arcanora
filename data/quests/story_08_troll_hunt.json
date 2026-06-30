@@ -1,5 +1,6 @@
 {
   "id": "story_08_troll_hunt",
+  "displayOrder": 18,
   "name": "Troll Threat",
   "description": "Slay 4 Cave Trolls guarding the subterranean pathways.",
   "type": "story",

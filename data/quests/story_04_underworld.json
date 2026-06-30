@@ -1,5 +1,6 @@
 {
   "id": "story_04_underworld",
+  "displayOrder": 19,
   "name": "Underworld Entry",
   "description": "Enter the Forgotten Ironmine and explore it at least once.",
   "type": "story",

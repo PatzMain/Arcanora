@@ -1,5 +1,6 @@
 {
   "id": "story_02_river_king",
+  "displayOrder": 9,
   "name": "The River King",
   "description": "Catch 1 Silver Carp downstream at the Silverbrook River.",
   "type": "story",

@@ -19,7 +19,9 @@
   },
   "ecosystem": {
     "creatures": [],
-    "resources": ["mat_wood"],
+    "resources": [
+      "mat_wood"
+    ],
     "weather": "Warm and sunny with a light breeze",
     "hazards": []
   },
@@ -36,12 +38,27 @@
         ]
       }
     ],
-    "factions": ["Eldorian Vanguard"],
+    "factions": [
+      "Eldorian Vanguard"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_01_supply", "story_03_goblin_raids", "story_05_chieftain", "tutorial_04_world"],
+    "quests": [
+      "story_01_supply",
+      "story_03_goblin_raids",
+      "story_05_chieftain",
+      "tutorial_04_world"
+    ],
     "secrets": []
   },
-  "connections": ["cozy_tavern", "river_docks", "oakhaven_forge", "apothecary", "glittering_meadows", "oakhaven_sewers"]
+  "connections": [
+    "cozy_tavern",
+    "river_docks",
+    "oakhaven_forge",
+    "apothecary",
+    "glittering_meadows",
+    "oakhaven_sewers"
+  ],
+  "isDungeon": false
 }

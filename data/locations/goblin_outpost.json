@@ -18,8 +18,13 @@
     "currentConflicts": "Wood Goblins are actively raiding loggers passing the thicket connection."
   },
   "ecosystem": {
-    "creatures": ["wood_goblin", "wild_boar"],
-    "resources": ["mat_birch_logs"],
+    "creatures": [
+      "wood_goblin",
+      "wild_boar"
+    ],
+    "resources": [
+      "mat_birch_logs"
+    ],
     "weather": "Cold winds and campfire smoke",
     "hazards": []
   },
@@ -32,12 +37,31 @@
     "quests": [],
     "secrets": []
   },
-  "connections": ["birch_thicket", "forgotten_ironmine"],
-  "enemies": ["wood_goblin", "wild_boar"],
+  "connections": [
+    "birch_thicket",
+    "forgotten_ironmine"
+  ],
+  "enemies": [
+    "wood_goblin",
+    "wild_boar"
+  ],
   "encounters": [
-    { "type": "normal_mob", "weight": 75 },
-    { "type": "empty", "weight": 10 },
-    { "type": "treasure", "weight": 10 },
-    { "type": "rare_mob", "weight": 5 }
-  ]
+    {
+      "type": "normal_mob",
+      "weight": 75
+    },
+    {
+      "type": "empty",
+      "weight": 10
+    },
+    {
+      "type": "treasure",
+      "weight": 10
+    },
+    {
+      "type": "rare_mob",
+      "weight": 5
+    }
+  ],
+  "isDungeon": false
 }

@@ -1,0 +1,32 @@
+{
+  "id": "subterranean_crawler",
+  "name": "Subterranean Crawler",
+  "description": "A multi-legged cave dweller that climbs along the cavern ceiling before dropping onto prey.",
+  "zone": "crystal_caverns",
+  "rarity": "normal",
+  "level": 8,
+  "stats": {
+    "hp": 150,
+    "attack": 30,
+    "defense": 20,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "venomous_bite",
+      "name": "Venomous Bite",
+      "damage": 40,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 90,
+  "goldReward": 60
+}

@@ -1,5 +1,6 @@
 {
   "id": "story_04_stalker_slay",
+  "displayOrder": 10,
   "name": "Forest Stalkers",
   "description": "Slay 5 Shadow Stalkers to purge the canopy's edge.",
   "type": "story",

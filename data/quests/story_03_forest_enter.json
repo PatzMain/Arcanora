@@ -1,5 +1,6 @@
 {
   "id": "story_03_forest_enter",
+  "displayOrder": 8,
   "name": "Into the Forest",
   "description": "Travel to the Whispering Canopy and explore it once.",
   "type": "story",

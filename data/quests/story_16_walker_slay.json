@@ -1,5 +1,6 @@
 {
   "id": "story_16_walker_slay",
+  "displayOrder": 32,
   "name": "Void Shadows",
   "description": "Slay 6 Void Walkers in the deep darkness.",
   "type": "story",

@@ -646,3 +646,16 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Component ID Bug Fixes**: Fixed component interaction routing for select menus in [codex.ts](file:///c:/Users/Patz/Desktop/My%20Projects/Arcanora/src/commands/player/codex.ts) to strictly align split indexing.
 - **Project Rules & Handoff**: Established new rules in [AGENTS.md](file:///c:/Users/Patz/Desktop/My%20Projects/Arcanora/.agents/AGENTS.md) regarding Discord custom ID alignment and mandatory `CONTEXT_HANDOFF.md` updates.
 
+### 2026-06-30 (Phase 2)
+- **ASCII World Map Visualization**: Created a new visualization engine `src/utils/mapVisual.ts` that renders a structured ASCII location tree with active player position markers and fog-of-war (undiscovered locations appear as `⬛ ???`).
+- **Map Exploration Restructure**: Integrated the visual ASCII map into the `/map` screen embed, presenting the map in a monospaced codeblock and introducing a dynamic single-line Quest/Vitals guidance block under the new header system.
+- **Profile Split & Tabs**: Restructured `/player profile` and `/player stats` into a unified 3-tab layout (Identity, Equipment, Stats) with interactive navigation buttons updating the active message interface.
+- **Interactive Routing**: Programmed custom ID button handlers to allow real-time tab switching between profile views on the same message response.
+
+### 2026-06-30 (Phase 3)
+- **Combat Embed Redesign**: Re-engineered standard combat status embeds into a side-by-side player vs enemy status grid, and added active status effect buff/debuff badges (e.g. `🛡️ Shield (2t)`, `🔥 Burn (1t)`) with compact visual progress indicators.
+- **Dynamic Weakness Detection**: Programmed automatic elemental weakness hints in combat templates based on enemy identifiers (e.g. "❄️ Weak to Water & Ice").
+- **Secure Action Custom IDs**: Overhauled combat action button, skill/item select menus, and preset buttons custom ID builders to dynamically append player `discordId`, and added strict user ownership validation inside `handleCombatInteraction` (mitigating cross-player click exploits).
+- **Lore Injection in Quests**: Introduced `"narrative"` blocks inside quest JSON schemas, rendering contextual NPC dialog upon accepting a quest, tracking custom narrative hints on map screens, and writing cinematic complete text into success announcers.
+- **Location Arrival Flavor**: Integrated location-specific `"arrivalText"` strings dynamically presented as italicized flavor text when traveling node-to-node on the map.
+

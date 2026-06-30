@@ -1,0 +1,32 @@
+{
+  "id": "trench_lurker",
+  "name": "Trench Lurker",
+  "description": "A massive, shadowed creature with grasping tentacles that hides in the ocean silt.",
+  "zone": "abyssal_depths",
+  "rarity": "normal",
+  "level": 19,
+  "stats": {
+    "hp": 440,
+    "attack": 100,
+    "defense": 60,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "shadow_grasp",
+      "name": "Shadow Grasp",
+      "damage": 130,
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 300,
+  "goldReward": 180
+}

@@ -1,0 +1,38 @@
+{
+  "id": "lava_golem",
+  "name": "Lava Golem",
+  "description": "A massive construct formed from cooled obsidian and flowing magma.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 12,
+  "stats": {
+    "hp": 300,
+    "attack": 50,
+    "defense": 50,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "lava_fist",
+      "name": "Lava Fist",
+      "damage": 70,
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_coal",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 150,
+  "goldReward": 100
+}

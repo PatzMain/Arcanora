@@ -1,5 +1,6 @@
 {
   "id": "story_14_titan_defeat",
+  "displayOrder": 28,
   "name": "Heart of Fire",
   "description": "Defeat the Infernal Titan at the volcanic summit.",
   "type": "story",

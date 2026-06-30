@@ -1,0 +1,32 @@
+{
+  "id": "goblin_chieftain",
+  "name": "Goblin Chieftain",
+  "description": "The formidable leader of the Watchtower goblin garrison, wielding a spiked mace.",
+  "zone": "goblin_sanctuary",
+  "rarity": "boss",
+  "level": 6,
+  "stats": {
+    "hp": 350,
+    "attack": 40,
+    "defense": 30,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "chieftain_strike",
+      "name": "Chieftain Strike",
+      "damage": 50,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 100,
+      "minQty": 2,
+      "maxQty": 4
+    }
+  ],
+  "expReward": 150,
+  "goldReward": 100
+}

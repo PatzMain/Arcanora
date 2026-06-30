@@ -1,0 +1,32 @@
+{
+  "id": "anglerfish_stalker",
+  "name": "Anglerfish Stalker",
+  "description": "An aggressive, deep-sea hunter that lures its prey with a glowing light before snapping its jaws.",
+  "zone": "abyssal_depths",
+  "rarity": "normal",
+  "level": 17,
+  "stats": {
+    "hp": 370,
+    "attack": 90,
+    "defense": 30,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "lure_bite",
+      "name": "Lure Bite",
+      "damage": 120,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_void_essence",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 250,
+  "goldReward": 160
+}

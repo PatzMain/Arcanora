@@ -1,0 +1,26 @@
+{
+  "id": "story_06_cavern_entry",
+  "displayOrder": 16,
+  "name": "Glittering Depths Entry",
+  "description": "Travel to the Glittering Depths (Crystal Caverns) and explore it once.",
+  "type": "story",
+  "levelReq": 6,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "crystal_caverns",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 800,
+    "gold": 350,
+    "gems": 8
+  },
+  "narrative": {
+    "accept": "Silas says, \"The Glittering Depths are beautiful, but highly unstable. Walk carefully down there.\"",
+    "complete": "\"You found the veins? Incredible. Just make sure the elementals don't catch you.\"",
+    "hint": "Travel to Glittering Depths and explore it."
+  }
+}

@@ -1,5 +1,6 @@
 {
   "id": "weekly_cavern_crawler",
+  "displayOrder": 202,
   "name": "Weekly Cavern Crawler",
   "description": "Defeat 12 Crystal Golems in the Caverns.",
   "type": "weekly",

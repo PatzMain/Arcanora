@@ -1,5 +1,6 @@
 {
   "id": "story_01_supply",
+  "displayOrder": 7,
   "name": "Outpost Supply",
   "description": "Deliver 10 Birch Logs and 5 Copper Ore to Ralph the Blacksmith.",
   "type": "story",

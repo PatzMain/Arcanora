@@ -174,7 +174,7 @@ export async function runQuestsBoard(
       if (activeIds.includes(quest.id)) return false;
       if (completedIds.includes(quest.id) && !quest.repeatable) return false;
       return true;
-    });
+    }).sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
     let description = '';
     if (available.length > 0) {

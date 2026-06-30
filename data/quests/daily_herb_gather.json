@@ -1,5 +1,6 @@
 {
   "id": "daily_herb_gather",
+  "displayOrder": 102,
   "name": "Daily Herbalist",
   "description": "Gather 3 Wild Herbs to supply the local healers.",
   "type": "daily",

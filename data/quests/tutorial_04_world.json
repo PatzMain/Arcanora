@@ -1,5 +1,6 @@
 {
   "id": "tutorial_04_world",
+  "displayOrder": 4,
   "name": "Captain's Call",
   "description": "Report to Captain Vaelen and explore the Glittering Meadows once.",
   "type": "story",

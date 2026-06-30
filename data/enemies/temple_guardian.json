@@ -1,0 +1,32 @@
+{
+  "id": "temple_guardian",
+  "name": "Temple Guardian",
+  "description": "An ancient stone statue animated by residual sea magic, guarding the temple entrance.",
+  "zone": "sunken_temple",
+  "rarity": "normal",
+  "level": 16,
+  "stats": {
+    "hp": 380,
+    "attack": 80,
+    "defense": 60,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "guardian_strike",
+      "name": "Guardian Strike",
+      "damage": 100,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 230,
+  "goldReward": 140
+}

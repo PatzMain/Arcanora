@@ -1,0 +1,26 @@
+{
+  "id": "story_04_watchtower_siege",
+  "displayOrder": 13,
+  "name": "Watchtower Siege",
+  "description": "Infiltrate the Fallen Watchtower and clear the goblin occupiers.",
+  "type": "story",
+  "levelReq": 5,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "goblin_sanctuary",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 600,
+    "gold": 250,
+    "gems": 5
+  },
+  "narrative": {
+    "accept": "Guard Captain Vaelen points to the map. \"The Fallen Watchtower has become a goblin stronghold. We need you to breach their defences and clear out the occupiers.\"",
+    "complete": "\"You made it back! The watchtower is ours again, and Eldoria is safer for it. Take this reward, you've earned it.\"",
+    "hint": "Travel to Fallen Watchtower and explore it."
+  }
+}

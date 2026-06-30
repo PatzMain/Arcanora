@@ -1,0 +1,26 @@
+{
+  "id": "story_14_keep_siege",
+  "displayOrder": 29,
+  "name": "Lava Keep Siege",
+  "description": "Breach the gates of Lava Keep and explore the fortress once.",
+  "type": "story",
+  "levelReq": 14,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "lava_keep",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 2000,
+    "gold": 800,
+    "gems": 15
+  },
+  "narrative": {
+    "accept": "Captain Vaelen commands, \"The Lava Keep is the stronghold of the Fire Monarch. We must lay siege and storm the gates!\"",
+    "complete": "\"A decisive victory! The keep has fallen, but the source of the flame remains.\"",
+    "hint": "Travel to Lava Keep and explore it."
+  }
+}

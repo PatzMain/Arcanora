@@ -1,0 +1,32 @@
+{
+  "id": "fire_monarch",
+  "name": "Fire Monarch",
+  "description": "The supreme overlord of the Ashen Frontier, ruling from a throne of solid magma.",
+  "zone": "lava_keep",
+  "rarity": "boss",
+  "level": 15,
+  "stats": {
+    "hp": 700,
+    "attack": 100,
+    "defense": 60,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "eruption",
+      "name": "Eruption",
+      "damage": 130,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 100,
+      "minQty": 2,
+      "maxQty": 4
+    }
+  ],
+  "expReward": 400,
+  "goldReward": 250
+}

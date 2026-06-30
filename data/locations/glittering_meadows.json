@@ -19,8 +19,17 @@
     "currentConflicts": "Wood sprites have turned defensive due to the nearby goblin outpost activities."
   },
   "ecosystem": {
-    "creatures": ["forest_sprite", "wild_rabbit", "young_wolf"],
-    "resources": ["mat_copper_ore", "mat_flax_fiber", "mat_herbs", "mat_wood"],
+    "creatures": [
+      "forest_sprite",
+      "wild_rabbit",
+      "young_wolf"
+    ],
+    "resources": [
+      "mat_copper_ore",
+      "mat_flax_fiber",
+      "mat_herbs",
+      "mat_wood"
+    ],
     "weather": "Sunny and calm",
     "hazards": []
   },
@@ -33,12 +42,33 @@
     "quests": [],
     "secrets": []
   },
-  "connections": ["oakhaven_square", "birch_thicket", "silverbrook_river"],
-  "enemies": ["forest_sprite", "wild_rabbit", "young_wolf"],
+  "connections": [
+    "oakhaven_square",
+    "birch_thicket",
+    "silverbrook_river"
+  ],
+  "enemies": [
+    "forest_sprite",
+    "wild_rabbit",
+    "young_wolf"
+  ],
   "encounters": [
-    { "type": "normal_mob", "weight": 60 },
-    { "type": "empty", "weight": 20 },
-    { "type": "treasure", "weight": 15 },
-    { "type": "rare_mob", "weight": 5 }
-  ]
+    {
+      "type": "normal_mob",
+      "weight": 60
+    },
+    {
+      "type": "empty",
+      "weight": 20
+    },
+    {
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
+      "weight": 5
+    }
+  ],
+  "isDungeon": false
 }

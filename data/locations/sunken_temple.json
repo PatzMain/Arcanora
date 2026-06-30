@@ -23,20 +23,31 @@
       "deep_cultist",
       "abyssal_kraken"
     ],
-    "resources": ["mat_void_essence", "mat_crystal_shard"],
+    "resources": [
+      "mat_void_essence",
+      "mat_crystal_shard"
+    ],
     "weather": "Submerged cold waters with ancient echoes",
-    "hazards": ["Suffocation / Water currents"]
+    "hazards": [
+      "Suffocation / Water currents"
+    ]
   },
   "social": {
     "npcs": [],
-    "factions": ["Precursor Sentinels"],
+    "factions": [
+      "Precursor Sentinels"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_19_nameless_defeat"],
+    "quests": [
+      "story_19_nameless_defeat"
+    ],
     "secrets": []
   },
-  "connections": ["abyssal_depths"],
+  "connections": [
+    "abyssal_depths"
+  ],
   "isDungeon": true,
   "enemies": [
     "temple_guardian",
@@ -65,5 +76,6 @@
       "type": "boss",
       "weight": 5
     }
-  ]
+  ],
+  "hasRestBed": false
 }

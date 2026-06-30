@@ -1,5 +1,6 @@
 {
   "id": "story_17_lurker_hunt",
+  "displayOrder": 33,
   "name": "Deep Predators",
   "description": "Slay 5 Deep Lurkers that prey on deep-sea divers.",
   "type": "story",

@@ -1,5 +1,6 @@
 {
   "id": "story_01_begin",
+  "displayOrder": 5,
   "name": "The Journey Begins",
   "description": "Travel to the Glittering Meadows to begin your adventure.",
   "type": "story",

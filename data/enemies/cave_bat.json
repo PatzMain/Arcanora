@@ -1,0 +1,32 @@
+{
+  "id": "cave_bat",
+  "name": "Cave Bat",
+  "description": "A large, winged mammal that swoops from the cave ceiling to attack.",
+  "zone": "shimmering_cave",
+  "rarity": "normal",
+  "level": 5,
+  "stats": {
+    "hp": 90,
+    "attack": 20,
+    "defense": 10,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "screech",
+      "name": "Screech",
+      "damage": 15,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 30,
+  "goldReward": 15
+}

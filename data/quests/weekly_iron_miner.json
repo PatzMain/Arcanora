@@ -1,5 +1,6 @@
 {
   "id": "weekly_iron_miner",
+  "displayOrder": 203,
   "name": "Weekly Supplier",
   "description": "Gather 10 Iron Ore chunks.",
   "type": "weekly",

@@ -1,0 +1,38 @@
+{
+  "id": "magma_basilisk",
+  "name": "Magma Basilisk",
+  "description": "A low-slung, six-legged reptile that exhales a stream of superheated ash.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 13,
+  "stats": {
+    "hp": 280,
+    "attack": 60,
+    "defense": 40,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "magma_breath",
+      "name": "Magma Breath",
+      "damage": 80,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 170,
+  "goldReward": 110
+}

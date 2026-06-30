@@ -1,0 +1,26 @@
+{
+  "id": "story_10_volcanic_entry",
+  "displayOrder": 23,
+  "name": "Volcanic Wastes Entry",
+  "description": "Travel to the Volcanic Wastes and explore the area once.",
+  "type": "story",
+  "levelReq": 10,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "volcanic_wastes",
+      "required": 1
+    }
+  ],
+  "rewards": {
+    "exp": 1500,
+    "gold": 600,
+    "gems": 12
+  },
+  "narrative": {
+    "accept": "The Royal Envoy tells you, \"Mount Ignis is cooling, but the surrounding wastes are teeming with fire creatures. Go and investigate.\"",
+    "complete": "\"Fascinating. The energy there is highly volatile.\"",
+    "hint": "Travel to Volcanic Wastes and explore it."
+  }
+}

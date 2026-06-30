@@ -1,5 +1,6 @@
 {
   "id": "daily_mob_slay",
+  "displayOrder": 103,
   "name": "Meadow Ranger",
   "description": "Slay 5 Forest Sprites to keep the roads safe.",
   "type": "daily",

@@ -1,5 +1,6 @@
 {
   "id": "story_13_scorpion_slay",
+  "displayOrder": 27,
   "name": "Obsidian Shells",
   "description": "Slay 4 Obsidian Scorpions to collect their protective plates.",
   "type": "story",

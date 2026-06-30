@@ -1,5 +1,6 @@
 {
   "id": "story_15_depths_enter",
+  "displayOrder": 30,
   "name": "The Abyss",
   "description": "Travel to the Abyssal Trench and explore it once.",
   "type": "story",

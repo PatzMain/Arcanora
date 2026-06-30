@@ -1,0 +1,32 @@
+{
+  "id": "goblin_scout",
+  "name": "Goblin Scout",
+  "description": "A nimble goblin sent ahead to search for intruders and report back.",
+  "zone": "goblin_sanctuary",
+  "rarity": "normal",
+  "level": 3,
+  "stats": {
+    "hp": 70,
+    "attack": 10,
+    "defense": 10,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "quick_slash",
+      "name": "Quick Slash",
+      "damage": 15,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 25,
+  "goldReward": 15
+}

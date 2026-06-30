@@ -23,20 +23,34 @@
       "cave_troll",
       "crystal_colossus"
     ],
-    "resources": ["mat_iron_ore", "mat_silver_ore", "mat_gold_ore", "mat_crystal_shard"],
+    "resources": [
+      "mat_iron_ore",
+      "mat_silver_ore",
+      "mat_gold_ore",
+      "mat_crystal_shard"
+    ],
     "weather": "Dry and dust-choked air",
-    "hazards": ["Unstable Shaft Collapse"]
+    "hazards": [
+      "Unstable Shaft Collapse"
+    ]
   },
   "social": {
     "npcs": [],
-    "factions": ["Iron Clan Dwarfs"],
+    "factions": [
+      "Iron Clan Dwarfs"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_09_mine_exploration"],
+    "quests": [
+      "story_09_mine_exploration"
+    ],
     "secrets": []
   },
-  "connections": ["crystal_caverns", "volcanic_wastes"],
+  "connections": [
+    "crystal_caverns",
+    "volcanic_wastes"
+  ],
   "isDungeon": true,
   "enemies": [
     "crystal_golem",
@@ -65,5 +79,6 @@
       "type": "boss",
       "weight": 10
     }
-  ]
+  ],
+  "hasRestBed": false
 }

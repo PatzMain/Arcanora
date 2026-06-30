@@ -1,0 +1,32 @@
+{
+  "id": "abyssal_eel",
+  "name": "Abyssal Eel",
+  "description": "A long, slithering predator that discharges powerful electrical current in the deep waters.",
+  "zone": "abyssal_depths",
+  "rarity": "normal",
+  "level": 16,
+  "stats": {
+    "hp": 340,
+    "attack": 80,
+    "defense": 40,
+    "speed": 40
+  },
+  "abilities": [
+    {
+      "id": "electric_shock",
+      "name": "Electric Shock",
+      "damage": 100,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_leather",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 220,
+  "goldReward": 140
+}

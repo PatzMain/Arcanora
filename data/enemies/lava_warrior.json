@@ -1,0 +1,32 @@
+{
+  "id": "lava_warrior",
+  "name": "Lava Warrior",
+  "description": "An armored infantryman of the Fire Monarch, wielding a heated basalt blade.",
+  "zone": "lava_keep",
+  "rarity": "normal",
+  "level": 11,
+  "stats": {
+    "hp": 240,
+    "attack": 50,
+    "defense": 40,
+    "speed": 20
+  },
+  "abilities": [
+    {
+      "id": "molten_strike",
+      "name": "Molten Strike",
+      "damage": 65,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_coal",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 130,
+  "goldReward": 90
+}

@@ -1,5 +1,6 @@
 {
   "id": "story_05_chieftain",
+  "displayOrder": 22,
   "name": "Grak'Zul's Fall",
   "description": "Defeat Goblin Chieftain, Grak'Zul in the depths of the Forgotten Ironmine.",
   "type": "story",

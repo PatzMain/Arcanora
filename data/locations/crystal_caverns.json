@@ -24,9 +24,15 @@
       "gem_serpent",
       "crystal_colossus"
     ],
-    "resources": ["mat_iron_ore", "mat_crystal_shard", "mat_silver_ore"],
+    "resources": [
+      "mat_iron_ore",
+      "mat_crystal_shard",
+      "mat_silver_ore"
+    ],
     "weather": "Chilly cave dampness with hum of magic",
-    "hazards": ["Falling Crystals"]
+    "hazards": [
+      "Falling Crystals"
+    ]
   },
   "social": {
     "npcs": [
@@ -41,11 +47,15 @@
         ]
       }
     ],
-    "factions": ["Eldorian Mining Guild"],
+    "factions": [
+      "Eldorian Mining Guild"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_06_cavern_entry"],
+    "quests": [
+      "story_06_cavern_entry"
+    ],
     "secrets": [
       {
         "id": "secret_vault",
@@ -54,7 +64,10 @@
       }
     ]
   },
-  "connections": ["shadow_forest", "ancient_mine"],
+  "connections": [
+    "shadow_forest",
+    "ancient_mine"
+  ],
   "enemies": [
     "crystal_bat",
     "subterranean_crawler",
@@ -83,5 +96,7 @@
       "type": "boss",
       "weight": 3
     }
-  ]
+  ],
+  "hasRestBed": false,
+  "isDungeon": false
 }

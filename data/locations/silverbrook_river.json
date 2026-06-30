@@ -18,8 +18,15 @@
     "currentConflicts": "Spawns mud sprites that flood the banks with sticky clay."
   },
   "ecosystem": {
-    "creatures": ["river_crab", "giant_bullfrog", "mud_sprite"],
-    "resources": ["fish_trout", "fish_carp"],
+    "creatures": [
+      "river_crab",
+      "giant_bullfrog",
+      "mud_sprite"
+    ],
+    "resources": [
+      "fish_trout",
+      "fish_carp"
+    ],
     "weather": "Mist and river breeze",
     "hazards": []
   },
@@ -32,12 +39,32 @@
     "quests": [],
     "secrets": []
   },
-  "connections": ["glittering_meadows", "shimmering_cave"],
-  "enemies": ["river_crab", "giant_bullfrog", "mud_sprite"],
+  "connections": [
+    "glittering_meadows",
+    "shimmering_cave"
+  ],
+  "enemies": [
+    "river_crab",
+    "giant_bullfrog",
+    "mud_sprite"
+  ],
   "encounters": [
-    { "type": "normal_mob", "weight": 60 },
-    { "type": "empty", "weight": 20 },
-    { "type": "treasure", "weight": 10 },
-    { "type": "rare_mob", "weight": 10 }
-  ]
+    {
+      "type": "normal_mob",
+      "weight": 60
+    },
+    {
+      "type": "empty",
+      "weight": 20
+    },
+    {
+      "type": "treasure",
+      "weight": 10
+    },
+    {
+      "type": "rare_mob",
+      "weight": 10
+    }
+  ],
+  "isDungeon": false
 }

@@ -23,20 +23,31 @@
       "goblin_shaman",
       "goblin_chieftain"
     ],
-    "resources": ["mat_copper_ore", "mat_leather"],
+    "resources": [
+      "mat_copper_ore",
+      "mat_leather"
+    ],
     "weather": "Overcast and windy",
-    "hazards": ["Tripwire Trap"]
+    "hazards": [
+      "Tripwire Trap"
+    ]
   },
   "social": {
     "npcs": [],
-    "factions": ["Red Sun Tribe"],
+    "factions": [
+      "Red Sun Tribe"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_04_watchtower_siege"],
+    "quests": [
+      "story_04_watchtower_siege"
+    ],
     "secrets": []
   },
-  "connections": ["shadow_forest"],
+  "connections": [
+    "shadow_forest"
+  ],
   "isDungeon": true,
   "enemies": [
     "goblin_scout",
@@ -65,5 +76,6 @@
       "type": "boss",
       "weight": 5
     }
-  ]
+  ],
+  "hasRestBed": false
 }

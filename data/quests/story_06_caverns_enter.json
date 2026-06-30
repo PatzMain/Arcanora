@@ -1,5 +1,6 @@
 {
   "id": "story_06_caverns_enter",
+  "displayOrder": 15,
   "name": "The Crystal Cave",
   "description": "Travel to the Glittering Depths and explore it once.",
   "type": "story",

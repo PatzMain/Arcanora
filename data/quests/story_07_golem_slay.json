@@ -1,5 +1,6 @@
 {
   "id": "story_07_golem_slay",
+  "displayOrder": 17,
   "name": "Golem Cleansing",
   "description": "Slay 6 Crystal Golems to clear path for miners.",
   "type": "story",

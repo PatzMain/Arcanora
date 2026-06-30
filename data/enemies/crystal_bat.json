@@ -1,0 +1,32 @@
+{
+  "id": "crystal_bat",
+  "name": "Crystal Bat",
+  "description": "A bat with razor-sharp crystalline wings that reflect light in the darkness.",
+  "zone": "crystal_caverns",
+  "rarity": "normal",
+  "level": 6,
+  "stats": {
+    "hp": 100,
+    "attack": 20,
+    "defense": 10,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "crystal_screech",
+      "name": "Crystal Screech",
+      "damage": 20,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_crystal_shard",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 70,
+  "goldReward": 50
+}

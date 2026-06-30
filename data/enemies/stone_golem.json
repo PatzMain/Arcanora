@@ -1,0 +1,38 @@
+{
+  "id": "stone_golem",
+  "name": "Stone Golem",
+  "description": "An animated pile of rock and crystal that guards the cavern veins.",
+  "zone": "shimmering_cave",
+  "rarity": "normal",
+  "level": 7,
+  "stats": {
+    "hp": 160,
+    "attack": 30,
+    "defense": 40,
+    "speed": 10
+  },
+  "abilities": [
+    {
+      "id": "rock_slam",
+      "name": "Rock Slam",
+      "damage": 30,
+      "chance": 20
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_iron_ore",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    },
+    {
+      "itemId": "mat_coal",
+      "dropRate": 30,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 40,
+  "goldReward": 20
+}

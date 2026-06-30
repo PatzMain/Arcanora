@@ -1,0 +1,26 @@
+{
+  "id": "story_03_forest_depths",
+  "displayOrder": 11,
+  "name": "Forest Depths",
+  "description": "Scout deep into the Whispering Canopy to map the layout.",
+  "type": "story",
+  "levelReq": 5,
+  "repeatable": false,
+  "conditions": [
+    {
+      "type": "explore",
+      "target": "shadow_forest",
+      "required": 3
+    }
+  ],
+  "rewards": {
+    "exp": 500,
+    "gold": 400,
+    "gems": 10
+  },
+  "narrative": {
+    "accept": "Silas notes, \"The woods have grown denser. I need someone to scout deep into the Whispering Canopy and map out the pathways.\"",
+    "complete": "\"Excellent work. This map will keep travelers safe. Keep your guard up, though.\"",
+    "hint": "Scout the Shadow Forest 3 times using the explore command."
+  }
+}

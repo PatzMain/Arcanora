@@ -25,15 +25,21 @@
       "nightshade_witch",
       "ancient_hollow"
     ],
-    "resources": ["mat_wood", "mat_leather", "mat_spider_silk"],
+    "resources": [
+      "mat_wood",
+      "mat_leather",
+      "mat_spider_silk"
+    ],
     "weather": "Dense purple mist and cold wind",
-    "hazards": ["Poisonous Brambles"]
+    "hazards": [
+      "Poisonous Brambles"
+    ]
   },
   "social": {
     "npcs": [
       {
-        "id": "elara",
-        "name": "Druid Elara",
+        "id": "miriel",
+        "name": "Druid Miriel",
         "role": "Forest Protector",
         "dialogue": [
           "The trees weep... their roots taste shadow.",
@@ -42,11 +48,15 @@
         ]
       }
     ],
-    "factions": ["Circle of Thorns"],
+    "factions": [
+      "Circle of Thorns"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_03_forest_depths"],
+    "quests": [
+      "story_03_forest_depths"
+    ],
     "secrets": [
       {
         "id": "secret_nexus",
@@ -55,7 +65,11 @@
       }
     ]
   },
-  "connections": ["forgotten_ironmine", "goblin_sanctuary", "crystal_caverns"],
+  "connections": [
+    "forgotten_ironmine",
+    "goblin_sanctuary",
+    "crystal_caverns"
+  ],
   "enemies": [
     "shadow_stalker",
     "dark_treant",
@@ -85,5 +99,7 @@
       "type": "boss",
       "weight": 3
     }
-  ]
+  ],
+  "hasRestBed": false,
+  "isDungeon": false
 }

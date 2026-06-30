@@ -1,0 +1,32 @@
+{
+  "id": "fire_imp",
+  "name": "Fire Imp",
+  "description": "A small, mischievous fire elemental that hurls balls of liquid flame.",
+  "zone": "volcanic_wastes",
+  "rarity": "normal",
+  "level": 10,
+  "stats": {
+    "hp": 180,
+    "attack": 40,
+    "defense": 20,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "fire_bolt",
+      "name": "Fire Bolt",
+      "damage": 50,
+      "chance": 30
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_coal",
+      "dropRate": 50,
+      "minQty": 1,
+      "maxQty": 2
+    }
+  ],
+  "expReward": 120,
+  "goldReward": 80
+}

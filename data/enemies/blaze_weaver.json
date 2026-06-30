@@ -1,0 +1,32 @@
+{
+  "id": "blaze_weaver",
+  "name": "Blaze Weaver",
+  "description": "A dark elf spellcaster who commands embers and wraps themself in flame protection.",
+  "zone": "lava_keep",
+  "rarity": "normal",
+  "level": 13,
+  "stats": {
+    "hp": 280,
+    "attack": 70,
+    "defense": 20,
+    "speed": 30
+  },
+  "abilities": [
+    {
+      "id": "flame_shield",
+      "name": "Flame Shield",
+      "damage": 90,
+      "chance": 25
+    }
+  ],
+  "lootTable": [
+    {
+      "itemId": "mat_obsidian_chunk",
+      "dropRate": 40,
+      "minQty": 1,
+      "maxQty": 1
+    }
+  ],
+  "expReward": 170,
+  "goldReward": 110
+}

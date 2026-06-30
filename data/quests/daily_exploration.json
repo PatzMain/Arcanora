@@ -1,5 +1,6 @@
 {
   "id": "daily_exploration",
+  "displayOrder": 101,
   "name": "Daily Scout",
   "description": "Explore the meadows or forest 3 times.",
   "type": "daily",

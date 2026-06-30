@@ -1,5 +1,6 @@
 {
   "id": "tutorial_03_slimes",
+  "displayOrder": 3,
   "name": "Sewers in the Dark",
   "description": "Clear 3 Sewer Slimes in the Oakhaven Sewers.",
   "type": "story",

@@ -24,9 +24,14 @@
       "ash_wraith",
       "fire_drake"
     ],
-    "resources": ["mat_obsidian_chunk", "mat_copper_ore"],
+    "resources": [
+      "mat_obsidian_chunk",
+      "mat_copper_ore"
+    ],
     "weather": "Choking sulfur fumes and ashfall",
-    "hazards": ["Lava Geysers"]
+    "hazards": [
+      "Lava Geysers"
+    ]
   },
   "social": {
     "npcs": [
@@ -41,11 +46,15 @@
         ]
       }
     ],
-    "factions": ["Acolytes of Mount Ignis"],
+    "factions": [
+      "Acolytes of Mount Ignis"
+    ],
     "travelers": []
   },
   "gameplay": {
-    "quests": ["story_10_volcanic_entry"],
+    "quests": [
+      "story_10_volcanic_entry"
+    ],
     "secrets": [
       {
         "id": "secret_altar",
@@ -54,7 +63,11 @@
       }
     ]
   },
-  "connections": ["ancient_mine", "lava_keep", "abyssal_depths"],
+  "connections": [
+    "ancient_mine",
+    "lava_keep",
+    "abyssal_depths"
+  ],
   "enemies": [
     "fire_imp",
     "lava_golem",
@@ -83,5 +96,7 @@
       "type": "boss",
       "weight": 2
     }
-  ]
+  ],
+  "hasRestBed": false,
+  "isDungeon": false
 }

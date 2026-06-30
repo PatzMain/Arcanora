@@ -18,8 +18,15 @@
     "currentConflicts": "Infested with aggressive stone golems blocking the lower tunnels."
   },
   "ecosystem": {
-    "creatures": ["cave_bat", "stone_golem"],
-    "resources": ["mat_iron_ore", "mat_coal", "fish_cavefish"],
+    "creatures": [
+      "cave_bat",
+      "stone_golem"
+    ],
+    "resources": [
+      "mat_iron_ore",
+      "mat_coal",
+      "fish_cavefish"
+    ],
     "weather": "Damp and cold air",
     "hazards": []
   },
@@ -32,12 +39,31 @@
     "quests": [],
     "secrets": []
   },
-  "connections": ["silverbrook_river", "forgotten_ironmine"],
-  "enemies": ["cave_bat", "stone_golem"],
+  "connections": [
+    "silverbrook_river",
+    "forgotten_ironmine"
+  ],
+  "enemies": [
+    "cave_bat",
+    "stone_golem"
+  ],
   "encounters": [
-    { "type": "normal_mob", "weight": 70 },
-    { "type": "empty", "weight": 10 },
-    { "type": "treasure", "weight": 15 },
-    { "type": "rare_mob", "weight": 5 }
-  ]
+    {
+      "type": "normal_mob",
+      "weight": 70
+    },
+    {
+      "type": "empty",
+      "weight": 10
+    },
+    {
+      "type": "treasure",
+      "weight": 15
+    },
+    {
+      "type": "rare_mob",
+      "weight": 5
+    }
+  ],
+  "isDungeon": false
 }

@@ -1,5 +1,6 @@
 {
   "id": "weekly_boss_slayer",
+  "displayOrder": 201,
   "name": "Weekly Executioner",
   "description": "Defeat any 3 Dungeon or Zone Bosses.",
   "type": "weekly",

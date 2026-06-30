@@ -1,5 +1,6 @@
 {
   "id": "story_09_colossus_defeat",
+  "displayOrder": 21,
   "name": "The Crystal Giant",
   "description": "Defeat the Crystal Colossus to unlock the deep volcanic tunnels.",
   "type": "story",
