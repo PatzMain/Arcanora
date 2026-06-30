@@ -858,7 +858,7 @@ export async function handleDungeonInteraction(
         dbSession: session
       };
 
-      if (nodeAction === 'merchant') {
+      if (nodeType === 'merchant' && nodeAction === 'browse') {
         const shopItems = currNode.encounterData?.shopItems || [];
         const selectMenuOptions = shopItems.map((spec: any) => {
           const def = itemsCatalog.find(i => i.id === spec.id);
@@ -879,7 +879,7 @@ export async function handleDungeonInteraction(
         return;
       }
 
-      if (nodeAction === 'event') {
+      if (nodeType === 'event' && nodeAction === 'examine') {
         const event = currNode.encounterData?.event;
         if (!event) return;
 
@@ -913,7 +913,7 @@ export async function handleDungeonInteraction(
         result = await handler.onAction(nodeAction, context);
       }
 
-      if (nodeType === 'combat' && nodeAction === 'engage') {
+      if (['room', 'elite', 'boss'].includes(nodeType) && nodeAction === 'engage') {
         if (result.success) {
           await updateExplorationSession(session.id, {
             mapState: session.mapState
