@@ -53,7 +53,10 @@
     "temple_guardian",
     "submerged_specter",
     "deep_cultist",
-    "abyssal_kraken"
+    "abyssal_kraken",
+    "trench_lurker",
+    "the_nameless_one",
+    "eldritch_horror"
   ],
   "encounters": [
     {

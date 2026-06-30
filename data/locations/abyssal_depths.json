@@ -70,7 +70,11 @@
     "abyssal_eel",
     "anglerfish_stalker",
     "trench_lurker",
-    "abyssal_kraken"
+    "abyssal_kraken",
+    "deep_lurker",
+    "deep_cultist",
+    "submerged_specter",
+    "the_nameless_one"
   ],
   "encounters": [
     {

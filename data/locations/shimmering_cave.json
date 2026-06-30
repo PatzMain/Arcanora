@@ -45,7 +45,10 @@
   ],
   "enemies": [
     "cave_bat",
-    "stone_golem"
+    "stone_golem",
+    "mine_spider",
+    "cave_troll",
+    "glowbat_swarm"
   ],
   "encounters": [
     {

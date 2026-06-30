@@ -53,7 +53,10 @@
     "fire_monarch",
     "lava_warrior",
     "lava_hound",
-    "blaze_weaver"
+    "blaze_weaver",
+    "fire_elemental",
+    "infernal_titan",
+    "lava_golem"
   ],
   "encounters": [
     {

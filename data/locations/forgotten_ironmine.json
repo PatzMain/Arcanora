@@ -34,7 +34,7 @@
     "secrets": []
   },
   "connections": ["shimmering_cave", "goblin_outpost", "shadow_forest"],
-  "enemies": ["goblin_miner", "mine_spider", "ironhide_boar"],
+  "enemies": ["goblin_miner", "mine_spider", "ironhide_boar", "grak_zul"],
   "encounters": [
     { "type": "normal_mob", "weight": 70 },
     { "type": "treasure", "weight": 20 },

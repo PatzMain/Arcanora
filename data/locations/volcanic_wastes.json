@@ -73,7 +73,10 @@
     "lava_golem",
     "magma_basilisk",
     "ash_wraith",
-    "fire_drake"
+    "fire_drake",
+    "fire_elemental",
+    "magma_wyrm",
+    "obsidian_scorpion"
   ],
   "encounters": [
     {
