@@ -30,47 +30,67 @@ import { itemBehaviorRegistry } from '../items/itemBehavior.js';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-function drawDungeonMapVisual(mapState: any, currentNodeId: string, previousNodeId: string | null): string {
-  const currNode = mapState.nodes[currentNodeId];
-  if (!currNode) return 'Unknown Room';
-
-  const getSymbol = (type: string) => {
-    switch (type) {
-      case 'campsite': return '🏕️';
-      case 'treasure': return '🪙';
-      case 'merchant': return '🏪';
-      case 'puzzle': return '🧩';
-      case 'event': return '✨';
-      case 'elite': return '⚔️';
-      case 'boss': return '☠️';
-      default: return '🚪';
-    }
-  };
-
+function drawDungeonMapVisual(mapState: any, currentNodeId: string): string {
+  const width = mapState.width || 6;
+  const height = mapState.height || 6;
   let text = '';
-  if (previousNodeId && mapState.nodes[previousNodeId]) {
-    const prevNode = mapState.nodes[previousNodeId];
-    text += `   *${getSymbol(prevNode.type)} Visited: ${prevNode.name}*\n       │\n`;
-  }
-  
-  text += `📍 **YOU: ${getSymbol(currNode.type)} ${currNode.name}**\n`;
-  
-  const connIds = currNode.connections || [];
-  if (connIds.length === 0) {
-    text += `       *(Final Chamber)*\n`;
-  } else {
-    connIds.forEach((connId: string, idx: number) => {
-      const nextNode = mapState.nodes[connId];
-      if (nextNode) {
-        const isLast = idx === connIds.length - 1;
-        const prefix = connIds.length === 1 ? '       └──' : (isLast ? '       └──' : '       ├──');
-        if (nextNode.status === 'hidden') {
-          text += `${prefix} ❓ **Unknown Room**\n`;
-        } else {
-          text += `${prefix} ${getSymbol(nextNode.type)} **${nextNode.name}**\n`;
-        }
+
+  for (let y = 0; y < height; y++) {
+    let rowText = '';
+    for (let x = 0; x < width; x++) {
+      const id = `${x}_${y}`;
+      const node = mapState.nodes[id];
+      
+      if (!node) {
+        rowText += '⬛';
+        continue;
       }
-    });
+
+      if (id === currentNodeId) {
+        rowText += '🧙'; // Player icon
+        continue;
+      }
+
+      if (node.status === 'hidden') {
+        rowText += '⬛'; // Hidden by fog
+        continue;
+      }
+
+      if (node.type === 'wall') {
+        rowText += '🪨'; // Solid wall
+        continue;
+      }
+
+      const isCleared = node.status === 'visited' || node.status === 'cleared';
+
+      switch (node.type) {
+        case 'campsite':
+          rowText += '🏕️';
+          break;
+        case 'treasure':
+          rowText += isCleared ? '🫙' : '🎁'; // Opened vs closed chest
+          break;
+        case 'merchant':
+          rowText += '🏪';
+          break;
+        case 'event':
+          rowText += isCleared ? '⬜' : '✨';
+          break;
+        case 'elite':
+          rowText += isCleared ? '⬜' : '⚔️';
+          break;
+        case 'boss':
+          rowText += isCleared ? '⬜' : '☠️';
+          break;
+        case 'stairs':
+          rowText += '🪜';
+          break;
+        default:
+          rowText += '⬜'; // Visited normal room
+          break;
+      }
+    }
+    text += `${rowText}\n`;
   }
   return text;
 }
@@ -223,12 +243,12 @@ export async function renderDungeonScreen(
   // Build Dungeon Embed
   const embed = new EmbedBuilder()
     .setColor(0x7C3AED) // Premium purple
-    .setTitle(`🏰 ${dungeonName} — Floor ${mapState.floor || 1} (Layer ${currNode.layer + 1}/${mapState.layersCount})`)
+    .setTitle(`🏰 ${dungeonName} — Floor ${mapState.floor || 1}/${mapState.layersCount}`)
     .setDescription(
       `📍 **${currNode.name}** (${roomTypeDisplay} Room)\n` +
       `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP\n\n` +
-      `── **Paths Ahead** ──\n` +
-      `${drawDungeonMapVisual(mapState, currentNodeId, session.previousNodeId)}`
+      `── **Dungeon Map** ──\n` +
+      `${drawDungeonMapVisual(mapState, currentNodeId)}`
     )
     .setFooter({ text: '🧭 Entry costs 10 Stamina. Movement is free!' })
     .setTimestamp();
@@ -240,25 +260,59 @@ export async function renderDungeonScreen(
   const isCleared = currNode.status === 'cleared' || currNode.status === 'visited';
   const mustFight = isCombat && !isCleared;
 
-  // 1. Movement Row (if not blocked by combat)
+  // 1. Movement Row (arrow controls; only include if direction is passable/available)
   const moveRow = new ActionRowBuilder<ButtonBuilder>();
-  const connIds = currNode.connections || [];
-  
-  connIds.forEach((connId: string) => {
-    const nextNode = mapState.nodes[connId];
-    if (nextNode) {
-      const isHidden = nextNode.status === 'hidden';
-      const label = isHidden ? '❓ Unknown Room' : nextNode.name;
-      const moveBtn = new ButtonBuilder()
-        .setCustomId(`dungeon_move_${connId}_${player.discordId}`)
-        .setLabel(label)
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(mustFight);
-      moveRow.addComponents(moveBtn);
-    }
-  });
+  const cx = currNode.x;
+  const cy = currNode.y;
 
-  if (connIds.length > 0) {
+  const upId = `${cx}_${cy - 1}`;
+  const downId = `${cx}_${cy + 1}`;
+  const leftId = `${cx - 1}_${cy}`;
+  const rightId = `${cx + 1}_${cy}`;
+
+  const hasUp = mapState.nodes[upId] && mapState.nodes[upId].type !== 'wall';
+  const hasDown = mapState.nodes[downId] && mapState.nodes[downId].type !== 'wall';
+  const hasLeft = mapState.nodes[leftId] && mapState.nodes[leftId].type !== 'wall';
+  const hasRight = mapState.nodes[rightId] && mapState.nodes[rightId].type !== 'wall';
+
+  if (hasLeft) {
+    moveRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`dungeon_move_${leftId}_${player.discordId}`)
+        .setLabel('⬅️ Left')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(mustFight)
+    );
+  }
+  if (hasUp) {
+    moveRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`dungeon_move_${upId}_${player.discordId}`)
+        .setLabel('⬆️ Up')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(mustFight)
+    );
+  }
+  if (hasDown) {
+    moveRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`dungeon_move_${downId}_${player.discordId}`)
+        .setLabel('⬇️ Down')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(mustFight)
+    );
+  }
+  if (hasRight) {
+    moveRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`dungeon_move_${rightId}_${player.discordId}`)
+        .setLabel('➡️ Right')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(mustFight)
+    );
+  }
+
+  if (moveRow.components.length > 0) {
     components.push(moveRow);
   }
 
@@ -278,7 +332,7 @@ export async function renderDungeonScreen(
     actionRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`dungeon_action_treasure_loot_${player.discordId}`)
-        .setLabel('🪙 Open Chest')
+        .setLabel('🎁 Open Chest')
         .setStyle(ButtonStyle.Primary)
     );
     hasAction = true;
@@ -306,13 +360,16 @@ export async function renderDungeonScreen(
         .setStyle(ButtonStyle.Danger)
     );
     hasAction = true;
-  } else if (currNode.id === 'boss' && isCleared) {
+  } else if (currNode.type === 'stairs') {
     actionRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`dungeon_nextfloor_${player.discordId}`)
         .setLabel('🪜 Next Floor')
         .setStyle(ButtonStyle.Success)
-        .setDisabled(false),
+    );
+    hasAction = true;
+  } else if (currNode.type === 'boss' && isCleared) {
+    actionRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`dungeon_claimvictory_${player.discordId}`)
         .setLabel('🏆 Claim Victory')
@@ -518,7 +575,7 @@ export async function handleDungeonInteraction(
         await db
           .update(explorationSessions)
           .set({
-            currentNodeId: 'start',
+            currentNodeId: mapState.startNodeId,
             mapState
           })
           .where(eq(explorationSessions.id, sessionId));
@@ -559,7 +616,7 @@ export async function handleDungeonInteraction(
         playerId: player.id,
         channelId: interaction.channelId || '',
         zoneId,
-        currentNodeId: 'start',
+        currentNodeId: mapState.startNodeId,
         party: { leaderId: player.id, members: [{ playerId: player.id, username: player.username, level: player.level }] },
         mapState
       });
@@ -602,11 +659,10 @@ export async function handleDungeonInteraction(
       const mapState = session.mapState as any;
       const currentFloor = mapState.floor || 1;
       const nextFloor = currentFloor + 1;
-      const nextMapState = generateDungeonMap(session.zoneId, player.level);
-      (nextMapState as any).floor = nextFloor;
+      const nextMapState = generateDungeonMap(session.zoneId, player.level, nextFloor);
 
       await updateExplorationSession(session.id, {
-        currentNodeId: 'start',
+        currentNodeId: nextMapState.startNodeId,
         previousNodeId: null,
         mapState: nextMapState
       });

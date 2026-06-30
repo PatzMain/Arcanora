@@ -14,57 +14,70 @@ describe('Dungeon Crawling Exploration System', () => {
   });
 
   describe('Procedural Dungeon Map Generator', () => {
-    it('should generate a valid map structure with start and boss nodes', () => {
-      const map = generateDungeonMap('crystal_caverns', 1);
+    it('should generate a valid grid structure with start and exit/boss nodes', () => {
+      // Generate normal floor (floor = 1)
+      const map = generateDungeonMap('crystal_caverns', 1, 1);
 
       expect(map.zoneId).toBe('crystal_caverns');
       expect(map.layersCount).toBe(7);
-      expect(map.startNodeId).toBe('start');
-      expect(map.bossNodeId).toBe('boss');
+      expect(map.width).toBe(6);
+      expect(map.height).toBe(6);
       
       const startNode = map.nodes[map.startNodeId];
-      const bossNode = map.nodes[map.bossNodeId];
+      const exitNode = map.nodes[map.bossNodeId]; // bossNodeId is the exit node ID
 
       expect(startNode).toBeDefined();
       expect(startNode.type).toBe('campsite');
-      expect(startNode.layer).toBe(0);
       expect(startNode.status).toBe('visited');
+      expect(startNode.x).toBe(0);
 
-      expect(bossNode).toBeDefined();
-      expect(bossNode.type).toBe('boss');
-      expect(bossNode.layer).toBe(6);
-      expect(bossNode.status).toBe('hidden');
+      expect(exitNode).toBeDefined();
+      expect(exitNode.type).toBe('stairs'); // stairs on normal floor
+      expect(exitNode.status).toBe('hidden');
+      expect(exitNode.x).toBe(5);
     });
 
-    it('should assign valid node types and connections', () => {
-      const map = generateDungeonMap('shadow_forest', 5);
+    it('should generate a boss on the last floor', () => {
+      // Generate last floor (floor = 7 for crystal_caverns)
+      const map = generateDungeonMap('crystal_caverns', 1, 7);
+      
+      const exitNode = map.nodes[map.bossNodeId];
+      expect(exitNode.type).toBe('boss');
+    });
+
+    it('should assign valid node coordinates and connections', () => {
+      const map = generateDungeonMap('shadow_forest', 5, 1);
       const nodeIds = Object.keys(map.nodes);
 
-      // Total nodes should be greater than layersCount
-      expect(nodeIds.length).toBeGreaterThan(6);
+      // Total nodes should be width * height = 36
+      expect(nodeIds.length).toBe(36);
 
       nodeIds.forEach(id => {
         const node = map.nodes[id];
         expect(node.id).toBe(id);
-        expect(node.layer).toBeGreaterThanOrEqual(0);
-        expect(node.layer).toBeLessThanOrEqual(5);
+        expect(node.x).toBeGreaterThanOrEqual(0);
+        expect(node.x).toBeLessThan(6);
+        expect(node.y).toBeGreaterThanOrEqual(0);
+        expect(node.y).toBeLessThan(6);
 
-        // Connections must be valid existing nodes
+        // Connections must be adjacent passable cells
         node.connections.forEach(connId => {
           expect(map.nodes[connId]).toBeDefined();
-          // Connections should only move forward by layers
-          expect(map.nodes[connId].layer).toBeGreaterThan(node.layer);
+          expect(map.nodes[connId].type).not.toBe('wall');
+          const connNode = map.nodes[connId];
+          const dist = Math.abs(node.x - connNode.x) + Math.abs(node.y - connNode.y);
+          expect(dist).toBe(1); // Taxicab distance of 1 for orthogonally adjacent
         });
       });
     });
 
-    it('should ensure the boss is reachable from start (DAG path validation)', () => {
-      const map = generateDungeonMap('abyssal_depths', 1);
+    it('should ensure the exit is reachable from start (Grid path validation)', () => {
+      const map = generateDungeonMap('abyssal_depths', 1, 1);
       
-      // BFS to find reachability from start to boss
+      // BFS to check connectivity between start and exit
       const visited = new Set<string>();
-      const queue: string[] = ['start'];
-      visited.add('start');
+      const queue: string[] = [map.startNodeId];
+      visited.add(map.startNodeId);
 
       while (queue.length > 0) {
         const currentId = queue.shift()!;
@@ -77,28 +90,32 @@ describe('Dungeon Crawling Exploration System', () => {
         });
       }
 
-      // Boss must be visited
-      expect(visited.has('boss')).toBe(true);
+      // Exit must be reachable
+      expect(visited.has(map.bossNodeId)).toBe(true);
     });
   });
 
   describe('Fog of War Map Visibility', () => {
     it('should reveal adjacent nodes when a node is visited', () => {
-      const map = generateDungeonMap('verdant_meadows', 1);
+      const map = generateDungeonMap('verdant_meadows', 1, 1);
       
       // Initially: start is visited, its connections are revealed
-      expect(map.nodes['start'].status).toBe('visited');
-      map.nodes['start'].connections.forEach(connId => {
+      expect(map.nodes[map.startNodeId].status).toBe('visited');
+      map.nodes[map.startNodeId].connections.forEach(connId => {
         expect(map.nodes[connId].status).toBe('revealed');
       });
 
       // Move player to one of the connected nodes
-      const nextNodeId = map.nodes['start'].connections[0];
+      const nextNodeId = map.nodes[map.startNodeId].connections[0];
       const updatedNodes = updateFogOfWar(map.nodes, nextNodeId);
 
       expect(updatedNodes[nextNodeId].status).toBe('visited');
       updatedNodes[nextNodeId].connections.forEach(connId => {
-        expect(updatedNodes[connId].status).toBe('revealed');
+        if (connId === map.startNodeId) {
+          expect(updatedNodes[connId].status).toBe('visited');
+        } else {
+          expect(updatedNodes[connId].status).toBe('revealed');
+        }
       });
     });
   });
@@ -131,12 +148,11 @@ describe('Dungeon Crawling Exploration System', () => {
 
   describe('Dungeon Floor Scaling & Rewards', () => {
     it('should assign a default floor of 1 on initialization and support custom floor', () => {
-      const map = generateDungeonMap('crystal_caverns', 1);
-      (map as any).floor = 1;
-      expect((map as any).floor).toBe(1);
+      const map = generateDungeonMap('crystal_caverns', 1, 1);
+      expect(map.floor).toBe(1);
 
-      (map as any).floor = 5;
-      expect((map as any).floor).toBe(5);
+      const map5 = generateDungeonMap('crystal_caverns', 1, 5);
+      expect(map5.floor).toBe(5);
     });
 
     it('should calculate floor scaling difficulty and reward factors correctly', () => {

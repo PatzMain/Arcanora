@@ -1,25 +1,30 @@
 import { zonesCatalog, enemiesCatalog } from '../../utils/catalog.js';
 
 export interface DungeonNode {
-  id: string;
+  id: string; // "x_y" format
   name: string;
-  type: 'campsite' | 'treasure' | 'merchant' | 'event' | 'elite' | 'boss' | 'room';
+  type: 'campsite' | 'treasure' | 'merchant' | 'event' | 'elite' | 'boss' | 'room' | 'wall' | 'stairs';
   status: 'hidden' | 'revealed' | 'visited' | 'cleared';
   connections: string[];
   encounterData?: any;
-  layer: number;
+  layer: number; // Keep field for compatibility
+  x: number;
+  y: number;
 }
 
 export interface DungeonMap {
   zoneId: string;
   name: string;
-  layersCount: number;
+  layersCount: number; // Total floors
   nodes: Record<string, DungeonNode>;
   startNodeId: string;
   bossNodeId: string;
+  width: number;
+  height: number;
+  playerX: number;
+  playerY: number;
+  floor: number;
 }
-
-// Riddles array removed
 
 // Predefined random events
 export const EVENTS = [
@@ -86,7 +91,7 @@ export const EVENTS = [
   }
 ];
 
-// Helper to determine depth layers count for each zone
+// Helper to determine depth layers count for each zone (number of floors)
 export function getDungeonDepth(zoneId: string): number {
   switch (zoneId) {
     case 'forgotten_ironmine': return 5;
@@ -104,7 +109,6 @@ function getRandomEnemyForZone(zoneId: string, rarity: 'normal' | 'rare' | 'boss
   const zone = zonesCatalog.find(z => z.id === zoneId);
   const zoneEnemies = zone?.enemies || [];
   
-  // Find matching enemies in the catalog
   const candidates = enemiesCatalog.filter(e => {
     return zoneEnemies.includes(e.id) && e.rarity === rarity;
   });
@@ -114,14 +118,11 @@ function getRandomEnemyForZone(zoneId: string, rarity: 'normal' | 'rare' | 'boss
     return candidates[idx].id;
   }
   
-  // Fallback to any zone enemy if no match by rarity
   if (zoneEnemies.length > 0) {
-    // Pick standard fallback
     const fallbackId = zoneEnemies[Math.floor(Math.random() * zoneEnemies.length)];
     return fallbackId;
   }
   
-  // Hard fallbacks
   switch (rarity) {
     case 'boss': return 'crystal_colossus';
     case 'rare': return 'gem_serpent';
@@ -130,159 +131,184 @@ function getRandomEnemyForZone(zoneId: string, rarity: 'normal' | 'rare' | 'boss
 }
 
 /**
- * Generate a procedural, stateless DAG dungeon map.
+ * Generate a procedural, grid-based dungeon map.
  */
-export function generateDungeonMap(zoneId: string, playerLevel: number): DungeonMap {
+export function generateDungeonMap(zoneId: string, playerLevel: number, floor: number = 1): DungeonMap {
   const zone = zonesCatalog.find(z => z.id === zoneId);
   const zoneName = zone ? zone.name : 'Unknown Dungeon';
   const depth = getDungeonDepth(zoneId);
   
+  const width = 6;
+  const height = 6;
   const nodes: Record<string, DungeonNode> = {};
   
-  // 1. Create Start Node (Layer 0)
-  const startNode: DungeonNode = {
-    id: 'start',
-    name: '🏕️ Dungeon Entrance',
-    type: 'campsite',
-    status: 'visited',
-    connections: [],
-    layer: 0
-  };
-  nodes['start'] = startNode;
-  
-  // 2. Generate Middle Layers (1 to depth - 2)
-  const layers: string[][] = [['start']];
-  
-  for (let L = 1; L <= depth - 2; L++) {
-    // Determine how many nodes in this layer (2 or 3)
-    const numNodes = Math.floor(Math.random() * 2) + 2; 
-    const layerNodeIds: string[] = [];
-    
-    for (let i = 0; i < numNodes; i++) {
-      const nodeId = `node_${L}_${i}`;
-      
-      // Select type using weighted weights
-      // room: 50%, treasure: 20%, event: 15%, merchant: 10%, campsite: 5%
-      // (Elite is placed dynamically or has 5%)
-      const rand = Math.random() * 100;
-      let type: DungeonNode['type'] = 'room';
-      let name = '🚪 Regular Room';
-      
-      if (rand < 50) {
-        type = 'room';
-        name = '🚪 Regular Room';
-      } else if (rand < 70) {
-        type = 'treasure';
-        name = '🪙 Treasure Chamber';
-      } else if (rand < 85) {
-        type = 'event';
-        name = '✨ Random Event';
-      } else if (rand < 95) {
-        type = 'merchant';
-        name = '🏪 Dungeon Merchant';
-      } else {
-        type = 'campsite';
-        name = '🏕️ Campsite';
-      }
-      
-      // Override some to elite if L is deep enough and rolls a check
-      if (type === 'room' && L >= Math.floor(depth / 2) && Math.random() < 0.25) {
-        type = 'elite';
-        name = '⚔️ Elite Encounter';
-      }
-      
-      // Populate encounter data
-      let encounterData: any = {};
-      if (type === 'room') {
-        encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'normal') };
-      } else if (type === 'elite') {
-        encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'rare') };
-      } else if (type === 'event') {
-        const eventIdx = Math.floor(Math.random() * EVENTS.length);
-        encounterData = { event: EVENTS[eventIdx] };
-      } else if (type === 'merchant') {
-        // Preset stock list
-        encounterData = {
-          shopItems: [
-            { id: 'potion_health_small', price: 20 },
-            { id: 'potion_health_medium', price: 50 },
-            { id: 'potion_mana_small', price: 20 },
-            { id: 'potion_mana_medium', price: 50 },
-            { id: 'potion_stamina_small', price: 100 },
-            { id: 'potion_stamina_medium', price: 180 }
-          ]
-        };
-      }
-      
-      const node: DungeonNode = {
-        id: nodeId,
-        name,
-        type,
+  // 1. Initialize all cells as walls
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const id = `${x}_${y}`;
+      nodes[id] = {
+        id,
+        name: '🪨 Wall',
+        type: 'wall',
         status: 'hidden',
         connections: [],
-        encounterData,
-        layer: L
+        layer: 0,
+        x,
+        y
       };
-      
-      nodes[nodeId] = node;
-      layerNodeIds.push(nodeId);
-    }
-    
-    layers.push(layerNodeIds);
-  }
-  
-  // 3. Create Boss Node (Layer depth - 1)
-  const bossNodeId = 'boss';
-  const bossNode: DungeonNode = {
-    id: bossNodeId,
-    name: '☠️ Boss Chamber',
-    type: 'boss',
-    status: 'hidden',
-    connections: [],
-    encounterData: { enemyId: getRandomEnemyForZone(zoneId, 'boss') },
-    layer: depth - 1
-  };
-  nodes[bossNodeId] = bossNode;
-  layers.push([bossNodeId]);
-  
-  // 4. Connect Layers
-  for (let L = 0; L < layers.length - 1; L++) {
-    const currentLayer = layers[L]!;
-    const nextLayer = layers[L + 1]!;
-    
-    // Connect each node in current layer to at least one node in next layer
-    for (const currId of currentLayer) {
-      const nextId = nextLayer[Math.floor(Math.random() * nextLayer.length)]!;
-      nodes[currId]!.connections.push(nextId);
-    }
-    
-    // Ensure every node in next layer has at least one incoming connection
-    for (const nextId of nextLayer) {
-      const incoming = currentLayer.filter(currId => nodes[currId]!.connections.includes(nextId));
-      if (incoming.length === 0) {
-        const randomCurrId = currentLayer[Math.floor(Math.random() * currentLayer.length)]!;
-        nodes[randomCurrId]!.connections.push(nextId);
-      }
-    }
-    
-    // Add some random extra connections for branching paths (30% chance)
-    if (nextLayer.length > 1) {
-      for (const currId of currentLayer) {
-        if (Math.random() < 0.3) {
-          const unusedNext = nextLayer.filter(nextId => !nodes[currId]!.connections.includes(nextId));
-          if (unusedNext.length > 0) {
-            const extraNextId = unusedNext[Math.floor(Math.random() * unusedNext.length)]!;
-            nodes[currId]!.connections.push(extraNextId);
-          }
-        }
-      }
     }
   }
   
-  // 5. Initial Fog of War Reveal
-  // start is visited, reveal all nodes connected from start
-  nodes['start']!.status = 'visited';
-  for (const connId of nodes['start']!.connections) {
+  // 2. Select starting position on the left edge (x = 0)
+  const startX = 0;
+  const startY = Math.floor(Math.random() * height);
+  const startId = `${startX}_${startY}`;
+  
+  // 3. Select exit position on the right edge (x = 5)
+  const exitX = width - 1;
+  const exitY = Math.floor(Math.random() * height);
+  const exitId = `${exitX}_${exitY}`;
+  
+  // 4. Generate main path from start to exit using random walk
+  let curX = startX;
+  let curY = startY;
+  const pathCells = new Set<string>();
+  pathCells.add(startId);
+  
+  while (curX !== exitX || curY !== exitY) {
+    const candidates: [number, number][] = [];
+    
+    // Prioritize moving right, but allow vertical steps
+    if (curX < exitX) candidates.push([curX + 1, curY]);
+    if (curY < exitY) candidates.push([curX, curY + 1]);
+    if (curY > exitY) candidates.push([curX, curY - 1]);
+    
+    // Add some random variation occasionally
+    if (candidates.length === 0 || Math.random() < 0.25) {
+      if (curX > 0) candidates.push([curX - 1, curY]);
+      if (curY < height - 1) candidates.push([curX, curY + 1]);
+      if (curY > 0) candidates.push([curX, curY - 1]);
+    }
+    
+    const valid = candidates.filter(([nx, ny]) => nx >= 0 && nx < width && ny >= 0 && ny < height);
+    if (valid.length === 0) break;
+    
+    const [nextX, nextY] = valid[Math.floor(Math.random() * valid.length)];
+    const nextId = `${nextX}_${nextY}`;
+    pathCells.add(nextId);
+    curX = nextX;
+    curY = nextY;
+  }
+  
+  // 5. Generate branch paths/dead ends
+  const mainCells = Array.from(pathCells);
+  const numBranches = 4;
+  for (let b = 0; b < numBranches; b++) {
+    const randomSourceId = mainCells[Math.floor(Math.random() * mainCells.length)];
+    const sourceNode = nodes[randomSourceId];
+    if (!sourceNode) continue;
+    
+    let bx = sourceNode.x;
+    let by = sourceNode.y;
+    const steps = Math.floor(Math.random() * 2) + 1; // 1-2 steps
+    
+    for (let s = 0; s < steps; s++) {
+      const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+      const [dx, dy] = dirs[Math.floor(Math.random() * dirs.length)];
+      const nx = bx + dx;
+      const ny = by + dy;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        const branchId = `${nx}_${ny}`;
+        pathCells.add(branchId);
+        bx = nx;
+        by = ny;
+      }
+    }
+  }
+  
+  // 6. Populate cells with room types
+  const isLastFloor = floor >= depth;
+  const exitType = isLastFloor ? 'boss' : 'stairs';
+  const exitName = isLastFloor ? '☠️ Boss Chamber' : '🪜 Stairs Down';
+  
+  for (const cellId of pathCells) {
+    const node = nodes[cellId]!;
+    
+    if (cellId === startId) {
+      node.name = '🏕️ Dungeon Entrance';
+      node.type = 'campsite';
+      node.status = 'visited';
+      continue;
+    }
+    
+    if (cellId === exitId) {
+      node.name = exitName;
+      node.type = exitType;
+      node.status = 'hidden';
+      if (exitType === 'boss') {
+        node.encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'boss') };
+      }
+      continue;
+    }
+    
+    // Choose room content with weights
+    const roll = Math.random() * 100;
+    if (roll < 55) {
+      node.type = 'room';
+      node.name = '🚪 Regular Room';
+      node.encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'normal') };
+    } else if (roll < 70) {
+      node.type = 'treasure';
+      node.name = '🎁 Treasure Chamber';
+    } else if (roll < 80) {
+      node.type = 'event';
+      node.name = '✨ Random Event';
+      const eventIdx = Math.floor(Math.random() * EVENTS.length);
+      node.encounterData = { event: EVENTS[eventIdx] };
+    } else if (roll < 88) {
+      node.type = 'merchant';
+      node.name = '🏪 Dungeon Merchant';
+      node.encounterData = {
+        shopItems: [
+          { id: 'potion_health_small', price: 20 },
+          { id: 'potion_health_medium', price: 50 },
+          { id: 'potion_mana_small', price: 20 },
+          { id: 'potion_mana_medium', price: 50 },
+          { id: 'potion_stamina_small', price: 100 },
+          { id: 'potion_stamina_medium', price: 180 }
+        ]
+      };
+    } else if (roll < 94) {
+      node.type = 'campsite';
+      node.name = '🏕️ Campsite';
+    } else {
+      node.type = 'elite';
+      node.name = '⚔️ Elite Encounter';
+      node.encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'rare') };
+    }
+  }
+  
+  // 7. Establish connections (adjacent coordinate IDs)
+  for (const cellId of pathCells) {
+    const node = nodes[cellId]!;
+    const adjacents = [
+      { x: node.x, y: node.y - 1 }, // Up
+      { x: node.x, y: node.y + 1 }, // Down
+      { x: node.x - 1, y: node.y }, // Left
+      { x: node.x + 1, y: node.y }  // Right
+    ];
+    
+    for (const adj of adjacents) {
+      const adjId = `${adj.x}_${adj.y}`;
+      if (nodes[adjId] && nodes[adjId].type !== 'wall') {
+        node.connections.push(adjId);
+      }
+    }
+  }
+  
+  // 8. Initial Fog of War Reveal
+  nodes[startId]!.status = 'visited';
+  for (const connId of nodes[startId]!.connections) {
     if (nodes[connId]) {
       nodes[connId]!.status = 'revealed';
     }
@@ -293,25 +319,26 @@ export function generateDungeonMap(zoneId: string, playerLevel: number): Dungeon
     name: zoneName,
     layersCount: depth,
     nodes,
-    startNodeId: 'start',
-    bossNodeId: 'boss'
+    startNodeId: startId,
+    bossNodeId: exitId,
+    width,
+    height,
+    playerX: startX,
+    playerY: startY,
+    floor
   };
 }
 
 /**
  * Recomputes node statuses based on visited nodes.
- * Used when players move to a new node.
  */
 export function updateFogOfWar(nodes: Record<string, DungeonNode>, currentNodeId: string): Record<string, DungeonNode> {
-  // Mark current node as visited
   if (nodes[currentNodeId]) {
     nodes[currentNodeId]!.status = 'visited';
   }
   
-  // Collect all visited nodes
   const visitedIds = Object.keys(nodes).filter(id => nodes[id]?.status === 'visited' || nodes[id]?.status === 'cleared');
   
-  // Reveal all nodes connected to visited nodes that are not visited themselves
   for (const id of Object.keys(nodes)) {
     const node = nodes[id]!;
     if (node.status !== 'visited' && node.status !== 'cleared') {
