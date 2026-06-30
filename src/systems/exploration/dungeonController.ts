@@ -845,7 +845,7 @@ export async function handleDungeonInteraction(
       const currentNodeId = session.currentNodeId;
       const currNode = mapState.nodes[currentNodeId];
 
-      const handler = dungeonNodeRegistry.get(nodeType);
+      const handler = dungeonNodeRegistry.get(nodeType === 'combat' ? currNode.type : nodeType);
       if (!handler) {
         await interaction.reply({ content: '❌ Action handler not registered.', flags: [MessageFlags.Ephemeral] });
         return;
@@ -913,7 +913,7 @@ export async function handleDungeonInteraction(
         result = await handler.onAction(nodeAction, context);
       }
 
-      if (['room', 'elite', 'boss'].includes(nodeType) && nodeAction === 'engage') {
+      if ((['room', 'elite', 'boss'].includes(nodeType) || nodeType === 'combat') && nodeAction === 'engage') {
         if (result.success) {
           await updateExplorationSession(session.id, {
             mapState: session.mapState
