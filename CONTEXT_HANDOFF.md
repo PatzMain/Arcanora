@@ -684,6 +684,8 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **New Location Content**: Added 4 new locations matching the base map visual (Town East Gate, Town South Gate, Foothills Crypt, and Abandoned Barracks) with unique lore and travel path connections.
 - **Grid-Based Tile Dungeon Crawler**: Re-engineered the dungeon exploration system from a node-based DAG into a procedurally generated 2D grid (`6x6`) tile crawler. Programmed native emoji grid map rendering (`🧙`, `🪨`, `⬛`, `⬜`, `🪜`, `🎁`), arrow movement button components (Up/Down/Left/Right) that dynamically omit blocked/wall directions, and multi-floor scaling ending in a final boss encounter.
 - **Dungeon Test Refactoring**: Rewrote `tests/dungeon.test.ts` to validate the new grid structures, boundaries, path connectivity, and FOW checks.
+- **Spam Cooldown & Co-op Rate Limiting**: Verified global rate limiting verification pipeline (5 actions per 10 sliding window) guarding all command inputs, button clicks, and select menus.
+- **Enemy Encounters Enrichment**: Mapped 15+ missing boss/rare/normal monsters into combat zone locations (e.g. adding Grak'Zul to Forgotten Ironmine, The Nameless One to Abyssal Depths, and Infernal Titan / Fire Elemental to Lava Keep), significantly enriching dungeon spawns and hunts.
 
 
 
