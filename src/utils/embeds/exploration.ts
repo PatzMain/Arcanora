@@ -145,49 +145,94 @@ export function statsEmbed(
     );
 }
 
+import { buildCompactItemCard } from './itemCard.js';
+
 export function inventoryEmbed(
-  items: { name: string; quantity: number; rarity: string; slot?: string; id?: string; emoji?: string | null }[],
+  items: {
+    name: string;
+    quantity: number;
+    rarity: string;
+    slot?: string;
+    id?: string;
+    emoji?: string | null;
+    type?: string;
+    stats?: any;
+    levelReq?: number;
+    equipped?: boolean;
+  }[],
   page: number,
   totalPages: number,
 ): EmbedBuilder {
-  const itemLines = items.length > 0
-    ? items
-        .map(
-          (i, idx) =>
-            `\`${((page - 1) * items.length + idx + 1).toString().padStart(2, '0')}\` ` +
-            `${i.emoji || (i.id ? getItemEmoji(i.id, i.rarity) : (RARITY_EMOJIS[i.rarity] || '🪨'))} **${i.name}** ×${i.quantity}` +
-            (i.slot ? ` *(${i.slot})*` : ''),
-        )
-        .join('\n')
-    : '*Your inventory is empty.*';
+  const categories: Record<string, string[]> = {
+    '⚔️ Weapons': [],
+    '🛡️ Armor': [],
+    '🧪 Consumables': [],
+    '📦 Materials & Others': [],
+  };
+
+  const armorTypes = ['chest', 'helmet', 'gloves', 'boots', 'accessory'];
+
+  if (items.length > 0) {
+    items.forEach((item) => {
+      const type = (item.type || 'item').toLowerCase();
+      const card = buildCompactItemCard(item, { quantity: item.quantity, equipped: item.equipped });
+      if (type === 'weapon') {
+        categories['⚔️ Weapons']?.push(card);
+      } else if (armorTypes.includes(type)) {
+        categories['🛡️ Armor']?.push(card);
+      } else if (type === 'consumable') {
+        categories['🧪 Consumables']?.push(card);
+      } else {
+        categories['📦 Materials & Others']?.push(card);
+      }
+    });
+  }
+
+  const descLines: string[] = [];
+  for (const [title, list] of Object.entries(categories)) {
+    if (list.length > 0) {
+      descLines.push(`**${title}**`);
+      descLines.push(...list.map(line => ` ${line}`));
+      descLines.push('');
+    }
+  }
+
+  const description = descLines.length > 0 ? descLines.join('\n').trim() : '*Your inventory is empty.*';
 
   return baseEmbed()
-    .setColor(COLORS.PRIMARY)
+    .setColor(COLORS.INVENTORY)
     .setTitle('🎒 Inventory')
-    .setDescription(`${DIVIDER}\n${itemLines}`)
+    .setDescription(`${DIVIDER}\n${description}`)
     .setFooter({ text: `Arcanora — Discord MMORPG • Page ${page}/${totalPages}` });
 }
 
 export function shopEmbed(
-  items: { name: string; price: number; rarity: string; description?: string; id?: string; emoji?: string | null }[],
+  items: { name: string; buyPrice: number; rarity: string; description?: string; id?: string; emoji?: string | null; type?: string; stats?: any; levelReq?: number }[],
   page: number,
   totalPages: number,
+  playerGold: number,
+  statusMsg?: string | null,
 ): EmbedBuilder {
   const itemLines = items.length > 0
     ? items
-        .map(
-          (i, idx) =>
-            `\`${((page - 1) * items.length + idx + 1).toString().padStart(2, '0')}\` ` +
-            `${i.emoji || (i.id ? getItemEmoji(i.id, i.rarity) : (RARITY_EMOJIS[i.rarity] || '🪨'))} **${i.name}** — ${getCurrencyEmoji('gold')} ${i.price.toLocaleString()}` +
-            (i.description ? `\n   *${i.description}*` : ''),
-        )
+        .map((i, idx) => {
+          const num = ((page - 1) * items.length + idx + 1).toString().padStart(2, '0');
+          const card = buildCompactItemCard(i, { buyMode: true });
+          const affordable = playerGold >= (i.buyPrice || 0);
+          return `\`${num}\` ${affordable ? card : `~~${card}~~`}`;
+        })
         .join('\n')
     : '*Shop is empty.*';
 
   return baseEmbed()
-    .setColor(COLORS.GOLD)
-    .setTitle('🏪 Shop')
-    .setDescription(`${DIVIDER}\n${itemLines}`)
+    .setColor(COLORS.SHOP)
+    .setTitle('🏪 NPC Merchant Shop')
+    .setDescription(
+      `### 💰 Balance: ${getCurrencyEmoji('gold')} **${playerGold.toLocaleString()}** Gold\n` +
+      (statusMsg ? `🔔 **Status**: ${statusMsg}\n\n` : '') +
+      `${DIVIDER}\n` +
+      itemLines
+    )
     .setFooter({ text: `Arcanora — Discord MMORPG • Page ${page}/${totalPages}` });
 }
 
@@ -206,8 +251,7 @@ export function questEmbed(
     ? quests
         .map((q) => {
           const typeEmoji = q.type === 'daily' ? '📅' : q.type === 'weekly' ? '📆' : '📜';
-          const pct = Math.min(q.current / q.target, 1);
-          const bar = progressBar(q.current, q.target, 8);
+          const bar = progressBar(q.current, q.target, 6);
           const status = q.current >= q.target ? '✅' : '⏳';
           const rewards: string[] = [];
           if (q.rewardGold) rewards.push(`🪙 ${q.rewardGold}`);
@@ -216,14 +260,14 @@ export function questEmbed(
           return (
             `${typeEmoji} **${q.name}** ${status}\n` +
             `  *${q.description}*\n` +
-            `  ${bar} \`${q.current}/${q.target}\` (${Math.round(pct * 100)}%)${rewardStr}`
+            `  ${bar} \`${q.current}/${q.target}\`${rewardStr}`
           );
         })
         .join('\n\n')
     : '*No active quests. Visit the quest board!*';
 
   return baseEmbed()
-    .setColor(COLORS.INFO)
+    .setColor(COLORS.QUEST)
     .setTitle('📋 Active Quests')
     .setDescription(`${DIVIDER}\n${questLines}`);
 }
@@ -245,7 +289,7 @@ export function leaderboardEmbed(
     : '*No entries yet.*';
 
   return baseEmbed()
-    .setColor(COLORS.GOLD)
+    .setColor(COLORS.PROFILE)
     .setTitle(`🏆 Leaderboard: ${capitalize(category)}`)
     .setDescription(`${DIVIDER}\n${lines}`)
     .setFooter({ text: `Arcanora — Discord MMORPG • Page ${page}` });

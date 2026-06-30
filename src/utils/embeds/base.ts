@@ -13,6 +13,14 @@ export const COLORS = {
   RARE: 0x3B82F6,
   EPIC: 0x8B5CF6,
   PET: 0xA78BFA,        // Pet companion light purple
+  COMBAT: 0xDC2626,     // Red
+  EXPLORATION: 0x16A34A, // Green
+  SHOP: 0xD97706,       // Gold
+  INVENTORY: 0x2563EB,  // Blue
+  PROFILE: 0x7C3AED,    // Purple
+  QUEST: 0xCA8A04,      // Amber
+  DUNGEON: 0x6D28D9,    // Deep purple
+  LOOT: 0xEAB308,       // Yellow
 } as const;
 
 export const RARITY_COLORS: Record<string, number> = {
@@ -43,8 +51,9 @@ export const CLASS_EMOJIS: Record<string, string> = {
 };
 
 export const FOOTER_TEXT = 'Arcanora — Discord MMORPG';
-export const DIVIDER = '❖ ────────── ✦ ────────── ❖';
+export const DIVIDER = '── ── ── ── ── ── ──';
 export const DIVIDER_SHORT = '✦ ────── ✦';
+export const SECTION = '▸';
 
 export function makeProgressBar(current: number, max: number, filledEmoji: string, emptyEmoji: string, length = 10): string {
   const ratio = max <= 0 ? 0 : Math.max(0, Math.min(1, current / max));
@@ -86,6 +95,34 @@ export function prestigeStars(prestige: number): string {
   if (prestige <= 0) return '';
   const stars = Math.min(prestige, 10);
   return ' ' + '⭐'.repeat(stars) + (prestige > 10 ? ` +${prestige - 10}` : '');
+}
+
+export function rarityBadge(rarity: string): string {
+  const cap = capitalize(rarity);
+  if (rarity.toLowerCase() === 'mythic') return `「✦ ${cap}」`;
+  return `「${cap}」`;
+}
+
+export function compactBar(current: number, max: number, type: 'hp' | 'mana' | 'stamina' | 'xp' | 'pet'): string {
+  const emojis: Record<string, string> = {
+    hp: '🟥',
+    mana: '🟦',
+    stamina: '🟪',
+    xp: '🟨',
+    pet: '🟩'
+  };
+  return makeProgressBar(current, max, emojis[type] || '🟨', '⬛', 6);
+}
+
+export function statLine(label: string, value: any, icon = ''): string {
+  return `${icon ? icon + ' ' : ''}**${label}**: ${value}`;
+}
+
+export function priceLine(buy: number | null, sell: number | null): string {
+  const parts: string[] = [];
+  if (buy !== null && buy > 0) parts.push(`💰 Buy ${buy}`);
+  if (sell !== null && sell > 0) parts.push(`Sell ${sell}`);
+  return parts.join('   ');
 }
 
 export function baseEmbed(): EmbedBuilder {

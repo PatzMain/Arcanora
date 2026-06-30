@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getShopItems, buyItem } from '../../economy/shop.js';
-import { successEmbed, errorEmbed } from '../../utils/embeds.js';
+import { successEmbed, errorEmbed, shopEmbed, COLORS } from '../../utils/embeds.js';
 import { db } from '../../database/client.js';
 import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
@@ -74,24 +74,7 @@ export function getShopMessageOptions(player: any, page: number, statusMsg?: str
   const totalPages = Math.max(1, shopData.totalPages);
   const activePage = Math.max(1, Math.min(page, totalPages));
 
-  const itemLines = shopData.items.length > 0
-    ? shopData.items.map((i, idx) => {
-        const num = ((activePage - 1) * pageSize + idx + 1).toString().padStart(2, '0');
-        const emoji = getItemEmoji(i.id, i.rarity);
-        return `\`${num}\` ${emoji} **${i.name}** — ${getCurrencyEmoji('gold')} **${i.buyPrice.toLocaleString()}**g\n   *${i.description}*`;
-      }).join('\n')
-    : '*No items available.*';
-
-  const embed = new EmbedBuilder()
-    .setColor(0xFBBF24)
-    .setTitle('🏪 NPC Merchant Shop')
-    .setDescription(
-      `### 💰 Your Balance: ${getCurrencyEmoji('gold')} **${player.gold.toLocaleString()}** Gold\n\n` +
-      (statusMsg ? `🔔 **Status**: ${statusMsg}\n\n` : '') +
-      itemLines
-    )
-    .setFooter({ text: `Arcanora — Discord MMORPG • Page ${activePage}/${totalPages}` })
-    .setTimestamp();
+  const embed = shopEmbed(shopData.items as any, activePage, totalPages, player.gold, statusMsg);
 
   // 1. Navigation buttons row
   const prevBtn = new ButtonBuilder()
@@ -180,7 +163,7 @@ export async function runBalance(
       `🪙 Gold: **${player.gold.toLocaleString()}**\n` +
       `💎 Gems: **${player.gems.toLocaleString()}**`
     );
-    embed.setColor(0xFFD700);
+    embed.setColor(COLORS.SHOP);
 
     const navButtons = getNavButtons('economy_shop', player.discordId);
 

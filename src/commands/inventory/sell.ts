@@ -11,7 +11,7 @@ import { db } from '../../database/client.js';
 import { inventory } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getNavButtons } from '../../utils/navigation.js';
-import { successEmbed, errorEmbed } from '../../utils/embeds.js';
+import { successEmbed, errorEmbed, buildCompactItemCard, COLORS, DIVIDER, capitalize } from '../../utils/embeds.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 
 export async function runSell(
@@ -106,8 +106,17 @@ export async function runSell(
       return;
     }
 
+    const itemLines = sellables.map((s) => {
+      return buildCompactItemCard(s.def, { quantity: s.dbItem.quantity, sellMode: true });
+    }).join('\n');
+
     const embed = successEmbed('Sell Gear', 'Select an item from the dropdown below to sell it (1x).');
-    embed.setColor(0xFBBF24);
+    embed.setColor(COLORS.SHOP);
+    embed.setDescription(
+      `Select an item from the dropdown below to sell it (1x).\n\n` +
+      `${DIVIDER}\n` +
+      itemLines
+    );
 
     const selectMenuOptions = sellables.slice(0, 25).map((s) => {
       let label = `${s.def.name} (x${s.dbItem.quantity})`;
@@ -116,7 +125,7 @@ export async function runSell(
       }
       return {
         label,
-        description: `Sell price: ${s.def.sellPrice}g each | [${s.def.type.toUpperCase()}]`,
+        description: `Sell price: ${s.def.sellPrice}g each | [${capitalize(s.def.rarity)} ${capitalize(s.def.type)}]`,
         value: s.dbItem.id
       };
     });

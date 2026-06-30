@@ -11,7 +11,9 @@ export {
   staminaBar,
   progressBar,
   petBar,
-  capitalize
+  capitalize,
+  baseEmbed,
+  SECTION
 } from './embeds/base.js';
 
 export {
@@ -40,3 +42,10 @@ export {
   helpEmbed,
   helpOverviewEmbed
 } from './embeds/exploration.js';
+
+export {
+  buildItemDetailEmbed,
+  buildCompactItemCard,
+  getItemEmoji
+} from './embeds/itemCard.js';
+

@@ -37,15 +37,17 @@ export async function runBag(
     const mappedItems = invData.items.map((dbItem) => {
       const def = catalog.find((i) => i.id === dbItem.itemId);
       let name = def ? def.name : dbItem.itemId;
-      if (dbItem.enhancement > 0) {
-        name += ` +${dbItem.enhancement}`;
-      }
       return {
         name,
         quantity: dbItem.quantity,
         rarity: def?.rarity || 'common',
         id: dbItem.itemId,
-        slot: dbItem.equipped ? (def?.type ? capitalize(def.type) : 'Equipped') : undefined
+        slot: dbItem.equipped ? (def?.type ? capitalize(def.type) : 'Equipped') : undefined,
+        equipped: dbItem.equipped,
+        type: def?.type || 'item',
+        stats: def?.stats,
+        levelReq: def?.levelReq,
+        enhancement: dbItem.enhancement
       };
     });
     const totalPages = Math.max(1, invData.totalPages);

@@ -14,31 +14,46 @@ export function combatEmbed(
   round: number,
   log: string[],
 ): EmbedBuilder {
-  const recentLog = log.slice(-5).join('\n') || '*Combat started!*';
+  const recentLog = log.slice(-5).map(line => {
+    let emoji = '⚡';
+    const lower = line.toLowerCase();
+    if (lower.includes('attack') || lower.includes('strike') || lower.includes('hit') || lower.includes('swung')) {
+      emoji = '🗡️';
+    } else if (lower.includes('dodge') || lower.includes('missed') || lower.includes('evaded')) {
+      emoji = '💨';
+    } else if (lower.includes('heal') || lower.includes('restore') || lower.includes('regenerate')) {
+      emoji = '❇️';
+    } else if (lower.includes('poison') || lower.includes('burn') || lower.includes('bleed') || lower.includes('stun')) {
+      emoji = '🛡️';
+    } else if (lower.includes('flee') || lower.includes('run') || lower.includes('escaped')) {
+      emoji = '🏃';
+    } else if (lower.includes('defeat') || lower.includes('slain') || lower.includes('died')) {
+      emoji = '💀';
+    }
+    return `${emoji} ${line}`;
+  }).join('\n') || '*Combat started!*';
 
   return baseEmbed()
-    .setColor(COLORS.DANGER)
-    .setTitle(`⚔️ Combat — 🔄 Round ${round}`)
-    .setDescription(DIVIDER)
+    .setColor(COLORS.COMBAT)
+    .setTitle(`⚔️ Battle — Round ${round}`)
     .addFields(
       {
-        name: `🧙 ${playerName}`,
+        name: `🧑 ${playerName}`,
         value:
-          `❤️ ${hpBar(playerHp, playerMaxHp)} \`${playerHp}/${playerMaxHp}\`\n` +
-          `💧 ${manaBar(playerMana, playerMaxMana)} \`${playerMana}/${playerMaxMana}\``,
+          `🟥 ${hpBar(playerHp, playerMaxHp, 8)} \`${playerHp}/${playerMaxHp}\`\n` +
+          `🟦 ${manaBar(playerMana, playerMaxMana, 8)} \`${playerMana}/${playerMaxMana}\``,
         inline: true,
       },
-      { name: '⚡ VS ⚡', value: '\u200b', inline: true },
       {
         name: `👹 ${enemy.name} (Lv.${enemy.level})`,
-        value: `❤️ ${hpBar(enemyHp, enemyMaxHp)} \`${enemyHp}/${enemyMaxHp}\``,
+        value: `🟥 ${hpBar(enemyHp, enemyMaxHp, 8)} \`${enemyHp}/${enemyMaxHp}\``,
         inline: true,
       },
       {
-        name: `─── 📜 **Combat Activity** ───`,
-        value: `\`\`\`\n${recentLog}\n\`\`\``,
+        name: '\u200b',
+        value: recentLog,
         inline: false,
-      },
+      }
     );
 }
 
@@ -52,7 +67,7 @@ export function lootEmbed(
     : '*No items dropped*';
 
   return baseEmbed()
-    .setColor(COLORS.GOLD)
+    .setColor(COLORS.LOOT)
     .setTitle('🏆 Victory!')
     .setDescription(`${DIVIDER}\n✨ *The dust settles and spoils await…*`)
     .addFields(
@@ -138,7 +153,7 @@ export function bossVictoryEmbed(
   const titlePrefix = boss.isGlobal ? 'Global World Boss Slain' : 'World Boss Slain';
 
   return baseEmbed()
-    .setColor(COLORS.GOLD)
+    .setColor(COLORS.LOOT)
     .setTitle(`🏆 ${titlePrefix}: ${boss.name}! 🏆`)
     .setDescription(
       `🎉 **${boss.name} (Lv.${boss.level})** has been defeated!\n\n` +

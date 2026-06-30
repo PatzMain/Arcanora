@@ -12,7 +12,7 @@ import { db } from '../../database/client.js';
 import { inventory } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getNavButtons } from '../../utils/navigation.js';
-import { successEmbed, errorEmbed } from '../../utils/embeds.js';
+import { successEmbed, errorEmbed, buildItemDetailEmbed, capitalize } from '../../utils/embeds.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 
 export async function runEquip(
@@ -86,12 +86,18 @@ export async function runEquip(
       const formatDelta = (before: number, after: number) => {
         const diff = after - before;
         if (diff === 0) return `\`${after}\``;
-        const sign = diff > 0 ? '+' : '';
-        return `\`${before} -> ${after} (${sign}${diff})\``;
+        const changeIndicator = diff > 0 ? `📈 (**+${diff}**)` : `📉 (**${diff}**)`;
+        return `\`${before}\` ➔ \`${after}\` ${changeIndicator}`;
       };
 
-      const description =
-        `You equipped **${itemDef.name}** into your **${itemDef.type}** slot.\n\n` +
+      const embed = buildItemDetailEmbed(itemDef, {
+        durability: targetItem.durability ?? undefined,
+        enhancement: targetItem.enhancement ?? undefined,
+        equipped: true
+      });
+
+      const statChanges =
+        `✅ **Equipped!** You equipped this item into your **${itemDef.type}** slot.\n\n` +
         `**Stat Changes:**\n` +
         `⚔️ Attack: ${formatDelta(statsBefore.attack, statsAfter.attack)}\n` +
         `🛡️ Defense: ${formatDelta(statsBefore.defense, statsAfter.defense)}\n` +
@@ -100,7 +106,7 @@ export async function runEquip(
         `💨 Speed: ${formatDelta(statsBefore.speed, statsAfter.speed)}\n` +
         `🍀 Luck: ${formatDelta(statsBefore.luck, statsAfter.luck)}`;
 
-      const embed = successEmbed('Item Equipped', description);
+      embed.setDescription(`${statChanges}\n\n${embed.data.description || ''}`);
       
       const navButtons = getNavButtons('craft_result', player.discordId);
       return { embeds: [embed], components: navButtons ? [navButtons] : [] };
@@ -169,7 +175,7 @@ export async function runEquip(
 
       return {
         label,
-        description: `[${e.def.type.toUpperCase()}] Req. Lv.${e.def.levelReq} | ${statsText || 'No stats'}`,
+        description: `[${capitalize(e.def.rarity)} ${capitalize(e.def.type)}] Req. Lv.${e.def.levelReq} | ${statsText || 'No stats'}`,
         value: e.dbItem.id
       };
     });

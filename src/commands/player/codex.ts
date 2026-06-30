@@ -11,7 +11,7 @@ import {
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getCodexEntries, getCodexEntry } from '../../database/queries/codex.js';
 import { enemiesCatalog, itemsCatalog, zonesCatalog } from '../../utils/catalog.js';
-import { baseEmbed, COLORS, DIVIDER, DIVIDER_SHORT, capitalize } from '../../utils/embeds/base.js';
+import { baseEmbed, COLORS, DIVIDER, DIVIDER_SHORT, capitalize, buildItemDetailEmbed } from '../../utils/embeds.js';
 import { getItemEmoji, getCurrencyEmoji } from '../../utils/emojis.js';
 import { buildNavId } from '../../utils/navigation.js';
 
@@ -93,7 +93,8 @@ async function renderInspect(
   playerId: string,
   discordId: string,
   type: 'enemies' | 'items' | 'locations',
-  inspectValue: string
+  inspectValue: string,
+  showDetails = false
 ) {
   const embed = baseEmbed();
 
@@ -121,34 +122,39 @@ async function renderInspect(
     }
 
     const rarityBadge = enemy.rarity === 'boss' ? '🔴 Boss' : (enemy.rarity === 'rare' ? '🟡 Elite' : '⚪ Normal');
-    const abilitiesStr = enemy.abilities.length > 0
-      ? enemy.abilities.map((a: any) => `• **${a.name}** (${a.chance}% chance)`).join('\n')
-      : '• Basic Attack only';
-
-    const dropsStr = enemy.lootTable.length > 0
-      ? enemy.lootTable
-          .map((l: any) => {
-            const item = itemsCatalog.find((i) => i.id === l.itemId);
-            return `• **${item ? item.name : capitalize(l.itemId)}** (${l.dropRate}% chance)`;
-          })
-          .join('\n')
-      : '• No drops';
-
+    
     embed
-      .setColor(enemy.rarity === 'boss' ? COLORS.DANGER : (enemy.rarity === 'rare' ? COLORS.WARNING : COLORS.PRIMARY))
-      .setTitle(`📖 Bestiary: ${enemy.name}`)
+      .setColor(enemy.rarity === 'boss' ? COLORS.DANGER : (enemy.rarity === 'rare' ? COLORS.WARNING : COLORS.INVENTORY))
+      .setTitle(`👹 Bestiary: ${enemy.name}`)
       .setDescription(
-        `${DIVIDER}\n` +
-        `*"${enemy.description}"*\n\n` +
-        `**Rarity:** ${rarityBadge}\n` +
-        `**Base Level:** ${enemy.level}\n` +
-        `**Defeated Count:** ${codexEntry.killCount} times\n\n` +
-        `─── 📊 **Base Stats** ───\n` +
-        `❤️ **HP:** ${enemy.stats.hp}  |  ⚔️ **ATK:** ${enemy.stats.attack}  |  🛡️ **DEF:** ${enemy.stats.defense}  |  ⚡ **SPD:** ${enemy.stats.speed}\n\n` +
-        `─── ✨ **Abilities** ───\n` +
-        `${abilitiesStr}\n\n` +
-        `─── 🎁 **Possible Drops** ───\n` +
-        `${dropsStr}`
+        `*${enemy.description}*\n\n` +
+        `**Rarity:** ${rarityBadge}  •  **Base Level:** Lv.${enemy.level}  •  **Defeated:** ${codexEntry.killCount}x`
+      )
+      .addFields(
+        {
+          name: '📊 Stats Grid',
+          value:
+            `❤️ HP: \`${enemy.stats.hp}\`  •  ⚔️ ATK: \`${enemy.stats.attack}\`\n` +
+            `🛡️ DEF: \`${enemy.stats.defense}\`  •  💨 SPD: \`${enemy.stats.speed}\``,
+          inline: false
+        },
+        {
+          name: '✨ Abilities',
+          value: enemy.abilities.length > 0
+            ? enemy.abilities.map((a: any) => `▸ **${a.name}** (${a.chance}%)`).join('\n')
+            : '▸ *Basic Attack*',
+          inline: true
+        },
+        {
+          name: '🎁 Drops',
+          value: enemy.lootTable.length > 0
+            ? enemy.lootTable.map((l: any) => {
+                const item = itemsCatalog.find((i) => i.id === l.itemId);
+                return `▸ **${item ? item.name : capitalize(l.itemId)}** (${l.dropRate}%)`;
+              }).join('\n')
+            : '▸ *No drops*',
+          inline: true
+        }
       );
 
   } else if (type === 'items') {
@@ -174,31 +180,32 @@ async function renderInspect(
       return;
     }
 
-    const emoji = getItemEmoji(item.id, item.rarity);
-    let statsStr = '';
-    if (item.stats) {
-      statsStr = Object.entries(item.stats)
-        .map(([k, v]) => `• **${capitalize(k)}**: +${v}`)
-        .join('\n');
-    }
+    const detailEmbed = buildItemDetailEmbed(item, {
+      showMoreDetails: showDetails,
+      foundCount: codexEntry.foundCount
+    });
 
-    embed
-      .setColor(COLORS.GOLD)
-      .setTitle(`${emoji} Item Codex: ${item.name}`)
-      .setDescription(
-        `${DIVIDER}\n` +
-        `*"${item.description || 'No description available.'}"*\n\n` +
-        `**Type:** ${capitalize(item.type)}  |  **Rarity:** ${capitalize(item.rarity)}\n` +
-        `**Required Level:** ${item.levelReq || 1}\n` +
-        `**Times Acquired:** ${codexEntry.foundCount}\n\n` +
-        `─── 📈 **Item Bonuses** ───\n` +
-        `${statsStr || '• None'}\n\n` +
-        `─── 🪙 **NPC Shop Value** ───\n` +
-        `• **Buy Price:** ${getCurrencyEmoji('gold')} ${item.buyPrice?.toLocaleString() || 'N/A'}\n` +
-        `• **Sell Price:** ${getCurrencyEmoji('gold')} ${item.sellPrice?.toLocaleString() || 'N/A'}\n\n` +
-        `─── ⚙️ **Durability** ───\n` +
-        `• **Max Durability:** ${item.maxDurability || 'N/A'}`
-      );
+    const backBtn = new ButtonBuilder()
+      .setCustomId(`codex_back_${discordId}_${type}_1`)
+      .setLabel('Back to List')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('🔙');
+
+    const detailsBtn = new ButtonBuilder()
+      .setCustomId(`codex_details_${discordId}_${item.id}_${showDetails ? '0' : '1'}`)
+      .setLabel(showDetails ? 'Hide Details' : 'More Details')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji(showDetails ? '📖' : '🔍');
+
+    const mapBtn = new ButtonBuilder()
+      .setCustomId(buildNavId('player_map', discordId))
+      .setLabel('Open Map')
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji('🗺️');
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(backBtn, detailsBtn, mapBtn);
+    await interaction.editReply({ embeds: [detailEmbed], components: [row] });
+    return;
 
   } else if (type === 'locations') {
     const loc = zonesCatalog.find(
@@ -223,34 +230,30 @@ async function renderInspect(
       return;
     }
 
-    const npcStr = loc.social?.npcs && loc.social.npcs.length > 0
-      ? loc.social.npcs.map((n: any) => `• **${capitalize(n.replace(/_/g, ' '))}**`).join('\n')
-      : '• None';
-
-    const creaturesStr = loc.enemies && loc.enemies.length > 0
-      ? loc.enemies.map((e: any) => `• **${capitalize(e.replace(/_/g, ' '))}**`).join('\n')
-      : '• None';
-
-    const resourcesStr = loc.ecosystem?.resources && loc.ecosystem.resources.length > 0
-      ? loc.ecosystem.resources.map((r: any) => `• **${capitalize(r.replace(/_/g, ' '))}**`).join('\n')
-      : '• None';
-
+    const typeBadge = loc.isDungeon ? '🏰 Dungeon' : '🌿 Zone';
     embed
-      .setColor(COLORS.INFO)
-      .setTitle(`🗺️ Location Codex: ${loc.name}`)
+      .setColor(COLORS.INVENTORY)
+      .setTitle(`📍 ${loc.name}`)
       .setDescription(
-        `${DIVIDER}\n` +
-        `📍 **Region:** ${loc.region || 'Kingdom of Eldoria'}  |  **Area:** ${loc.area || 'Eldoria Foothills'}\n` +
-        `**Type:** ${capitalize(loc.type || (loc.isDungeon ? 'dungeon' : 'zone'))}\n` +
-        `**Min Level:** ${loc.minLevel}  |  **Travel Cooldown:** ${loc.explorationCooldown}s\n\n` +
-        `*"${loc.description || ''}"*\n\n` +
-        `─── 🏘️ **Settlement Details** ───\n` +
-        `• **Rest House:** ${loc.hasRestBed ? '✅ Yes (Free Recovery)' : '❌ No'}\n` +
-        `• **Local NPCs:**\n${npcStr}\n\n` +
-        `─── 🐉 **Creatures Spotted** ───\n` +
-        `${creaturesStr}\n\n` +
-        `─── 🪵 **Gatherable Resources** ───\n` +
-        `${resourcesStr}`
+        `*${loc.description || ''}*\n\n` +
+        `🗺️ **${loc.region || 'Kingdom of Eldoria'}**  •  ${typeBadge}\n` +
+        `⚖️ **Min Level:** Lv.${loc.minLevel}  •  ⏱️ **Cooldown:** ${loc.explorationCooldown}s`
+      )
+      .addFields(
+        {
+          name: '🏘️ Social & Settlement',
+          value:
+            `🛏️ Rest Bed: ${loc.hasRestBed ? '✅ Available' : '❌ None'}\n` +
+            `👤 NPCs: ${loc.social?.npcs && loc.social.npcs.length > 0 ? loc.social.npcs.map((n: any) => capitalize(n.replace(/_/g, ' '))).join(', ') : '*None*'}`,
+          inline: false
+        },
+        {
+          name: '🐉 Enemies & Resources',
+          value:
+            `👹 Enemies: ${loc.enemies && loc.enemies.length > 0 ? loc.enemies.map((e: any) => capitalize(e.replace(/_/g, ' '))).join(', ') : '*None*'}\n` +
+            `🪵 Resources: ${loc.ecosystem?.resources && loc.ecosystem.resources.length > 0 ? loc.ecosystem.resources.map((r: any) => capitalize(r.replace(/_/g, ' '))).join(', ') : '*None*'}`,
+          inline: false
+        }
       );
   }
 
@@ -311,7 +314,7 @@ async function renderList(
     });
 
     embed
-      .setColor(COLORS.PRIMARY)
+      .setColor(COLORS.INVENTORY)
       .setTitle('📖 Codex: Bestiary')
       .setDescription(
         `${DIVIDER}\n` +
@@ -375,7 +378,7 @@ async function renderList(
     });
 
     embed
-      .setColor(COLORS.GOLD)
+      .setColor(COLORS.INVENTORY)
       .setTitle('🎒 Codex: Items')
       .setDescription(
         `${DIVIDER}\n` +
@@ -437,7 +440,7 @@ async function renderList(
     });
 
     embed
-      .setColor(COLORS.INFO)
+      .setColor(COLORS.INVENTORY)
       .setTitle('🗺️ Codex: Locations')
       .setDescription(
         `${DIVIDER}\n` +
@@ -518,10 +521,9 @@ function buildPaginationButtons(
 export async function handleCodexInteraction(
   interaction: ButtonInteraction | StringSelectMenuInteraction
 ) {
-  const parts = interaction.customId.split('_'); // codex_page_{userId}_{type}_{page} or codex_back_{userId}_{type}_{page} or codex_inspect_select_{userId}_{type}
+  const parts = interaction.customId.split('_'); // codex_page_{userId}_{type}_{page} or codex_back_{userId}_{type}_{page} or codex_inspect_select_{userId}_{type} or codex_details_{userId}_{itemId}_{show}
   const action = parts[1];
   const discordId = parts[2];
-  const type = parts[3] as 'enemies' | 'items' | 'locations';
 
   if (interaction.user.id !== discordId) {
     return;
@@ -531,10 +533,16 @@ export async function handleCodexInteraction(
   const player = await findOrCreatePlayer(interaction.user.id, interaction.user.username);
 
   if (action === 'page' || action === 'back') {
+    const type = parts[3] as 'enemies' | 'items' | 'locations';
     const targetPage = parseInt(parts[4] || '1', 10);
     await renderList(interaction, player.id, player.discordId, type, targetPage);
   } else if (action === 'inspect' && interaction.isStringSelectMenu()) {
+    const type = parts[3] as 'enemies' | 'items' | 'locations';
     const selectedId = interaction.values[0]!;
     await renderInspect(interaction, player.id, player.discordId, type, selectedId);
+  } else if (action === 'details') {
+    const itemId = parts[3]!;
+    const showDetails = parts[4] === '1';
+    await renderInspect(interaction, player.id, player.discordId, 'items', itemId, showDetails);
   }
 }
