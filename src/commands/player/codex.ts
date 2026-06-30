@@ -325,7 +325,7 @@ async function renderList(
     const discoveredOnPage = pageItems.filter((e) => discoveredIds.has(e.id));
     if (discoveredOnPage.length > 0) {
       const selectMenu = new StringSelectMenuBuilder()
-        .setCustomId(`codex_inspect_select_${discordId}_enemies`)
+        .setCustomId(`codex_inspect_${discordId}_enemies`)
         .setPlaceholder('🔍 Inspect a discovered enemy...')
         .addOptions(
           discoveredOnPage.map((e) => {
@@ -389,7 +389,7 @@ async function renderList(
     const discoveredOnPage = pageItems.filter((i) => discoveredIds.has(i.id));
     if (discoveredOnPage.length > 0) {
       const selectMenu = new StringSelectMenuBuilder()
-        .setCustomId(`codex_inspect_select_${discordId}_items`)
+        .setCustomId(`codex_inspect_${discordId}_items`)
         .setPlaceholder('🔍 Inspect a discovered item...')
         .addOptions(
           discoveredOnPage.map((i) => {
@@ -451,7 +451,7 @@ async function renderList(
     const discoveredOnPage = pageItems.filter((z) => discoveredIds.has(z.id));
     if (discoveredOnPage.length > 0) {
       const selectMenu = new StringSelectMenuBuilder()
-        .setCustomId(`codex_inspect_select_${discordId}_locations`)
+        .setCustomId(`codex_inspect_${discordId}_locations`)
         .setPlaceholder('🔍 Inspect a discovered location...')
         .addOptions(
           discoveredOnPage.map((z) => {
