@@ -119,6 +119,9 @@ export async function execute(interaction: Interaction) {
         const parts = customId.split('_');
         const { handleFarmInteraction } = await import('../commands/player/farm.js');
         await handleFarmInteraction(interaction as any, parts);
+      } else if (customId.startsWith('codex_')) {
+        const { handleCodexInteraction } = await import('../commands/player/codex.js');
+        await handleCodexInteraction(interaction as any);
       }
     } catch (error) {
       logger.error({ error, customId }, 'Error processing component interaction');

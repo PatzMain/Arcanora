@@ -24,6 +24,7 @@ export async function addItem(
       ),
     });
 
+    let result;
     if (existing && durability === undefined) {
       // Stack onto existing row
       const [updated] = await tx
@@ -31,20 +32,26 @@ export async function addItem(
         .set({ quantity: sql`${inventory.quantity} + ${quantity}` })
         .where(eq(inventory.id, existing.id))
         .returning();
-      return updated;
+      result = updated;
+    } else {
+      // Insert new row
+      const [inserted] = await tx
+        .insert(inventory)
+        .values({
+          playerId,
+          itemId,
+          quantity,
+          durability: durability ?? null,
+        })
+        .returning();
+      result = inserted;
     }
 
-    // Insert new row
-    const [inserted] = await tx
-      .insert(inventory)
-      .values({
-        playerId,
-        itemId,
-        quantity,
-        durability: durability ?? null,
-      })
-      .returning();
-    return inserted;
+    // Record item discovery in codex
+    const { discoverItem } = await import('./codex.js');
+    await discoverItem(playerId, itemId);
+
+    return result;
   });
 }
 
