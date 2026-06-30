@@ -104,18 +104,18 @@ export async function renderDungeonScreen(
 
       // Rebuild components
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+        new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
       );
 
       const { getCombatSkillsRow, getCombatItemsRow } = await import('../combat/uiHelpers.js');
       const { parsePresets, buildPresetButtons } = await import('../combat/presets.js');
       const { combatEmbed } = await import('../../utils/embeds.js');
 
-      const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
-      const itemsRow = await getCombatItemsRow(player.id);
-      const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
+      const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId);
+      const itemsRow = await getCombatItemsRow(player.id, player.discordId);
+      const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId);
       const components: any[] = [row, presetsRow];
       if (selectMenuRow) components.push(selectMenuRow);
       if (itemsRow) components.push(itemsRow);
@@ -126,11 +126,13 @@ export async function renderDungeonScreen(
         stats.hpMax,
         state.playerMana,
         stats.manaMax,
-        { name: enemyDef.name, level: enemyDef.level + (floor - 1) * 2 },
+        { id: enemyDef.id, name: enemyDef.name, level: enemyDef.level + (floor - 1) * 2 },
         state.enemyHp,
         scaledEnemyStats.hp,
         state.round || 1,
-        state.combatLog
+        state.combatLog,
+        state.playerBuffs || [],
+        state.enemyBuffs || []
       );
 
       const message = await interaction.editReply({

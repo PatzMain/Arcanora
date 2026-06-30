@@ -95,23 +95,25 @@ export async function runFight(
       playerStats.hpMax,
       combatState.playerMana,
       playerStats.manaMax,
-      { name: enemyDef.name, level: enemyDef.level },
+      { id: enemyDef.id, name: enemyDef.name, level: enemyDef.level },
       combatState.enemyHp,
       combatState.enemyMaxHp,
       combatState.round,
-      combatState.combatLog
+      combatState.combatLog,
+      combatState.playerBuffs || [],
+      combatState.enemyBuffs || []
     );
 
     // Build components
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
     );
 
-    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
-    const itemsRow = await getCombatItemsRow(player.id);
-    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
+    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId);
+    const itemsRow = await getCombatItemsRow(player.id, player.discordId);
+    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId);
     const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);

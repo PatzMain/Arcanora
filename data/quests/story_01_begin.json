@@ -15,5 +15,10 @@
   "rewards": {
     "gold": 100,
     "gems": 5
+  },
+  "narrative": {
+    "accept": "Guard Captain Vaelen looks you over. \"Welcome to Oakhaven, recruit. The road ahead is dangerous. Start by traveling to the Glittering Meadows and scout the area.\"",
+    "complete": "\"Ah, you made it back. Excellent. The meadows are beautiful but full of pests. Let's get you prepared for real combat.\"",
+    "hint": "Travel to the Glittering Meadows using the Travel menu on your Map."
   }
 }

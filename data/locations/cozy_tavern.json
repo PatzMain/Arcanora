@@ -1,6 +1,7 @@
 {
   "id": "cozy_tavern",
   "name": "Cozy Tavern",
+  "arrivalText": "The scent of roasting meats, spiced cider, and a crackling hearth wraps around you as you push open the heavy oak doors.",
   "description": "A warm, bustling tavern with comfortable rooms, hot stews, and a crackling hearth. Sleep here to restore your stats and cure all ailments.",
   "minLevel": 1,
   "maxLevel": 100,

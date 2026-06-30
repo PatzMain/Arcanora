@@ -20,5 +20,10 @@
   "rewards": {
     "exp": 300,
     "gold": 100
+  },
+  "narrative": {
+    "accept": "Ralph the Blacksmith wipes soot from his brow. \"The guards at the outpost need supplies. Bring me 10 Birch Logs and 5 Copper Ore, and I'll prepare a shipment.\"",
+    "complete": "\"Superb craftsmanship requires good raw materials. These logs and copper ore are perfect. Vaelen will be pleased with the new shields!\"",
+    "hint": "Gather Birch Logs from Birch Thicket and Copper Ore from Forgotten Ironmine."
   }
 }

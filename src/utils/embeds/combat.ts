@@ -2,17 +2,52 @@ import { EmbedBuilder } from 'discord.js';
 import { baseEmbed, COLORS, DIVIDER, DIVIDER_SHORT, hpBar, manaBar, RARITY_EMOJIS } from './base.js';
 import { getCurrencyEmoji, getItemEmoji } from '../emojis.js';
 
+function getEnemyWeaknessHint(enemyId: string): string | null {
+  const id = enemyId.toLowerCase();
+  if (id.includes('fire') || id.includes('lava') || id.includes('vulcan') || id.includes('magma') || id.includes('blaze')) {
+    return '❄️ Weak to Water & Ice';
+  }
+  if (id.includes('crystal') || id.includes('golem') || id.includes('stone') || id.includes('iron')) {
+    return '🔨 Weak to Bludgeoning';
+  }
+  if (id.includes('specter') || id.includes('ghost') || id.includes('shadow') || id.includes('abyssal') || id.includes('cultist')) {
+    return '✨ Weak to Light & Holy';
+  }
+  if (id.includes('eel') || id.includes('water') || id.includes('fish') || id.includes('kraken') || id.includes('sunken')) {
+    return '⚡ Weak to Lightning';
+  }
+  return null;
+}
+
+function formatBuffs(buffs?: any[]): string {
+  if (!buffs || buffs.length === 0) return '';
+  return '\n' + buffs.map(b => {
+    let emoji = b.type === 'buff' ? '✨' : '⚠️';
+    const nameLower = b.name.toLowerCase();
+    if (nameLower.includes('poison')) emoji = '🧪';
+    else if (nameLower.includes('burn') || nameLower.includes('fire')) emoji = '🔥';
+    else if (nameLower.includes('shield') || nameLower.includes('defense') || nameLower.includes('defend')) emoji = '🛡️';
+    else if (nameLower.includes('attack') || nameLower.includes('rage') || nameLower.includes('damage')) emoji = '⚔️';
+    else if (nameLower.includes('speed') || nameLower.includes('haste')) emoji = '⚡';
+    else if (nameLower.includes('regen') || nameLower.includes('heal')) emoji = '❇️';
+    
+    return `\`${emoji} ${b.name} (${b.turnsRemaining}t)\``;
+  }).join(' ');
+}
+
 export function combatEmbed(
   playerName: string,
   playerHp: number,
   playerMaxHp: number,
   playerMana: number,
   playerMaxMana: number,
-  enemy: { name: string; level: number },
+  enemy: { id: string; name: string; level: number },
   enemyHp: number,
   enemyMaxHp: number,
   round: number,
   log: string[],
+  playerBuffs?: any[],
+  enemyBuffs?: any[],
 ): EmbedBuilder {
   const recentLog = log.slice(-5).map(line => {
     let emoji = '⚡';
@@ -33,6 +68,9 @@ export function combatEmbed(
     return `${emoji} ${line}`;
   }).join('\n') || '*Combat started!*';
 
+  const weakness = getEnemyWeaknessHint(enemy.id);
+  const weaknessLine = weakness ? `\n*${weakness}*` : '';
+
   return baseEmbed()
     .setColor(COLORS.COMBAT)
     .setTitle(`⚔️ Battle — Round ${round}`)
@@ -41,12 +79,12 @@ export function combatEmbed(
         name: `🧑 ${playerName}`,
         value:
           `🟥 ${hpBar(playerHp, playerMaxHp, 8)} \`${playerHp}/${playerMaxHp}\`\n` +
-          `🟦 ${manaBar(playerMana, playerMaxMana, 8)} \`${playerMana}/${playerMaxMana}\``,
+          `🟦 ${manaBar(playerMana, playerMaxMana, 8)} \`${playerMana}/${playerMaxMana}\`${formatBuffs(playerBuffs)}`,
         inline: true,
       },
       {
         name: `👹 ${enemy.name} (Lv.${enemy.level})`,
-        value: `🟥 ${hpBar(enemyHp, enemyMaxHp, 8)} \`${enemyHp}/${enemyMaxHp}\``,
+        value: `🟥 ${hpBar(enemyHp, enemyMaxHp, 8)} \`${enemyHp}/${enemyMaxHp}\`${formatBuffs(enemyBuffs)}${weaknessLine}`,
         inline: true,
       },
       {

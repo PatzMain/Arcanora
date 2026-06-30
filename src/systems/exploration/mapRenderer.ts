@@ -135,7 +135,9 @@ export async function renderWorldMapScreen(
         }
       }
       if (conditionText) {
-        guidanceLine = `📜 **${qDef.name}**: ${conditionText}`;
+        guidanceLine = (qDef as any).narrative?.hint
+          ? `📜 **${qDef.name}**: ${(qDef as any).narrative.hint}`
+          : `📜 **${qDef.name}**: ${conditionText}`;
       } else {
         guidanceLine = `📜 **${qDef.name}**: Ready to turn in!`;
       }
@@ -452,7 +454,8 @@ export async function handleWorldMapInteraction(
 
       try {
         await travelToNode(player.id, targetLocationId);
-        await runMap(interaction as any, `You traveled to **${targetLoc.name}**.`);
+        const arrivalText = (targetLoc as any).arrivalText ? `\n*"${(targetLoc as any).arrivalText}"*` : '';
+        await runMap(interaction as any, `You traveled to **${targetLoc.name}**.${arrivalText}`);
       } catch (err: any) {
         await runMap(interaction as any, `❌ Travel failed: ${err.message || err}`);
       }
@@ -526,7 +529,8 @@ export async function handleWorldMapInteraction(
       const targetLocationId = parts.slice(3, -1).join('_');
       await travelToNode(player.id, targetLocationId);
       const targetLoc = zonesCatalog.find(z => z.id === targetLocationId);
-      await runMap(interaction as any, `You traveled to **${targetLoc?.name || targetLocationId}**.`);
+      const arrivalText = (targetLoc as any)?.arrivalText ? `\n*"${(targetLoc as any).arrivalText}"*` : '';
+      await runMap(interaction as any, `You traveled to **${targetLoc?.name || targetLocationId}**.${arrivalText}`);
       return;
     }
 

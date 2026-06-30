@@ -1,6 +1,7 @@
 {
   "id": "glittering_meadows",
   "name": "Glittering Meadows",
+  "arrivalText": "The scent of wild lavender and sweet clover fills the air as you step onto the shimmering fields of Glittering Meadows.",
   "description": "A sun-drenched pasture of wildflowers, copper veins, and wild flax. A peaceful area, though slimes and young wolves roam the hills.",
   "minLevel": 2,
   "maxLevel": 4,

@@ -95,7 +95,7 @@ export async function runBossFight(interaction: ChatInputCommandInteraction): Pr
       new ButtonBuilder().setCustomId('boss_leave').setLabel('🏃 Leave').setStyle(ButtonStyle.Danger)
     );
 
-    const presetsRow = buildPresetButtons(parsePresets(playerPresets), 'boss', player.playerClass);
+    const presetsRow = buildPresetButtons(parsePresets(playerPresets), 'boss', player.playerClass, player.discordId);
 
     // Fetch learned skills
     const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
@@ -190,7 +190,7 @@ export async function runBossFight(interaction: ChatInputCommandInteraction): Pr
             ? `💥 **CRITICAL HIT!** You dealt **${playerDmg}** damage!`
             : `⚔️ You hit for **${playerDmg}** damage.`;
         } else if (compInteraction.customId.startsWith('boss_preset_')) {
-          const slotNum = parseInt(compInteraction.customId.split('_')[2] || '1', 10);
+          const slotNum = parseInt(compInteraction.customId.split('_')[3] || '1', 10);
           const parsedPresets = parsePresets(freshPlayer.presets);
           const slot = parsedPresets[slotNum - 1];
           if (!slot || !slot.actions || slot.actions.length === 0) {

@@ -152,9 +152,11 @@ async function completeQuestAndCheckNext(
         rewardLines.push(`🎒 +**${rewards.itemQty}** **${itemDef?.name || rewards.itemId}**`);
       }
 
+      const completionDialogue = questDef.narrative?.complete ? `\n\n💬 *${questDef.narrative.complete}*\n` : '';
       const embed = successEmbed(
         '📜 Quest Completed!',
-        `**${questDef.name}**\n*${questDef.description}*\n\n` +
+        `**${questDef.name}**\n*${questDef.description}*` +
+        `${completionDialogue}\n` +
         `**Rewards Awarded:**\n${rewardLines.join('\n') || '*None*'}`
       );
 

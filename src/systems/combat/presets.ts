@@ -134,7 +134,7 @@ export function getPresetActionSummary(slot: PresetSlot, playerClass: string = '
 /**
  * Builds the ActionRow containing 3 preset buttons for standard combat or boss fights.
  */
-export function buildPresetButtons(presets: PlayerPresets, prefix: string, playerClass: string = 'novice'): ActionRowBuilder<ButtonBuilder> {
+export function buildPresetButtons(presets: PlayerPresets, prefix: string, playerClass: string = 'novice', userId: string): ActionRowBuilder<ButtonBuilder> {
   const buttons = [];
 
   const basicAttackEmoji = getBasicAttackEmoji(playerClass);
@@ -142,7 +142,7 @@ export function buildPresetButtons(presets: PlayerPresets, prefix: string, playe
   for (let i = 0; i < 3; i++) {
     const slot = presets[i];
     const button = new ButtonBuilder()
-      .setCustomId(`${prefix}_preset_${i + 1}`)
+      .setCustomId(`${prefix}_preset_${userId}_${i + 1}`)
       .setStyle(ButtonStyle.Success);
 
     if (!slot || !slot.actions || slot.actions.length === 0) {

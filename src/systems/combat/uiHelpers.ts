@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { SKILLS } from './skills.js';
 import { itemsCatalog } from '../../utils/catalog.js';
 
-export async function getCombatSkillsRow(playerId: string, playerClass: string) {
+export async function getCombatSkillsRow(playerId: string, playerClass: string, discordId: string) {
   try {
     const learned = await db.select().from(playerSkills).where(eq(playerSkills.playerId, playerId));
     if (learned.length === 0) return null;
@@ -23,7 +23,7 @@ export async function getCombatSkillsRow(playerId: string, playerClass: string) 
     if (options.length === 0) return null;
 
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('combat_use_skill')
+      .setCustomId(`combat_use_skill_${discordId}`)
       .setPlaceholder('🔮 Select a Skill to cast')
       .addOptions(options as any[]);
 
@@ -34,7 +34,7 @@ export async function getCombatSkillsRow(playerId: string, playerClass: string) 
   }
 }
 
-export async function getCombatItemsRow(playerId: string) {
+export async function getCombatItemsRow(playerId: string, discordId: string) {
   try {
     const dbItems = await db.select().from(inventory).where(and(eq(inventory.playerId, playerId), eq(inventory.equipped, false)));
     const catalog = itemsCatalog;
@@ -54,7 +54,7 @@ export async function getCombatItemsRow(playerId: string) {
     if (consumables.length === 0) return null;
 
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('combat_use_item')
+      .setCustomId(`combat_use_item_${discordId}`)
       .setPlaceholder('🧪 Select a Consumable to use')
       .addOptions(consumables as any[]);
 

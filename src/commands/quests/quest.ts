@@ -14,7 +14,7 @@ import { db } from '../../database/client.js';
 import { dailyLogins } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { awardGold, awardGems } from '../../economy/currency.js';
-import { successEmbed, errorEmbed, questEmbed } from '../../utils/embeds.js';
+import { successEmbed, errorEmbed, questEmbed, COLORS } from '../../utils/embeds.js';
 import { questsCatalog } from '../../utils/catalog.js';
 import { getNavButtons } from '../../utils/navigation.js';
 
@@ -197,7 +197,7 @@ export async function runQuestsBoard(
     }
 
     const embed = successEmbed('Quest Board', description);
-    embed.setColor(0x3B82F6);
+    embed.setColor(COLORS.QUEST);
 
     const selectMenuOptions = available.slice(0, 25).map((q) => ({
       label: q.name.slice(0, 25),
@@ -279,11 +279,13 @@ export async function runQuestsAccept(
 
     await startQuest(player.id, quest.id);
 
+    const acceptDialogue = (quest as any).narrative?.accept ? `\n\n💬 *${(quest as any).narrative.accept}*\n` : '';
     const embed = successEmbed(
       'Quest Accepted',
-      `You have accepted the quest: **${quest.name}**!\n\n` +
+      `You have accepted the quest: **${quest.name}**!${acceptDialogue}\n` +
       `*Track your progress using \`/quest active\`.*`
     );
+    embed.setColor(COLORS.QUEST);
 
     const navRow = getNavButtons('quest_board', player.discordId);
 

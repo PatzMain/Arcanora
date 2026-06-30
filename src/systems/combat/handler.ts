@@ -3,7 +3,8 @@ import {
   type StringSelectMenuInteraction,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  MessageFlags
 } from 'discord.js';
 import { db } from '../../database/client.js';
 import { combatSessions, players, playerSkills } from '../../database/schema.js';
@@ -30,6 +31,24 @@ export async function handleCombatInteraction(
     if (interaction.customId === 'combat_preset_configure') {
       const { runPreset } = await import('../../commands/player/presets.js');
       await runPreset(interaction);
+      return;
+    }
+
+    const parts = interaction.customId.split('_');
+    let targetUserId = '';
+    if (interaction.customId.startsWith('combat_preset_')) {
+      targetUserId = parts[2] || '';
+    } else if (interaction.customId.startsWith('combat_use_')) {
+      targetUserId = parts[3] || '';
+    } else {
+      targetUserId = parts[2] || '';
+    }
+
+    if (targetUserId && interaction.user.id !== targetUserId) {
+      await interaction.followUp({
+        content: '❌ This combat session is not yours!',
+        flags: [MessageFlags.Ephemeral]
+      });
       return;
     }
 
@@ -182,14 +201,14 @@ export async function handleCombatInteraction(
 
     // Rebuild components
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
     );
 
-    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
-    const itemsRow = await getCombatItemsRow(player.id);
-    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
+    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId);
+    const itemsRow = await getCombatItemsRow(player.id, player.discordId);
+    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId);
     const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);
@@ -200,11 +219,13 @@ export async function handleCombatInteraction(
       playerStats.hpMax,
       state.playerMana,
       playerStats.manaMax,
-      { name: enemyDef.name, level: enemyDef.level },
+      { id: enemyDef.id, name: enemyDef.name, level: enemyDef.level },
       state.enemyHp,
       state.enemyMaxHp,
       state.round,
-      state.combatLog
+      state.combatLog,
+      state.playerBuffs || [],
+      state.enemyBuffs || []
     );
 
     await interaction.editReply({
@@ -441,14 +462,14 @@ async function updateCombatMessage(client: any, activeSession: any, state: any, 
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder().setCustomId('combat_attack').setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('combat_defend').setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('combat_flee').setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
   );
 
-  const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass);
-  const itemsRow = await getCombatItemsRow(player.id);
-  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass);
+  const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId);
+  const itemsRow = await getCombatItemsRow(player.id, player.discordId);
+  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId);
   const components: any[] = [row, presetsRow];
   if (selectMenuRow) components.push(selectMenuRow);
   if (itemsRow) components.push(itemsRow);
@@ -459,11 +480,13 @@ async function updateCombatMessage(client: any, activeSession: any, state: any, 
     playerStats.hpMax,
     state.playerMana,
     playerStats.manaMax,
-    { name: enemyDef.name, level: enemyDef.level },
+    { id: enemyDef.id, name: enemyDef.name, level: enemyDef.level },
     state.enemyHp,
     state.enemyMaxHp,
     state.round,
-    state.combatLog
+    state.combatLog,
+    state.playerBuffs || [],
+    state.enemyBuffs || []
   );
 
   await message.edit({
