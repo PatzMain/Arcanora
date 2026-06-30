@@ -193,7 +193,9 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
     const valid = candidates.filter(([nx, ny]) => nx >= 0 && nx < width && ny >= 0 && ny < height);
     if (valid.length === 0) break;
     
-    const [nextX, nextY] = valid[Math.floor(Math.random() * valid.length)];
+    const chosen = valid[Math.floor(Math.random() * valid.length)];
+    if (!chosen) break;
+    const [nextX, nextY] = chosen;
     const nextId = `${nextX}_${nextY}`;
     pathCells.add(nextId);
     curX = nextX;
@@ -205,6 +207,7 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
   const numBranches = 4;
   for (let b = 0; b < numBranches; b++) {
     const randomSourceId = mainCells[Math.floor(Math.random() * mainCells.length)];
+    if (!randomSourceId) continue;
     const sourceNode = nodes[randomSourceId];
     if (!sourceNode) continue;
     
@@ -213,8 +216,10 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
     const steps = Math.floor(Math.random() * 2) + 1; // 1-2 steps
     
     for (let s = 0; s < steps; s++) {
-      const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-      const [dx, dy] = dirs[Math.floor(Math.random() * dirs.length)];
+      const dirs: [number, number][] = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+      const dir = dirs[Math.floor(Math.random() * dirs.length)];
+      if (!dir) continue;
+      const [dx, dy] = dir;
       const nx = bx + dx;
       const ny = by + dy;
       if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
