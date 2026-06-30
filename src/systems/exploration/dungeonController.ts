@@ -507,6 +507,12 @@ export async function handleDungeonInteraction(
         const mapState = generateDungeonMap(lobbySession.zoneId, avgLevel);
         (mapState as any).floor = 1;
 
+        // Discover location for all party members
+        const { discoverLocation: discoverCodexLocation } = await import('../../database/queries/codex.js');
+        for (const member of party.members) {
+          await discoverCodexLocation(member.playerId, lobbySession.zoneId);
+        }
+
         await db
           .update(explorationSessions)
           .set({
@@ -541,6 +547,10 @@ export async function handleDungeonInteraction(
       // Generate dungeon map
       const mapState = generateDungeonMap(zoneId, player.level);
       (mapState as any).floor = 1;
+
+      // Discover location in codex
+      const { discoverLocation: discoverCodexLocation } = await import('../../database/queries/codex.js');
+      await discoverCodexLocation(player.id, zoneId);
       
       // Create session
       await createExplorationSession({

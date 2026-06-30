@@ -58,6 +58,12 @@ export async function renderWorldMapScreen(
     }
   }
 
+  // Synchronize codex locations
+  const { discoverLocation: discoverCodexLocation } = await import('../../database/queries/codex.js');
+  for (const locId of discoveredLocIds) {
+    await discoverCodexLocation(player.id, locId);
+  }
+
   // Build destination lines for the "Where to Go" section
   let destinationsText = '';
   const connections = currentLoc.connections || [];

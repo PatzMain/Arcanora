@@ -93,8 +93,11 @@ export async function markNodeCleared(sessionId: string, nodeId: string) {
   const mapState = session.mapState as any;
   if (mapState && mapState.nodes && mapState.nodes[nodeId]) {
     mapState.nodes[nodeId].status = 'cleared';
+    const { updateFogOfWar } = await import('../../systems/exploration/dungeonGenerator.js');
+    mapState.nodes = updateFogOfWar(mapState.nodes, nodeId);
     return await updateExplorationSession(sessionId, { mapState });
   }
   return null;
 }
+
 
