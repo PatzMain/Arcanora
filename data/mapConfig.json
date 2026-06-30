@@ -6,7 +6,7 @@
   "labelFont": "10px 'Press Start 2P'",
   "labelColor": "#FFFFFF",
   "labelShadowColor": "#000000",
-  "pathColor": "#8B7355",
+  "pathColor": "#FFFFFF",
   "pathWidth": 2,
   "pathDashPattern": [8, 6],
   "fogColor": "rgba(0, 0, 0, 0.7)",
@@ -22,14 +22,14 @@
       "x": 150,
       "y": 150,
       "type": "settlement",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": 0, "y": 22 },
       "fogRadius": 40
     },
     "river_docks": {
       "x": 100,
       "y": 200,
       "type": "settlement",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": -75, "y": 4 },
       "fogRadius": 40
     },
     "oakhaven_forge": {
@@ -43,14 +43,14 @@
       "x": 220,
       "y": 180,
       "type": "settlement",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": 85, "y": 4 },
       "fogRadius": 40
     },
     "oakhaven_sewers": {
       "x": 80,
       "y": 150,
       "type": "dungeon",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": -75, "y": 4 },
       "fogRadius": 40
     },
     "glittering_meadows": {
@@ -71,14 +71,14 @@
       "x": 320,
       "y": 300,
       "type": "wilderness",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": -85, "y": 4 },
       "fogRadius": 40
     },
     "shimmering_cave": {
       "x": 420,
       "y": 320,
       "type": "wilderness",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": 0, "y": 22 },
       "fogRadius": 40
     },
     "goblin_outpost": {
@@ -113,7 +113,7 @@
       "x": 600,
       "y": 300,
       "type": "wilderness",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": 0, "y": 22 },
       "fogRadius": 40
     },
     "ancient_mine": {
@@ -127,7 +127,7 @@
       "x": 700,
       "y": 380,
       "type": "wilderness",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": -80, "y": 4 },
       "fogRadius": 50
     },
     "lava_keep": {
@@ -141,7 +141,7 @@
       "x": 680,
       "y": 450,
       "type": "wilderness",
-      "labelOffset": { "x": 0, "y": -20 },
+      "labelOffset": { "x": 0, "y": 22 },
       "fogRadius": 50
     },
     "sunken_temple": {
