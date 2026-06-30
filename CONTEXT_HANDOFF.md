@@ -241,6 +241,8 @@ Discord Bot/
 | `playerWorldDiscoveries` | `player_world_discoveries` | `id` (uuid) | playerId + locationId (unique), discoveredAt |
 | `customAssets` | `custom_assets` | `id` (varchar) | type, emoji, createdAt, updatedAt (custom emoji overrides) |
 | `feedbacks` | `feedbacks` | `id` (uuid) | playerId (FK), username, category, content, status, createdAt (feedback system) |
+| `codexEntries` | `codex_entries` | `id` (uuid) | playerId (FK), type, entityId, killCount, foundCount, discoveredAt |
+
 
 **Important schema details**:
 - `players.currentZoneId` defaults to `'verdant_meadows'`
@@ -260,6 +262,8 @@ Discord Bot/
 | `quest.ts` | `startQuest`, `getActiveQuests`, `updateQuestProgress`, `completeQuest`, `getCompletedQuests` |
 | `exploration.ts` | `createExplorationSession`, `getExplorationSessionByPlayerId`, `updateExplorationSession`, `deleteExplorationSession` |
 | `worldQueries.ts` | `discoverLocation`, `getPlayerDiscoveredLocations`, `isLocationDiscovered` |
+| `codex.ts` | `discoverEnemy`, `discoverItem`, `discoverLocation`, `getCodexEntries`, `getCodexEntry` |
+
 
 **Not in `queries/` — lives elsewhere**:
 - **Currency** (`src/economy/currency.ts`): `awardGold`, `deductGold`, `awardGems`, `deductGems`, `getBalance`, `transferGold`
@@ -319,6 +323,7 @@ Commands are organized by category folder. Each command file exports:
 |---|---|---|
 | `/admin` | `give-item`, `spawn-boss`, `spawn-global-boss`, `asset-set`, `asset-remove`, `asset-list`, `feedback-list`, `feedback-resolve` | Admin operations: items, boss raids, custom assets, and player feedback |
 | `/boss` | `info`, `fight` | World boss raid combat |
+| `/codex` | `enemies`, `items`, `locations` | View discovered bestiary, items database collection, and discovered zones |
 | `/combat` | `explore`, `fight` | Zone exploration encounters or resume combat |
 | `/craft` | `recipe` (optional) | Crafting menu or craft specific recipe |
 | `/economy` | `balance`, `shop`, `buy` | View currency, browse shop, buy items |
@@ -633,3 +638,10 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Riddle System Removal**: Completely removed the legacy riddle/puzzle system from both exploration outcomes and dungeon run nodes.
 - **Embed Redesign & Aesthetic Upgrades**: Redesigned all main embed outputs (player profile, inventory, shop, combat victory, bosses, help, and guilds) to look cleaner, replacing double-hyphen dividers with polished headers, modern bars, and custom db-configured emoji overrides.
 - **Vitest Suite Updates**: Updated and expanded test coverage (72 tests total passing).
+
+### 2026-06-30
+- **Codex & Bestiary System**: Implemented the `/codex` slash command with `enemies` (bestiary), `items` (inventory collection), and `locations` subcommands, including pagination, custom detail inspect views, and interactive select menus.
+- **Auto-Discovery Integration**: Integrated codex updates automatically when players defeat enemies, acquire items via `addItem`, travel the world map, or crawl through dungeons.
+- **Component ID Bug Fixes**: Fixed component interaction routing for select menus in [codex.ts](file:///c:/Users/Patz/Desktop/My%20Projects/Arcanora/src/commands/player/codex.ts) to strictly align split indexing.
+- **Project Rules & Handoff**: Established new rules in [AGENTS.md](file:///c:/Users/Patz/Desktop/My%20Projects/Arcanora/.agents/AGENTS.md) regarding Discord custom ID alignment and mandatory `CONTEXT_HANDOFF.md` updates.
+
