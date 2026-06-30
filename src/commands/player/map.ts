@@ -12,6 +12,9 @@ import { itemsCatalog } from '../../utils/catalog.js';
 import { errorEmbed } from '../../utils/embeds.js';
 import { renderWorldMapScreen } from '../../systems/exploration/mapRenderer.js';
 import { renderDungeonScreen } from '../../systems/exploration/dungeonController.js';
+import { db } from '../../database/client.js';
+import { combatSessions } from '../../database/schema.js';
+import { eq } from 'drizzle-orm';
 
 export { handleMapTravelInteraction, handleWorldMapInteraction, runTavernRest } from '../../systems/exploration/mapRenderer.js';
 export { handleDungeonInteraction } from '../../systems/exploration/dungeonController.js';
@@ -53,6 +56,26 @@ export async function runMap(
       const err = errorEmbed('Error', 'Player profile not found.');
       await interaction.editReply({ embeds: [err] });
       return;
+    }
+
+    // Check if player is in combat
+    const activeSession = await db.query.combatSessions.findFirst({
+      where: eq(combatSessions.playerId, player.id),
+    });
+
+    if (activeSession) {
+      const expiresAt = new Date(activeSession.expiresAt).getTime();
+      if (expiresAt > Date.now()) {
+        const err = errorEmbed(
+          'In Combat',
+          '❌ You cannot access the map while you are in combat! Use `/combat fight` to resume the battle or finish/flee it first.'
+        );
+        await interaction.editReply({ embeds: [err], components: [] });
+        return;
+      } else {
+        // Clean up expired session
+        await db.delete(combatSessions).where(eq(combatSessions.id, activeSession.id));
+      }
     }
 
     // Check if player has an active exploration session
