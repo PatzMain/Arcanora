@@ -91,7 +91,7 @@
     }
 
     #sidebar {
-      width: 320px;
+      width: 340px;
       background-color: var(--panel-bg);
       border-right: 1px solid var(--border-color);
       display: flex;
@@ -293,6 +293,11 @@
   <main>
     <div id="sidebar">
       <h2 class="section-title">Locations</h2>
+      <div style="padding: 10px 15px; display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
+        <button class="secondary" style="padding: 4px 8px; font-size: 11px; flex: 1;" onclick="bulkDiscovery('all')">All</button>
+        <button class="secondary" style="padding: 4px 8px; font-size: 11px; flex: 1;" onclick="bulkDiscovery('none')">None</button>
+        <button class="secondary" style="padding: 4px 8px; font-size: 11px; flex: 2;" onclick="bulkDiscovery('starter')">Starter Town</button>
+      </div>
       <ul class="location-list" id="locations-container"></ul>
       
       <div id="editor-panel">
@@ -404,6 +409,8 @@
       { from: "abyssal_depths", to: "sunken_temple" }
     ];
 
+    const STARTER_TOWNS = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary'];
+
     // Default configuration
     let config = {
       imageWidth: 800,
@@ -430,6 +437,12 @@
         labelOffset: { x: 0, y: -20 },
         fogRadius: 40
       };
+    });
+
+    // Track local discovery states for FOW preview
+    let discoveryState = {};
+    ZONES.forEach(z => {
+      discoveryState[z.id] = STARTER_TOWNS.includes(z.id);
     });
 
     let selectedLocId = null;
@@ -460,14 +473,18 @@
         
         const locConfig = config.locations[z.id];
         const isPlaced = locConfig.x > 0 || locConfig.y > 0;
+        const isDiscovered = discoveryState[z.id];
         
         item.innerHTML = `
-          <div class="loc-info">
-            <span class="loc-name">
-              <span class="marker-indicator indicator-${z.type}"></span>
-              ${z.name}
-            </span>
-            <span class="loc-type">${z.type.toUpperCase()}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" ${isDiscovered ? 'checked' : ''} onclick="event.stopPropagation(); toggleDiscoveryState('${z.id}')" title="Toggle Discovery (Fog of War)">
+            <div class="loc-info">
+              <span class="loc-name">
+                <span class="marker-indicator indicator-${z.type}"></span>
+                ${z.name}
+              </span>
+              <span class="loc-type">${z.type.toUpperCase()}</span>
+            </div>
           </div>
           <span class="loc-coords ${isPlaced ? 'set' : ''}">${isPlaced ? `${locConfig.x},${locConfig.y}` : 'UNSET'}</span>
         `;
@@ -490,6 +507,26 @@
         }
       });
       playerSelect.value = currentVal;
+    }
+
+    function toggleDiscoveryState(id) {
+      discoveryState[id] = !discoveryState[id];
+      renderLocationList();
+      redraw();
+    }
+
+    function bulkDiscovery(mode) {
+      ZONES.forEach(z => {
+        if (mode === 'all') {
+          discoveryState[z.id] = true;
+        } else if (mode === 'none') {
+          discoveryState[z.id] = false;
+        } else if (mode === 'starter') {
+          discoveryState[z.id] = STARTER_TOWNS.includes(z.id);
+        }
+      });
+      renderLocationList();
+      redraw();
     }
 
     function selectLocation(id) {
@@ -632,7 +669,8 @@
           const fromLoc = config.locations[p.from];
           const toLoc = config.locations[p.to];
           
-          if (fromLoc && toLoc && fromLoc.x > 0 && fromLoc.y > 0 && toLoc.x > 0 && toLoc.y > 0) {
+          const bothDiscovered = !options.showFog || (discoveryState[p.from] && discoveryState[p.to]);
+          if (fromLoc && toLoc && fromLoc.x > 0 && fromLoc.y > 0 && toLoc.x > 0 && toLoc.y > 0 && bothDiscovered) {
             ctx.beginPath();
             ctx.moveTo(Math.round(fromLoc.x), Math.round(fromLoc.y));
             ctx.lineTo(Math.round(toLoc.x), Math.round(toLoc.y));
@@ -645,11 +683,6 @@
 
       // 3. Draw Fog of War
       if (options.showFog) {
-        ctx.fillStyle = config.fogColor;
-        ZONES.forEach(z => {
-          const loc = config.locations[z.id];
-        });
-        
         // Accurate fog cutout rendering:
         ctx.save();
         ctx.fillStyle = config.fogColor;
@@ -662,11 +695,12 @@
         tempCtx.fillStyle = config.fogColor;
         tempCtx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Cutout circles for placed locations (assuming discovered for preview)
+        // Cutout circles for placed & discovered locations
         tempCtx.globalCompositeOperation = 'destination-out';
         for (const id in config.locations) {
           const loc = config.locations[id];
-          if (loc.x > 0 && loc.y > 0) {
+          const isDiscovered = discoveryState[id];
+          if (loc.x > 0 && loc.y > 0 && isDiscovered) {
             tempCtx.beginPath();
             tempCtx.arc(loc.x, loc.y, loc.fogRadius, 0, Math.PI * 2);
             tempCtx.fill();
@@ -680,7 +714,8 @@
       // 4. Draw markers
       for (const id in config.locations) {
         const loc = config.locations[id];
-        if (loc.x > 0 && loc.y > 0) {
+        const isDiscovered = !options.showFog || discoveryState[id];
+        if (loc.x > 0 && loc.y > 0 && isDiscovered) {
           const isSelected = selectedLocId === id;
           
           // Draw marker circle
@@ -729,7 +764,8 @@
       // 5. Draw Simulated Player
       if (simulationPlayerLoc && config.locations[simulationPlayerLoc]) {
         const pLoc = config.locations[simulationPlayerLoc];
-        if (pLoc.x > 0 && pLoc.y > 0) {
+        const isDiscovered = !options.showFog || discoveryState[simulationPlayerLoc];
+        if (pLoc.x > 0 && pLoc.y > 0 && isDiscovered) {
           // Draw player ring
           ctx.beginPath();
           ctx.arc(pLoc.x, pLoc.y, config.playerMarkerSize / 2, 0, Math.PI * 2);
