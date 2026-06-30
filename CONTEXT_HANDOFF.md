@@ -670,4 +670,14 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Presets & Interaction Fix**: Resolved preset combo activation failures by fixing the parsed slot ID index (extracting from index 3 instead of 2). Updated combat buttons and select menus to use `.startsWith()` instead of exact matching `===` to successfully route interactions with dynamic user ID suffixes (e.g. `combat_attack_${userId}`).
 - **Combat Map Guard**: Added active combat verification inside the map command executor `src/commands/player/map.ts` to block users from executing `/map` or using map-related buttons while they are actively in a combat session.
 
+### 2026-06-30 (Image World Map Overhaul)
+- **Pixel-Art World Map Overlay System**: Replaced the legacy ASCII text tree map with a dynamically drawn 16-bit pixel-art RPG world map overlay.
+- **Canvas Rendering Engine**: Implemented `src/utils/mapCanvas.ts` using `@napi-rs/canvas` to draw location markers, dashed path connections, fog-of-war transparent overlays, custom font location labels, and a gold pulsing player position ring onto a base pixel-art canvas.
+- **In-Memory Cache & self-invalidation**: Added a high-performance rendering cache for image buffers keyed by player, current location, and discovery status, preventing redundant canvas operations.
+- **Font & Asset Integration**: Integrated the Press Start 2P Google Font and a custom AI-generated fantasy map base image into the bot startup sequence via `initMapAssets()` inside the ready boot handler.
+- **Destinations Embed List**: Redesigned the `/map` output embed to display the image-based map via `AttachmentBuilder` file attachments alongside a condensed, level-locked text destination block.
+- **Local Map Editor Tool**: Created `tools/map-editor.html` to allow developers to visually drag-and-drop location markers, adjust label offsets, tune fog radii, and export/import `mapConfig.json`.
+- **Vitest Map Suite**: Created comprehensive tests in `tests/mapCanvas.test.ts` achieving 100% test pass rates.
+
+
 

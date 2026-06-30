@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Arcanora Map Editor</title>
+  <style>
+    :root {
+      --bg-color: #121214;
+      --panel-bg: #1e1e24;
+      --border-color: #2f2f37;
+      --text-color: #e4e4e7;
+      --text-muted: #a1a1aa;
+      --primary: #7c3aed;
+      --primary-hover: #6d28d9;
+      --danger: #ef4444;
+      --success: #10b981;
+      --info: #06b6d4;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button, .file-label {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: background-color 0.2s;
+      display: inline-block;
+    }
+
+    button:hover, .file-label:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    button.secondary:hover {
+      background-color: var(--border-color);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 320px;
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 15px 15px 5px 15px;
+      border-bottom: 1px solid var(--border-color);
+      margin: 0;
+    }
+
+    .location-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .location-item {
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      transition: background-color 0.15s;
+    }
+
+    .location-item:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .location-item.active {
+      background-color: rgba(124, 58, 237, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .loc-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .loc-name {
+      font-weight: 500;
+    }
+
+    .loc-type {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .loc-coords {
+      font-size: 0.75rem;
+      font-family: monospace;
+      background: rgba(0,0,0,0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--text-muted);
+    }
+
+    .loc-coords.set {
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    #editor-panel {
+      padding: 15px;
+      border-top: 1px solid var(--border-color);
+      background-color: rgba(0,0,0,0.15);
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    input[type="number"], input[type="text"] {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    #canvas-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #0b0b0c;
+      position: relative;
+      overflow: auto;
+    }
+
+    canvas {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      background-color: #1a1a1a;
+      cursor: crosshair;
+      image-rendering: pixelated;
+    }
+
+    #coord-overlay {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(0,0,0,0.8);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      pointer-events: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+
+    .marker-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .indicator-settlement { background-color: var(--success); }
+    .indicator-wilderness { background-color: var(--info); }
+    .indicator-dungeon { background-color: var(--danger); }
+
+    .bottom-bar {
+      background-color: var(--panel-bg);
+      border-top: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    textarea#json-io {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header>
+    <h1>🗺️ Arcanora Map Editor</h1>
+    <div class="toolbar">
+      <label class="file-label" for="map-file">Load Base Image</label>
+      <input type="file" id="map-file" accept="image/*">
+      <button class="secondary" onclick="importConfig()">Import Config</button>
+      <button onclick="exportConfig()">Export Config</button>
+      <button class="secondary" onclick="copyConfigToClipboard()">Copy JSON</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="sidebar">
+      <h2 class="section-title">Locations</h2>
+      <ul class="location-list" id="locations-container"></ul>
+      
+      <div id="editor-panel">
+        <h3 style="margin-top: 0; font-size: 0.9rem; margin-bottom: 12px;" id="selected-title">No Selection</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>X Coord</label>
+            <input type="number" id="field-x" min="0" max="800" onchange="updateSelectedLocation()">
+          </div>
+          <div class="form-group">
+            <label>Y Coord</label>
+            <input type="number" id="field-y" min="0" max="500" onchange="updateSelectedLocation()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fog Radius: <span id="label-fog">40</span>px</label>
+          <input type="range" id="field-fog" min="20" max="100" value="40" oninput="updateSelectedLocation()">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Label Offset X</label>
+            <input type="number" id="field-offset-x" onchange="updateSelectedLocation()">
+          </div>
+          <div class="form-group">
+            <label>Label Offset Y</label>
+            <input type="number" id="field-offset-y" onchange="updateSelectedLocation()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="canvas-container">
+      <canvas id="editor-canvas" width="800" height="500"></canvas>
+      <div id="coord-overlay">X: 0, Y: 0</div>
+    </div>
+  </main>
+
+  <div class="bottom-bar">
+    <div class="checkbox-group" onclick="toggleOption('showPaths')">
+      <input type="checkbox" id="opt-paths" checked>
+      <label>Show Paths</label>
+    </div>
+    <div class="checkbox-group" onclick="toggleOption('showLabels')">
+      <input type="checkbox" id="opt-labels" checked>
+      <label>Show Labels</label>
+    </div>
+    <div class="checkbox-group" onclick="toggleOption('showFog')">
+      <input type="checkbox" id="opt-fog">
+      <label>Preview Fog-of-War</label>
+    </div>
+    <div style="flex: 1;"></div>
+    <div>
+      <label for="player-loc-select">Simulate Player Location: </label>
+      <select id="player-loc-select" onchange="updatePlayerLocation()" style="background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 4px; border-radius: 4px;">
+        <option value="">(None)</option>
+      </select>
+    </div>
+  </div>
+
+  <textarea id="json-io"></textarea>
+
+  <script>
+    const ZONES = [
+      { id: 'cozy_tavern', name: 'Cozy Tavern', type: 'settlement' },
+      { id: 'oakhaven_square', name: 'Oakhaven Town Square', type: 'settlement' },
+      { id: 'river_docks', name: 'River Docks', type: 'settlement' },
+      { id: 'oakhaven_forge', name: 'Oakhaven Forge', type: 'settlement' },
+      { id: 'apothecary', name: 'Apothecary Cottage', type: 'settlement' },
+      { id: 'oakhaven_sewers', name: 'Oakhaven Sewers', type: 'dungeon' },
+      { id: 'glittering_meadows', name: 'Glittering Meadows', type: 'wilderness' },
+      { id: 'birch_thicket', name: 'Birch Thicket', type: 'wilderness' },
+      { id: 'silverbrook_river', name: 'Silverbrook River', type: 'wilderness' },
+      { id: 'shimmering_cave', name: 'Shimmering Cave', type: 'wilderness' },
+      { id: 'goblin_outpost', name: 'Goblin Outpost', type: 'wilderness' },
+      { id: 'forgotten_ironmine', name: 'Forgotten Ironmine', type: 'dungeon' },
+      { id: 'shadow_forest', name: 'Whispering Canopy', type: 'wilderness' },
+      { id: 'goblin_sanctuary', name: 'Fallen Watchtower', type: 'dungeon' },
+      { id: 'crystal_caverns', name: 'Glittering Depths', type: 'wilderness' },
+      { id: 'ancient_mine', name: 'Forgotten Mines', type: 'dungeon' },
+      { id: 'volcanic_wastes', name: 'Volcanic Wastes', type: 'wilderness' },
+      { id: 'lava_keep', name: 'Lava Keep', type: 'dungeon' },
+      { id: 'abyssal_depths', name: 'Abyssal Depths', type: 'wilderness' },
+      { id: 'sunken_temple', name: 'Sunken Temple', type: 'dungeon' }
+    ];
+
+    const PATHS = [
+      { from: "cozy_tavern", to: "oakhaven_square" },
+      { from: "oakhaven_square", to: "river_docks" },
+      { from: "oakhaven_square", to: "oakhaven_forge" },
+      { from: "oakhaven_square", to: "apothecary" },
+      { from: "oakhaven_square", to: "oakhaven_sewers" },
+      { from: "oakhaven_square", to: "glittering_meadows" },
+      { from: "glittering_meadows", to: "birch_thicket" },
+      { from: "glittering_meadows", to: "silverbrook_river" },
+      { from: "birch_thicket", to: "goblin_outpost" },
+      { from: "silverbrook_river", to: "shimmering_cave" },
+      { from: "shimmering_cave", to: "forgotten_ironmine" },
+      { from: "goblin_outpost", to: "forgotten_ironmine" },
+      { from: "forgotten_ironmine", to: "shadow_forest" },
+      { from: "shadow_forest", to: "goblin_sanctuary" },
+      { from: "shadow_forest", to: "crystal_caverns" },
+      { from: "crystal_caverns", to: "ancient_mine" },
+      { from: "ancient_mine", to: "volcanic_wastes" },
+      { from: "volcanic_wastes", to: "lava_keep" },
+      { from: "volcanic_wastes", to: "abyssal_depths" },
+      { from: "abyssal_depths", to: "sunken_temple" }
+    ];
+
+    // Default configuration
+    let config = {
+      imageWidth: 800,
+      imageHeight: 500,
+      markerSize: 20,
+      playerMarkerSize: 28,
+      labelFont: "8px 'Press Start 2P'",
+      labelColor: "#FFFFFF",
+      labelShadowColor: "#000000",
+      pathColor: "#8B7355",
+      pathWidth: 2,
+      pathDashPattern: [6, 4],
+      fogColor: "rgba(0, 0, 0, 0.7)",
+      locations: {},
+      paths: PATHS
+    };
+
+    // Initialize config locations
+    ZONES.forEach(z => {
+      config.locations[z.id] = {
+        x: 0,
+        y: 0,
+        type: z.type,
+        labelOffset: { x: 0, y: -20 },
+        fogRadius: 40
+      };
+    });
+
+    let selectedLocId = null;
+    let baseImage = null;
+    let isDragging = false;
+    let simulationPlayerLoc = "";
+    
+    // View Options
+    const options = {
+      showPaths: true,
+      showLabels: true,
+      showFog: false
+    };
+
+    const canvas = document.getElementById('editor-canvas');
+    const ctx = canvas.getContext('2d');
+    const coordOverlay = document.getElementById('coord-overlay');
+
+    // Load initial list
+    function renderLocationList() {
+      const container = document.getElementById('locations-container');
+      container.innerHTML = '';
+      
+      ZONES.forEach(z => {
+        const item = document.createElement('li');
+        item.className = 'location-item';
+        if (selectedLocId === z.id) item.classList.add('active');
+        
+        const locConfig = config.locations[z.id];
+        const isPlaced = locConfig.x > 0 || locConfig.y > 0;
+        
+        item.innerHTML = `
+          <div class="loc-info">
+            <span class="loc-name">
+              <span class="marker-indicator indicator-${z.type}"></span>
+              ${z.name}
+            </span>
+            <span class="loc-type">${z.type.toUpperCase()}</span>
+          </div>
+          <span class="loc-coords ${isPlaced ? 'set' : ''}">${isPlaced ? `${locConfig.x},${locConfig.y}` : 'UNSET'}</span>
+        `;
+        
+        item.onclick = () => selectLocation(z.id);
+        container.appendChild(item);
+      });
+
+      // Populate Player location simulator dropdown
+      const playerSelect = document.getElementById('player-loc-select');
+      const currentVal = playerSelect.value;
+      playerSelect.innerHTML = '<option value="">(None)</option>';
+      ZONES.forEach(z => {
+        const locConfig = config.locations[z.id];
+        if (locConfig.x > 0 || locConfig.y > 0) {
+          const opt = document.createElement('option');
+          opt.value = z.id;
+          opt.textContent = z.name;
+          playerSelect.appendChild(opt);
+        }
+      });
+      playerSelect.value = currentVal;
+    }
+
+    function selectLocation(id) {
+      selectedLocId = id;
+      renderLocationList();
+      
+      const loc = ZONES.find(z => z.id === id);
+      const locConfig = config.locations[id];
+      
+      document.getElementById('selected-title').textContent = loc.name;
+      document.getElementById('field-x').value = locConfig.x;
+      document.getElementById('field-y').value = locConfig.y;
+      document.getElementById('field-fog').value = locConfig.fogRadius;
+      document.getElementById('label-fog').textContent = locConfig.fogRadius;
+      document.getElementById('field-offset-x').value = locConfig.labelOffset.x;
+      document.getElementById('field-offset-y').value = locConfig.labelOffset.y;
+      
+      redraw();
+    }
+
+    function updateSelectedLocation() {
+      if (!selectedLocId) return;
+      const locConfig = config.locations[selectedLocId];
+      
+      locConfig.x = parseInt(document.getElementById('field-x').value) || 0;
+      locConfig.y = parseInt(document.getElementById('field-y').value) || 0;
+      locConfig.fogRadius = parseInt(document.getElementById('field-fog').value) || 40;
+      document.getElementById('label-fog').textContent = locConfig.fogRadius;
+      locConfig.labelOffset.x = parseInt(document.getElementById('field-offset-x').value) || 0;
+      locConfig.labelOffset.y = parseInt(document.getElementById('field-offset-y').value) || 0;
+      
+      renderLocationList();
+      redraw();
+    }
+
+    function toggleOption(key) {
+      options[key] = !options[key];
+      document.getElementById(`opt-${key === 'showPaths' ? 'paths' : key === 'showLabels' ? 'labels' : 'fog'}`).checked = options[key];
+      redraw();
+    }
+
+    function updatePlayerLocation() {
+      simulationPlayerLoc = document.getElementById('player-loc-select').value;
+      redraw();
+    }
+
+    // Image file handler
+    document.getElementById('map-file').onchange = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        baseImage = new Image();
+        baseImage.onload = function() {
+          redraw();
+        };
+        baseImage.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Canvas interactivity
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.round(e.clientX - rect.left);
+      const y = Math.round(e.clientY - rect.top);
+      coordOverlay.textContent = `X: ${x}, Y: ${y}`;
+
+      if (isDragging && selectedLocId) {
+        const locConfig = config.locations[selectedLocId];
+        locConfig.x = x;
+        locConfig.y = y;
+        document.getElementById('field-x').value = x;
+        document.getElementById('field-y').value = y;
+        updateSelectedLocation();
+      }
+    });
+
+    canvas.addEventListener('mousedown', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.round(e.clientX - rect.left);
+      const y = Math.round(e.clientY - rect.top);
+
+      // Check if clicked close to an existing marker to select/drag it
+      let clickedMarker = null;
+      for (const id in config.locations) {
+        const loc = config.locations[id];
+        if (loc.x > 0 && loc.y > 0) {
+          const dist = Math.hypot(loc.x - x, loc.y - y);
+          if (dist <= config.markerSize / 2 + 5) {
+            clickedMarker = id;
+            break;
+          }
+        }
+      }
+
+      if (clickedMarker) {
+        selectLocation(clickedMarker);
+        isDragging = true;
+      } else if (selectedLocId) {
+        // Place selected marker here
+        const locConfig = config.locations[selectedLocId];
+        locConfig.x = x;
+        locConfig.y = y;
+        document.getElementById('field-x').value = x;
+        document.getElementById('field-y').value = y;
+        updateSelectedLocation();
+        isDragging = true;
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Drawing
+    function redraw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 1. Draw base image
+      if (baseImage) {
+        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#1e1e1e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#a1a1aa';
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Please Load a Base Map Image (800x500)', canvas.width / 2, canvas.height / 2);
+      }
+
+      // 2. Draw paths
+      if (options.showPaths) {
+        ctx.strokeStyle = config.pathColor;
+        ctx.lineWidth = config.pathWidth;
+        ctx.setLineDash(config.pathDashPattern);
+        
+        config.paths.forEach(p => {
+          const fromLoc = config.locations[p.from];
+          const toLoc = config.locations[p.to];
+          
+          if (fromLoc && toLoc && fromLoc.x > 0 && fromLoc.y > 0 && toLoc.x > 0 && toLoc.y > 0) {
+            ctx.beginPath();
+            ctx.moveTo(fromLoc.x, fromLoc.y);
+            ctx.lineTo(toLoc.x, toLoc.y);
+            ctx.stroke();
+          }
+        });
+        
+        ctx.setLineDash([]); // Reset
+      }
+
+      // 3. Draw Fog of War
+      if (options.showFog) {
+        ctx.fillStyle = config.fogColor;
+        ZONES.forEach(z => {
+          const loc = config.locations[z.id];
+        });
+        
+        // Accurate fog cutout rendering:
+        ctx.save();
+        ctx.fillStyle = config.fogColor;
+        
+        // We create an offscreen path for cutting out
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.fillStyle = config.fogColor;
+        tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Cutout circles for placed locations (assuming discovered for preview)
+        tempCtx.globalCompositeOperation = 'destination-out';
+        for (const id in config.locations) {
+          const loc = config.locations[id];
+          if (loc.x > 0 && loc.y > 0) {
+            tempCtx.beginPath();
+            tempCtx.arc(loc.x, loc.y, loc.fogRadius, 0, Math.PI * 2);
+            tempCtx.fill();
+          }
+        }
+        
+        ctx.drawImage(tempCanvas, 0, 0);
+        ctx.restore();
+      }
+
+      // 4. Draw markers
+      for (const id in config.locations) {
+        const loc = config.locations[id];
+        if (loc.x > 0 && loc.y > 0) {
+          const isSelected = selectedLocId === id;
+          
+          // Draw marker circle
+          ctx.beginPath();
+          ctx.arc(loc.x, loc.y, config.markerSize / 2, 0, Math.PI * 2);
+          
+          let color = '#10b981'; // Settlement
+          if (loc.type === 'wilderness') color = '#06b6d4';
+          else if (loc.type === 'dungeon') color = '#ef4444';
+          
+          ctx.fillStyle = color;
+          ctx.fill();
+          
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = isSelected ? 3 : 1;
+          ctx.stroke();
+
+          // Selection highlight circle outline
+          if (isSelected) {
+            ctx.beginPath();
+            ctx.arc(loc.x, loc.y, config.markerSize / 2 + 6, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(124, 58, 237, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+          
+          // Draw text label
+          if (options.showLabels) {
+            const zInfo = ZONES.find(z => z.id === id);
+            const labelX = loc.x + loc.labelOffset.x;
+            const labelY = loc.y + loc.labelOffset.y;
+            
+            ctx.font = "8px 'Press Start 2P', monospace";
+            ctx.textAlign = 'center';
+            
+            // Text shadow/stroke
+            ctx.fillStyle = config.labelShadowColor;
+            ctx.fillText(zInfo.name, labelX + 1, labelY + 1);
+            
+            ctx.fillStyle = config.labelColor;
+            ctx.fillText(zInfo.name, labelX, labelY);
+          }
+        }
+      }
+
+      // 5. Draw Simulated Player
+      if (simulationPlayerLoc && config.locations[simulationPlayerLoc]) {
+        const pLoc = config.locations[simulationPlayerLoc];
+        if (pLoc.x > 0 && pLoc.y > 0) {
+          // Draw player ring
+          ctx.beginPath();
+          ctx.arc(pLoc.x, pLoc.y, config.playerMarkerSize / 2, 0, Math.PI * 2);
+          ctx.strokeStyle = '#FFD700'; // Gold
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          
+          // Small inner gold pulse
+          ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+          ctx.fill();
+        }
+      }
+    }
+
+    // Export & Import
+    function exportConfig() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "mapConfig.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function copyConfigToClipboard() {
+      const io = document.getElementById('json-io');
+      io.value = JSON.stringify(config, null, 2);
+      io.select();
+      document.execCommand('copy');
+      alert('Map config JSON copied to clipboard!');
+    }
+
+    function importConfig() {
+      const inputStr = prompt("Paste your mapConfig.json content here:");
+      if (!inputStr) return;
+      
+      try {
+        const parsed = JSON.parse(inputStr);
+        if (parsed.locations) {
+          // Merge imported locations into config
+          for (const key in parsed.locations) {
+            if (config.locations[key]) {
+              config.locations[key] = {
+                ...config.locations[key],
+                ...parsed.locations[key]
+              };
+            }
+          }
+          // Merge other styling options
+          config = {
+            ...config,
+            ...parsed,
+            locations: config.locations // preserve reference
+          };
+          renderLocationList();
+          redraw();
+          alert('Config imported successfully!');
+        }
+      } catch (err) {
+        alert('Invalid JSON! Make sure you copied it correctly.');
+      }
+    }
+
+    // Initial setup
+    renderLocationList();
+    redraw();
+  </script>
+</body>
+</html>

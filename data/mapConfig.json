@@ -1,0 +1,177 @@
+{
+  "imageWidth": 800,
+  "imageHeight": 500,
+  "markerSize": 20,
+  "playerMarkerSize": 28,
+  "labelFont": "8px 'Press Start 2P'",
+  "labelColor": "#FFFFFF",
+  "labelShadowColor": "#000000",
+  "pathColor": "#8B7355",
+  "pathWidth": 2,
+  "pathDashPattern": [6, 4],
+  "fogColor": "rgba(0, 0, 0, 0.7)",
+  "locations": {
+    "cozy_tavern": {
+      "x": 100,
+      "y": 100,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "oakhaven_square": {
+      "x": 150,
+      "y": 150,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "river_docks": {
+      "x": 100,
+      "y": 200,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "oakhaven_forge": {
+      "x": 200,
+      "y": 100,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "apothecary": {
+      "x": 220,
+      "y": 180,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "oakhaven_sewers": {
+      "x": 80,
+      "y": 150,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "glittering_meadows": {
+      "x": 300,
+      "y": 200,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 45
+    },
+    "birch_thicket": {
+      "x": 400,
+      "y": 150,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "silverbrook_river": {
+      "x": 320,
+      "y": 300,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "shimmering_cave": {
+      "x": 420,
+      "y": 320,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "goblin_outpost": {
+      "x": 480,
+      "y": 180,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "forgotten_ironmine": {
+      "x": 500,
+      "y": 280,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "shadow_forest": {
+      "x": 580,
+      "y": 200,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 45
+    },
+    "goblin_sanctuary": {
+      "x": 620,
+      "y": 120,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "crystal_caverns": {
+      "x": 600,
+      "y": 300,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "ancient_mine": {
+      "x": 680,
+      "y": 260,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "volcanic_wastes": {
+      "x": 700,
+      "y": 380,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 50
+    },
+    "lava_keep": {
+      "x": 750,
+      "y": 320,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "abyssal_depths": {
+      "x": 680,
+      "y": 450,
+      "type": "wilderness",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 50
+    },
+    "sunken_temple": {
+      "x": 760,
+      "y": 460,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    }
+  },
+  "paths": [
+    { "from": "cozy_tavern", "to": "oakhaven_square" },
+    { "from": "oakhaven_square", "to": "river_docks" },
+    { "from": "oakhaven_square", "to": "oakhaven_forge" },
+    { "from": "oakhaven_square", "to": "apothecary" },
+    { "from": "oakhaven_square", "to": "oakhaven_sewers" },
+    { "from": "oakhaven_square", "to": "glittering_meadows" },
+    { "from": "glittering_meadows", "to": "birch_thicket" },
+    { "from": "glittering_meadows", "to": "silverbrook_river" },
+    { "from": "birch_thicket", "to": "goblin_outpost" },
+    { "from": "silverbrook_river", "to": "shimmering_cave" },
+    { "from": "shimmering_cave", "to": "forgotten_ironmine" },
+    { "from": "goblin_outpost", "to": "forgotten_ironmine" },
+    { "from": "forgotten_ironmine", "to": "shadow_forest" },
+    { "from": "shadow_forest", "to": "goblin_sanctuary" },
+    { "from": "shadow_forest", "to": "crystal_caverns" },
+    { "from": "crystal_caverns", "to": "ancient_mine" },
+    { "from": "ancient_mine", "to": "volcanic_wastes" },
+    { "from": "volcanic_wastes", "to": "lava_keep" },
+    { "from": "volcanic_wastes", "to": "abyssal_depths" },
+    { "from": "abyssal_depths", "to": "sunken_temple" }
+  ]
+}

@@ -5,6 +5,7 @@ import {
   ButtonStyle,
   StringSelectMenuBuilder,
   MessageFlags,
+  AttachmentBuilder,
   type ButtonInteraction,
   type StringSelectMenuInteraction
 } from 'discord.js';
@@ -13,9 +14,10 @@ import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { getPlayerWithClampedStats } from '../../database/queries/player.js';
 import { zonesCatalog, itemsCatalog, enemiesCatalog, questsCatalog } from '../../utils/catalog.js';
-import { errorEmbed, progressBar, COLORS, baseEmbed } from '../../utils/embeds.js';
+import { errorEmbed, COLORS, baseEmbed } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
 import { renderWorldMap } from '../../utils/mapVisual.js';
+import { renderMapImage } from '../../utils/mapCanvas.js';
 import {
   discoverLocation,
   getPlayerDiscoveredLocations
@@ -24,8 +26,6 @@ import { getActiveQuests } from '../../database/queries/quest.js';
 import { travelToNode, exploreNode, huntNode } from './worldExplorer.js';
 import { executeRest } from './restService.js';
 import { createExplorationSession } from '../../database/queries/exploration.js';
-import { XP_TABLE } from '../progression/leveling.js';
-
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export async function renderWorldMapScreen(
@@ -155,19 +155,33 @@ export async function renderWorldMapScreen(
     .setTitle(`📍 ${currentLoc.name}`)
     .setDescription(embedDescription);
 
-  const asciiMap = renderWorldMap(player.currentZoneId, discoveredLocIds);
-  embed.addFields(
-    {
+  let mapAttachment: AttachmentBuilder | null = null;
+  const mapBuffer = await renderMapImage(player.currentZoneId, discoveredLocIds, player.id);
+  if (mapBuffer) {
+    mapAttachment = new AttachmentBuilder(mapBuffer, { name: 'map.png' });
+    embed.setImage('attachment://map.png');
+  } else {
+    const asciiMap = renderWorldMap(player.currentZoneId, discoveredLocIds);
+    embed.addFields({
       name: '🗺️ World Map',
       value: `\`\`\`\n${asciiMap}\n\`\`\``,
       inline: false
-    },
-    {
-      name: '🧭 Guidance',
-      value: guidanceLine,
+    });
+  }
+
+  if (destinationsText) {
+    embed.addFields({
+      name: '🧭 Nearby Destinations',
+      value: destinationsText.trim(),
       inline: false
-    }
-  );
+    });
+  }
+
+  embed.addFields({
+    name: '📜 Guidance',
+    value: guidanceLine,
+    inline: false
+  });
 
   const resources = currentLoc.ecosystem?.resources || [];
   const isDocks = currentLoc.id === 'river_docks';
@@ -325,7 +339,8 @@ export async function renderWorldMapScreen(
 
   await interaction.editReply({
     embeds: [embed],
-    components
+    components,
+    files: mapAttachment ? [mapAttachment] : []
   });
 }
 

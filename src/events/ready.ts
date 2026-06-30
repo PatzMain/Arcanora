@@ -26,6 +26,7 @@ import * as farmCmd from '../commands/player/farm.js';
 import * as dungeonCmd from '../commands/combat/dungeon.js';
 import * as codexCmd from '../commands/player/codex.js';
 import { initEmojis } from '../utils/emojis.js';
+import { initMapAssets } from '../utils/mapCanvas.js';
 
 export const data = {}; // keep index metadata or dummy placeholder if index references it
 
@@ -60,6 +61,11 @@ export async function execute(client: Client) {
 
   // Initialize custom assets memory cache
   await initEmojis();
+  try {
+    await initMapAssets();
+  } catch (err) {
+    logger.error({ err }, 'Failed to initialize map assets.');
+  }
 
   try {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
