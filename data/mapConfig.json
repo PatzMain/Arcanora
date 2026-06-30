@@ -3,12 +3,12 @@
   "imageHeight": 500,
   "markerSize": 20,
   "playerMarkerSize": 28,
-  "labelFont": "8px 'Press Start 2P'",
+  "labelFont": "10px 'Press Start 2P'",
   "labelColor": "#FFFFFF",
   "labelShadowColor": "#000000",
   "pathColor": "#8B7355",
   "pathWidth": 2,
-  "pathDashPattern": [6, 4],
+  "pathDashPattern": [8, 6],
   "fogColor": "rgba(0, 0, 0, 0.7)",
   "locations": {
     "cozy_tavern": {

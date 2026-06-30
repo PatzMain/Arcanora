@@ -410,12 +410,12 @@
       imageHeight: 500,
       markerSize: 20,
       playerMarkerSize: 28,
-      labelFont: "8px 'Press Start 2P'",
+      labelFont: "10px 'Press Start 2P'",
       labelColor: "#FFFFFF",
       labelShadowColor: "#000000",
       pathColor: "#8B7355",
       pathWidth: 2,
-      pathDashPattern: [6, 4],
+      pathDashPattern: [8, 6],
       fogColor: "rgba(0, 0, 0, 0.7)",
       locations: {},
       paths: PATHS
@@ -634,8 +634,8 @@
           
           if (fromLoc && toLoc && fromLoc.x > 0 && fromLoc.y > 0 && toLoc.x > 0 && toLoc.y > 0) {
             ctx.beginPath();
-            ctx.moveTo(fromLoc.x, fromLoc.y);
-            ctx.lineTo(toLoc.x, toLoc.y);
+            ctx.moveTo(Math.round(fromLoc.x), Math.round(fromLoc.y));
+            ctx.lineTo(Math.round(toLoc.x), Math.round(toLoc.y));
             ctx.stroke();
           }
         });
@@ -710,10 +710,10 @@
           // Draw text label
           if (options.showLabels) {
             const zInfo = ZONES.find(z => z.id === id);
-            const labelX = loc.x + loc.labelOffset.x;
-            const labelY = loc.y + loc.labelOffset.y;
+            const labelX = Math.round(loc.x + loc.labelOffset.x);
+            const labelY = Math.round(loc.y + loc.labelOffset.y);
             
-            ctx.font = "8px 'Press Start 2P', monospace";
+            ctx.font = "10px 'Press Start 2P', monospace";
             ctx.textAlign = 'center';
             
             // Text shadow/stroke

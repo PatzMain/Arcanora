@@ -130,7 +130,7 @@ export async function renderMapImage(
     ctx.save();
     ctx.strokeStyle = mapConfig.pathColor;
     ctx.lineWidth = mapConfig.pathWidth;
-    ctx.setLineDash(mapConfig.pathDashPattern || [6, 4]);
+    ctx.setLineDash(mapConfig.pathDashPattern || [8, 6]);
 
     for (const path of mapConfig.paths) {
       const fromLoc = mapConfig.locations[path.from];
@@ -143,8 +143,8 @@ export async function renderMapImage(
       const bothDiscovered = discoveredLocationIds.includes(path.from) && discoveredLocationIds.includes(path.to);
       if (bothDiscovered) {
         ctx.beginPath();
-        ctx.moveTo(fromLoc.x, fromLoc.y);
-        ctx.lineTo(toLoc.x, toLoc.y);
+        ctx.moveTo(Math.round(fromLoc.x), Math.round(fromLoc.y));
+        ctx.lineTo(Math.round(toLoc.x), Math.round(toLoc.y));
         ctx.stroke();
       }
     }
@@ -159,7 +159,7 @@ export async function renderMapImage(
       const isDiscovered = discoveredLocationIds.includes(locId);
       if (!isDiscovered) {
         ctx.beginPath();
-        ctx.arc(locConfig.x, locConfig.y, locConfig.fogRadius, 0, Math.PI * 2);
+        ctx.arc(Math.round(locConfig.x), Math.round(locConfig.y), Math.round(locConfig.fogRadius), 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -172,8 +172,10 @@ export async function renderMapImage(
       const isDiscovered = discoveredLocationIds.includes(locId);
       if (isDiscovered) {
         ctx.save();
+        const rx = Math.round(locConfig.x);
+        const ry = Math.round(locConfig.y);
         ctx.beginPath();
-        ctx.arc(locConfig.x, locConfig.y, mapConfig.markerSize / 2, 0, Math.PI * 2);
+        ctx.arc(rx, ry, mapConfig.markerSize / 2, 0, Math.PI * 2);
 
         if (locConfig.type === 'settlement') {
           ctx.fillStyle = '#10B981'; // Emerald
@@ -191,22 +193,22 @@ export async function renderMapImage(
         // Inner dot/symbol representation
         ctx.beginPath();
         if (locConfig.type === 'settlement') {
-          ctx.arc(locConfig.x, locConfig.y, 3, 0, Math.PI * 2);
+          ctx.arc(rx, ry, 3, 0, Math.PI * 2);
           ctx.fillStyle = '#FFFFFF';
           ctx.fill();
         } else if (locConfig.type === 'wilderness') {
           // Draw small crossed lines
           ctx.strokeStyle = '#FFFFFF';
           ctx.lineWidth = 1;
-          ctx.moveTo(locConfig.x - 3, locConfig.y - 3);
-          ctx.lineTo(locConfig.x + 3, locConfig.y + 3);
-          ctx.moveTo(locConfig.x + 3, locConfig.y - 3);
-          ctx.lineTo(locConfig.x - 3, locConfig.y + 3);
+          ctx.moveTo(rx - 3, ry - 3);
+          ctx.lineTo(rx + 3, ry + 3);
+          ctx.moveTo(rx + 3, ry - 3);
+          ctx.lineTo(rx - 3, ry + 3);
           ctx.stroke();
         } else {
           // Dungeon - small white square center
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(locConfig.x - 2, locConfig.y - 2, 4, 4);
+          ctx.fillRect(rx - 2, ry - 2, 4, 4);
         }
         ctx.restore();
       }
@@ -214,7 +216,7 @@ export async function renderMapImage(
 
     // 7. Draw Labels (only if discovered)
     ctx.save();
-    ctx.font = mapConfig.labelFont || "8px 'Press Start 2P', sans-serif";
+    ctx.font = mapConfig.labelFont || "10px 'Press Start 2P', sans-serif";
     ctx.textAlign = 'center';
 
     for (const [locId, locConfig] of Object.entries(mapConfig.locations)) {
@@ -225,8 +227,8 @@ export async function renderMapImage(
         const zone = zonesCatalog.find((z) => z.id === locId);
         const displayName = zone?.name || locId;
 
-        const labelX = locConfig.x + locConfig.labelOffset.x;
-        const labelY = locConfig.y + locConfig.labelOffset.y;
+        const labelX = Math.round(locConfig.x + locConfig.labelOffset.x);
+        const labelY = Math.round(locConfig.y + locConfig.labelOffset.y);
 
         // Shadow
         ctx.fillStyle = mapConfig.labelShadowColor || '#000000';
@@ -243,9 +245,11 @@ export async function renderMapImage(
     const playerLoc = mapConfig.locations[playerZoneId];
     if (playerLoc && playerLoc.x !== 0 && playerLoc.y !== 0) {
       ctx.save();
+      const px = Math.round(playerLoc.x);
+      const py = Math.round(playerLoc.y);
       // Outer pulse ring
       ctx.beginPath();
-      ctx.arc(playerLoc.x, playerLoc.y, mapConfig.playerMarkerSize / 2, 0, Math.PI * 2);
+      ctx.arc(px, py, mapConfig.playerMarkerSize / 2, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
       ctx.fill();
       ctx.strokeStyle = '#FBBF24'; // Amber-400 gold
@@ -254,7 +258,7 @@ export async function renderMapImage(
 
       // Inner center pulse point
       ctx.beginPath();
-      ctx.arc(playerLoc.x, playerLoc.y, 4, 0, Math.PI * 2);
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
       ctx.restore();
