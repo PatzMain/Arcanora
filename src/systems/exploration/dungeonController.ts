@@ -257,7 +257,7 @@ export async function renderDungeonScreen(
 
   // Determine if combat must be cleared first
   const isCombat = ['room', 'elite', 'boss'].includes(currNode.type);
-  const isCleared = currNode.status === 'cleared' || currNode.status === 'visited';
+  const isCleared = currNode.status === 'cleared';
   const mustFight = isCombat && !isCleared;
 
   // 1. Movement Row (arrow controls; only include if direction is passable/available)
