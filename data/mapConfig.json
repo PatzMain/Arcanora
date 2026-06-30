@@ -53,6 +53,34 @@
       "labelOffset": { "x": -75, "y": 4 },
       "fogRadius": 40
     },
+    "oakhaven_east_gate": {
+      "x": 260,
+      "y": 130,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "oakhaven_south_gate": {
+      "x": 200,
+      "y": 220,
+      "type": "settlement",
+      "labelOffset": { "x": 0, "y": 22 },
+      "fogRadius": 40
+    },
+    "abandoned_barracks": {
+      "x": 280,
+      "y": 60,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": -20 },
+      "fogRadius": 40
+    },
+    "foothills_crypt": {
+      "x": 160,
+      "y": 280,
+      "type": "dungeon",
+      "labelOffset": { "x": 0, "y": 22 },
+      "fogRadius": 40
+    },
     "glittering_meadows": {
       "x": 300,
       "y": 200,
@@ -158,7 +186,12 @@
     { "from": "oakhaven_square", "to": "oakhaven_forge" },
     { "from": "oakhaven_square", "to": "apothecary" },
     { "from": "oakhaven_square", "to": "oakhaven_sewers" },
-    { "from": "oakhaven_square", "to": "glittering_meadows" },
+    { "from": "oakhaven_square", "to": "oakhaven_east_gate" },
+    { "from": "oakhaven_square", "to": "oakhaven_south_gate" },
+    { "from": "oakhaven_east_gate", "to": "abandoned_barracks" },
+    { "from": "oakhaven_east_gate", "to": "birch_thicket" },
+    { "from": "oakhaven_south_gate", "to": "foothills_crypt" },
+    { "from": "oakhaven_south_gate", "to": "glittering_meadows" },
     { "from": "glittering_meadows", "to": "birch_thicket" },
     { "from": "glittering_meadows", "to": "silverbrook_river" },
     { "from": "birch_thicket", "to": "goblin_outpost" },

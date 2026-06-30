@@ -1,0 +1,55 @@
+{
+  "id": "oakhaven_east_gate",
+  "name": "Town East Gate",
+  "arrivalText": "The massive reinforced ironwood gates of Oakhaven's eastern wall loom before you, guarded by armored sentries watching the road to the dark birch woods.",
+  "description": "The fortified gate guarding Oakhaven's eastern exit, leading toward the foothills and birch thickets. Sentries stand watch day and night to keep wild beasts and goblins at bay.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "settlement",
+  "hasRestBed": false,
+  "visualTheme": "A stone fortification gate with heavy double doors, iron bands, guard towers, and clean flags waving in the wind.",
+  "history": {
+    "createdWhy": "Built during the Second Orc War to secure the hamlet's eastern approaches.",
+    "builtWho": "Eldorian Royal Engineers and local craftsmen.",
+    "majorEvents": "Successfully repelled a massive goblin raid five years ago.",
+    "whyExists": "Acts as the checkpoint and defense line for traders heading east.",
+    "currentConflicts": "Increased goblin scout activity has put the guards on high alert."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Breezy and clear",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "guard_captain_vaelen",
+        "name": "Captain Vaelen",
+        "role": "Gate Commander",
+        "dialogue": [
+          "Move along, traveler. Keep your weapon handy once you leave the walls.",
+          "The Eastern forests grow more dangerous by the day.",
+          "State your business. We don't need any more trouble makers here."
+        ]
+      }
+    ],
+    "factions": [
+      "Eldorian Guard"
+    ],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": [
+    "oakhaven_square",
+    "birch_thicket",
+    "abandoned_barracks"
+  ],
+  "isDungeon": false
+}

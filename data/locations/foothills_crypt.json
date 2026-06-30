@@ -1,0 +1,68 @@
+{
+  "id": "foothills_crypt",
+  "name": "Foothills Crypt",
+  "arrivalText": "A chilling draft escapes from the cracked stone doors of the ancient crypt nestled in the southern valley cliffs.",
+  "description": "An abandoned burial site of the ancient Eldorian settlers, now overrun by cave bats, mine spiders, and low-level cave creatures.",
+  "minLevel": 2,
+  "maxLevel": 5,
+  "explorationCooldown": 60,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "combat",
+  "isDungeon": true,
+  "hasRestBed": false,
+  "visualTheme": "Damp mossy stone corridors, cobwebs, dusty burial alcoves, and cold dark corners.",
+  "history": {
+    "createdWhy": "Built as a final resting place for the founding nobles of the Eldoria foothills.",
+    "builtWho": "Masons of the early Eldoria Dynasty.",
+    "majorEvents": "Desecrated and looted by grave robbers decades ago, sparking curses and infestation.",
+    "whyExists": "Stands as a grim reminder of the region's forgotten ancestors.",
+    "currentConflicts": "Cave creatures and spiders are spilling out into the South Gate pastures."
+  },
+  "ecosystem": {
+    "creatures": [
+      "mine_spider",
+      "cave_bat"
+    ],
+    "resources": [
+      "mat_copper_ore",
+      "mat_herbs"
+    ],
+    "weather": "Freezing and stagnant",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": [
+    "oakhaven_south_gate"
+  ],
+  "enemies": [
+    "mine_spider",
+    "cave_bat"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 60
+    },
+    {
+      "type": "empty",
+      "weight": 15
+    },
+    {
+      "type": "treasure",
+      "weight": 20
+    },
+    {
+      "type": "rare_mob",
+      "weight": 5
+    }
+  ]
+}

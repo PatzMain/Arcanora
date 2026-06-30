@@ -57,8 +57,9 @@
     "river_docks",
     "oakhaven_forge",
     "apothecary",
-    "glittering_meadows",
-    "oakhaven_sewers"
+    "oakhaven_sewers",
+    "oakhaven_east_gate",
+    "oakhaven_south_gate"
   ],
   "isDungeon": false
 }

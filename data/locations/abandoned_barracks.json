@@ -1,0 +1,70 @@
+{
+  "id": "abandoned_barracks",
+  "name": "Abandoned Barracks",
+  "arrivalText": "Vines cover the crumbling stone towers of the old military barracks, now silent save for the harsh whispers of goblin squatters.",
+  "description": "An abandoned border guard outpost built during the Second Orc War. Goblins have claimed the ruins, turning the old bunkrooms into dangerous traps and nests.",
+  "minLevel": 3,
+  "maxLevel": 6,
+  "explorationCooldown": 60,
+  "region": "Kingdom of Eldoria",
+  "area": "Eldoria Foothills",
+  "type": "combat",
+  "isDungeon": true,
+  "hasRestBed": false,
+  "visualTheme": "Decayed wooden floors, rusted iron gates, collapsed masonry, and crude goblin totems and barricades.",
+  "history": {
+    "createdWhy": "Built to house soldiers stationed along the eastern Oakhaven borders.",
+    "builtWho": "Royal builders of the Eldorian Vanguard.",
+    "majorEvents": "Abandoned after the war borders shifted east, leaving it empty for wood goblins to occupy.",
+    "whyExists": "Remains as a dangerous hazard on the edge of Oakhaven's borders.",
+    "currentConflicts": "Wood goblins from the barracks are launching small raids on Oakhaven's East Gate."
+  },
+  "ecosystem": {
+    "creatures": [
+      "wood_goblin",
+      "goblin_scout",
+      "goblin_warrior"
+    ],
+    "resources": [
+      "mat_wood",
+      "mat_flax_fiber"
+    ],
+    "weather": "Cold wind whistling through ruins",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [],
+    "factions": [],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": [
+    "oakhaven_east_gate"
+  ],
+  "enemies": [
+    "wood_goblin",
+    "goblin_scout",
+    "goblin_warrior"
+  ],
+  "encounters": [
+    {
+      "type": "normal_mob",
+      "weight": 60
+    },
+    {
+      "type": "empty",
+      "weight": 15
+    },
+    {
+      "type": "treasure",
+      "weight": 20
+    },
+    {
+      "type": "rare_mob",
+      "weight": 5
+    }
+  ]
+}

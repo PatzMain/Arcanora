@@ -1,0 +1,55 @@
+{
+  "id": "oakhaven_south_gate",
+  "name": "Town South Gate",
+  "arrivalText": "The wooden southern gate archway stands tall, overlooking the lush river meadows and the winding Silverbrook path.",
+  "description": "The southern entrance checkpoint of Oakhaven Hamlet. It opens directly to the sunlit meadows and fertile river farmlands.",
+  "minLevel": 1,
+  "maxLevel": 100,
+  "explorationCooldown": 0,
+  "region": "Kingdom of Eldoria",
+  "area": "Oakhaven Hamlet",
+  "type": "settlement",
+  "hasRestBed": false,
+  "visualTheme": "A wide timber archway gate with stone foundation, overlooking farm paths and fields.",
+  "history": {
+    "createdWhy": "Erected to regulate incoming agricultural trade and taxation from southern farming plots.",
+    "builtWho": "Silas Senior and local town builders.",
+    "majorEvents": "A massive flood reached the gate base three summers ago.",
+    "whyExists": "Primary entry point for farmers, shepherds, and fishermen.",
+    "currentConflicts": "Local wolves occasionally raid the nearby pastures, calling for defense."
+  },
+  "ecosystem": {
+    "creatures": [],
+    "resources": [],
+    "weather": "Warm and sunny",
+    "hazards": []
+  },
+  "social": {
+    "npcs": [
+      {
+        "id": "guard_cory",
+        "name": "Guard Cory",
+        "role": "Sentry",
+        "dialogue": [
+          "Beautiful day to fish at the docks, isn't it?",
+          "Watch out for slimes in the Meadows. They're sticky and annoying.",
+          "The South Gate is always peaceful, just how I like it."
+        ]
+      }
+    ],
+    "factions": [
+      "Eldorian Guard"
+    ],
+    "travelers": []
+  },
+  "gameplay": {
+    "quests": [],
+    "secrets": []
+  },
+  "connections": [
+    "oakhaven_square",
+    "glittering_meadows",
+    "foothills_crypt"
+  ],
+  "isDungeon": false
+}

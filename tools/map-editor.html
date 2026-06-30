@@ -282,6 +282,16 @@
   <header>
     <h1>🗺️ Arcanora Map Editor</h1>
     <div class="toolbar">
+      <div style="display: flex; align-items: center; gap: 5px; margin-right: 15px;">
+        <span style="font-size: 13px; color: var(--text-muted);">Zoom: <span id="zoom-value">100%</span></span>
+        <button class="secondary" style="padding: 4px 10px;" onclick="zoomCanvas(0.1)" title="Zoom In">+</button>
+        <button class="secondary" style="padding: 4px 10px;" onclick="zoomCanvas(-0.1)" title="Zoom Out">-</button>
+        <button class="secondary" style="padding: 4px 10px;" onclick="resetZoom()" title="Reset Zoom">Reset</button>
+      </div>
+      <div style="display: flex; gap: 5px; margin-right: 15px; border-right: 1px solid var(--border-color); padding-right: 15px;">
+        <button class="secondary" style="padding: 4px 10px;" onclick="undo()" title="Undo (Ctrl+Z)">Undo</button>
+        <button class="secondary" style="padding: 4px 10px;" onclick="redo()" title="Redo (Ctrl+Y)">Redo</button>
+      </div>
       <label class="file-label" for="map-file">Load Base Image</label>
       <input type="file" id="map-file" accept="image/*">
       <button class="secondary" onclick="importConfig()">Import Config</button>
@@ -351,7 +361,9 @@
       <input type="checkbox" id="opt-fog">
       <label>Preview Fog-of-War</label>
     </div>
-    <div style="flex: 1;"></div>
+    <div style="flex: 1; text-align: center; color: var(--text-muted); font-size: 0.75rem;">
+      💡 Hold Right-Click or Middle-Click and drag to PAN. Scroll wheel to ZOOM.
+    </div>
     <div>
       <label for="player-loc-select">Simulate Player Location: </label>
       <select id="player-loc-select" onchange="updatePlayerLocation()" style="background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 4px; border-radius: 4px;">
@@ -370,6 +382,10 @@
       { id: 'oakhaven_forge', name: 'Oakhaven Forge', type: 'settlement' },
       { id: 'apothecary', name: 'Apothecary Cottage', type: 'settlement' },
       { id: 'oakhaven_sewers', name: 'Oakhaven Sewers', type: 'dungeon' },
+      { id: 'oakhaven_east_gate', name: 'Town East Gate', type: 'settlement' },
+      { id: 'oakhaven_south_gate', name: 'Town South Gate', type: 'settlement' },
+      { id: 'abandoned_barracks', name: 'Abandoned Barracks', type: 'dungeon' },
+      { id: 'foothills_crypt', name: 'Foothills Crypt', type: 'dungeon' },
       { id: 'glittering_meadows', name: 'Glittering Meadows', type: 'wilderness' },
       { id: 'birch_thicket', name: 'Birch Thicket', type: 'wilderness' },
       { id: 'silverbrook_river', name: 'Silverbrook River', type: 'wilderness' },
@@ -392,7 +408,12 @@
       { from: "oakhaven_square", to: "oakhaven_forge" },
       { from: "oakhaven_square", to: "apothecary" },
       { from: "oakhaven_square", to: "oakhaven_sewers" },
-      { from: "oakhaven_square", to: "glittering_meadows" },
+      { from: "oakhaven_square", to: "oakhaven_east_gate" },
+      { from: "oakhaven_square", to: "oakhaven_south_gate" },
+      { from: "oakhaven_east_gate", to: "abandoned_barracks" },
+      { from: "oakhaven_east_gate", to: "birch_thicket" },
+      { from: "oakhaven_south_gate", to: "foothills_crypt" },
+      { from: "oakhaven_south_gate", to: "glittering_meadows" },
       { from: "glittering_meadows", to: "birch_thicket" },
       { from: "glittering_meadows", to: "silverbrook_river" },
       { from: "birch_thicket", to: "goblin_outpost" },
@@ -409,7 +430,7 @@
       { from: "abyssal_depths", to: "sunken_temple" }
     ];
 
-    const STARTER_TOWNS = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary'];
+    const STARTER_TOWNS = ['cozy_tavern', 'oakhaven_square', 'river_docks', 'oakhaven_forge', 'apothecary', 'oakhaven_east_gate', 'oakhaven_south_gate'];
 
     // Default configuration
     let config = {
@@ -445,6 +466,22 @@
       discoveryState[z.id] = STARTER_TOWNS.includes(z.id);
     });
 
+    // Undo / Redo stacks
+    let undoStack = [];
+    let redoStack = [];
+    const MAX_HISTORY = 100;
+
+    // Zoom & Pan variables
+    let zoomScale = 1.0;
+    const zoomMin = 0.5;
+    const zoomMax = 4.0;
+    let panX = 0;
+    let panY = 0;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let isSpacePressed = false;
+
     let selectedLocId = null;
     let baseImage = null;
     let isDragging = false;
@@ -460,6 +497,84 @@
     const canvas = document.getElementById('editor-canvas');
     const ctx = canvas.getContext('2d');
     const coordOverlay = document.getElementById('coord-overlay');
+
+    // Save history state
+    function saveState() {
+      const stateCopy = JSON.parse(JSON.stringify(config));
+      undoStack.push(stateCopy);
+      if (undoStack.length > MAX_HISTORY) {
+        undoStack.shift();
+      }
+      redoStack = []; // Clear redo
+    }
+
+    function undo() {
+      if (undoStack.length === 0) return;
+      const currentState = JSON.parse(JSON.stringify(config));
+      redoStack.push(currentState);
+      
+      const previousState = undoStack.pop();
+      config = previousState;
+      
+      renderLocationList();
+      redraw();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return;
+      const currentState = JSON.parse(JSON.stringify(config));
+      undoStack.push(currentState);
+      
+      const nextState = redoStack.pop();
+      config = nextState;
+      
+      renderLocationList();
+      redraw();
+    }
+
+    // Zoom Helpers
+    function zoomCanvas(delta) {
+      const oldZoom = zoomScale;
+      zoomScale = Math.max(zoomMin, Math.min(zoomMax, zoomScale + delta));
+      document.getElementById('zoom-value').textContent = Math.round(zoomScale * 100) + '%';
+      
+      // Center zoom adjustment
+      panX = (canvas.width / 2) - ((canvas.width / 2) - panX) * (zoomScale / oldZoom);
+      panY = (canvas.height / 2) - ((canvas.height / 2) - panY) * (zoomScale / oldZoom);
+      redraw();
+    }
+
+    function resetZoom() {
+      zoomScale = 1.0;
+      panX = 0;
+      panY = 0;
+      document.getElementById('zoom-value').textContent = '100%';
+      redraw();
+    }
+
+    // Keyboard Shortcuts (Ctrl+Z and Ctrl+Y, Spacebar to Pan)
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        isSpacePressed = true;
+        e.preventDefault(); // Prevent page scrolling
+      }
+      const isCtrl = e.ctrlKey || e.metaKey;
+      if (isCtrl) {
+        if (e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          undo();
+        } else if (e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          redo();
+        }
+      }
+    });
+
+    window.addEventListener('keyup', e => {
+      if (e.code === 'Space') {
+        isSpacePressed = false;
+      }
+    });
 
     // Load initial list
     function renderLocationList() {
@@ -549,8 +664,10 @@
 
     function updateSelectedLocation() {
       if (!selectedLocId) return;
-      const locConfig = config.locations[selectedLocId];
       
+      saveState(); // Record change state
+      
+      const locConfig = config.locations[selectedLocId];
       locConfig.x = parseInt(document.getElementById('field-x').value) || 0;
       locConfig.y = parseInt(document.getElementById('field-y').value) || 0;
       locConfig.fogRadius = parseInt(document.getElementById('field-fog').value) || 40;
@@ -589,12 +706,42 @@
       reader.readAsDataURL(file);
     };
 
+    // Canvas Mouse Wheel Zoom
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      const delta = e.deltaY < 0 ? 0.1 : -0.1;
+      const oldZoom = zoomScale;
+      zoomScale = Math.max(zoomMin, Math.min(zoomMax, zoomScale + delta));
+      document.getElementById('zoom-value').textContent = Math.round(zoomScale * 100) + '%';
+      
+      // Adjust pan coordinates so it zooms relative to cursor pointer position
+      panX = mouseX - (mouseX - panX) * (zoomScale / oldZoom);
+      panY = mouseY - (mouseY - panY) * (zoomScale / oldZoom);
+      
+      redraw();
+    }, { passive: false });
+
     // Canvas interactivity
     canvas.addEventListener('mousemove', e => {
       const rect = canvas.getBoundingClientRect();
-      const x = Math.round(e.clientX - rect.left);
-      const y = Math.round(e.clientY - rect.top);
+      const rawX = e.clientX - rect.left;
+      const rawY = e.clientY - rect.top;
+      
+      // Map screen coordinates back to zoomed/panned workspace coordinates
+      const x = Math.round((rawX - panX) / zoomScale);
+      const y = Math.round((rawY - panY) / zoomScale);
       coordOverlay.textContent = `X: ${x}, Y: ${y}`;
+
+      if (isPanning) {
+        panX = e.clientX - panStartX;
+        panY = e.clientY - panStartY;
+        redraw();
+        return;
+      }
 
       if (isDragging && selectedLocId) {
         const locConfig = config.locations[selectedLocId];
@@ -602,14 +749,26 @@
         locConfig.y = y;
         document.getElementById('field-x').value = x;
         document.getElementById('field-y').value = y;
-        updateSelectedLocation();
+        redraw();
       }
     });
 
     canvas.addEventListener('mousedown', e => {
       const rect = canvas.getBoundingClientRect();
-      const x = Math.round(e.clientX - rect.left);
-      const y = Math.round(e.clientY - rect.top);
+      const rawX = e.clientX - rect.left;
+      const rawY = e.clientY - rect.top;
+
+      // Check if panning trigger (Spacebar + drag, Right-click, Middle-click, or Shift key)
+      const isPanTrigger = e.button === 1 || e.button === 2 || e.shiftKey || isSpacePressed;
+      if (isPanTrigger) {
+        isPanning = true;
+        panStartX = e.clientX - panX;
+        panStartY = e.clientY - panY;
+        return;
+      }
+
+      const x = Math.round((rawX - panX) / zoomScale);
+      const y = Math.round((rawY - panY) / zoomScale);
 
       // Check if clicked close to an existing marker to select/drag it
       let clickedMarker = null;
@@ -623,6 +782,8 @@
           }
         }
       }
+
+      saveState(); // Record historical state before action
 
       if (clickedMarker) {
         selectLocation(clickedMarker);
@@ -641,22 +802,29 @@
 
     canvas.addEventListener('mouseup', () => {
       isDragging = false;
+      isPanning = false;
+      renderLocationList();
     });
 
     // Drawing
     function redraw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
+      // Save draw state and apply Pan and Zoom transformations
+      ctx.save();
+      ctx.translate(panX, panY);
+      ctx.scale(zoomScale, zoomScale);
+
       // 1. Draw base image
       if (baseImage) {
-        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(baseImage, 0, 0, baseImage.width || 800, baseImage.height || 500, 0, 0, 800, 500);
       } else {
         ctx.fillStyle = '#1e1e1e';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, 800, 500);
         ctx.fillStyle = '#a1a1aa';
         ctx.font = '14px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('Please Load a Base Map Image (800x500)', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('Please Load a Base Map Image (800x500)', 400, 250);
       }
 
       // 2. Draw paths
@@ -683,17 +851,16 @@
 
       // 3. Draw Fog of War
       if (options.showFog) {
-        // Accurate fog cutout rendering:
         ctx.save();
         ctx.fillStyle = config.fogColor;
         
         // We create an offscreen path for cutting out
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
+        tempCanvas.width = 800;
+        tempCanvas.height = 500;
         const tempCtx = tempCanvas.getContext('2d');
         tempCtx.fillStyle = config.fogColor;
-        tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+        tempCtx.fillRect(0, 0, 800, 500);
         
         // Cutout circles for placed & discovered locations
         tempCtx.globalCompositeOperation = 'destination-out';
@@ -778,6 +945,9 @@
           ctx.fill();
         }
       }
+
+      // Restore transformations
+      ctx.restore();
     }
 
     // Export & Import
@@ -806,6 +976,8 @@
       try {
         const parsed = JSON.parse(inputStr);
         if (parsed.locations) {
+          saveState(); // Record state before importing
+          
           // Merge imported locations into config
           for (const key in parsed.locations) {
             if (config.locations[key]) {

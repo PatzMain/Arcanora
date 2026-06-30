@@ -40,6 +40,7 @@
     "secrets": []
   },
   "connections": [
+    "oakhaven_east_gate",
     "glittering_meadows",
     "goblin_outpost"
   ],
