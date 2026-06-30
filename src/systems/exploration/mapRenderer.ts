@@ -13,8 +13,9 @@ import { players } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { getPlayerWithClampedStats } from '../../database/queries/player.js';
 import { zonesCatalog, itemsCatalog, enemiesCatalog, questsCatalog } from '../../utils/catalog.js';
-import { errorEmbed, progressBar } from '../../utils/embeds.js';
+import { errorEmbed, progressBar, COLORS, baseEmbed } from '../../utils/embeds.js';
 import { buildNavId } from '../../utils/navigation.js';
+import { renderWorldMap } from '../../utils/mapVisual.js';
 import {
   discoverLocation,
   getPlayerDiscoveredLocations
@@ -92,139 +93,84 @@ export async function renderWorldMapScreen(
   if (!destinationsText) destinationsText = '*No connections available.*';
 
   // Vitals block
-  const nextLevelXp = XP_TABLE[player.level + 1] || 0;
-  const xpBarString = progressBar(player.exp, nextLevelXp || 100, 10);
-  const vitalsText =
-    `🔋 **${player.stamina}/${player.staminaMax}** Stamina   ❤️ **${player.hpCurrent}/${stats.hpMax}** HP   💧 **${player.manaCurrent}/${stats.manaMax}** MP\n` +
-    `🌟 **XP**: ${xpBarString} \`${player.exp}/${nextLevelXp} XP\``;
+  const compactVitals = `❤️ **HP** ${player.hpCurrent}/${stats.hpMax}   💧 **MP** ${player.manaCurrent}/${stats.manaMax}   🔋 **ST** ${player.stamina}/${player.staminaMax}`;
 
   // Embed Description
   let msgPrefix = '✅ ';
   if (travelMsg && (travelMsg.startsWith('❌') || travelMsg.startsWith('⚠️') || travelMsg.startsWith('💤') || travelMsg.startsWith('ℹ️'))) {
     msgPrefix = '';
   }
-  const descriptionText =
-    (travelMsg ? `${msgPrefix}**${travelMsg}**\n\n` : '') +
-    `**Lv.${currentLoc.minLevel}-${currentLoc.maxLevel}  ·  ${capitalize(currentLoc.type)}  ·  ${currentLoc.region}**\n\n` +
-    `*"${currentLoc.description}"*\n\n` +
-    `${vitalsText}\n\n` +
-    `── **Where to Go** ──\n` +
-    destinationsText;
+  const statusLine = travelMsg ? `${msgPrefix}**${travelMsg}**\n\n` : '';
+  const embedDescription = `${statusLine}*"${currentLoc.description.split('\n')[0]}"*\n\n${compactVitals}`;
 
-  const activities = [];
-  const resources = currentLoc.ecosystem?.resources || [];
-  if (resources.length > 0) {
-    const resourceNames = resources.map((rId: string) => itemsCatalog.find((i) => i.id === rId)?.name || rId).join(', ');
-    const isWoodOnly = resources.length === 1 && resources[0] === 'mat_wood';
-    const isWoodPrimary = resources.includes('mat_wood') && !resources.some((r: string) => r.includes('ore'));
-    const gatherEmoji = (isWoodOnly || isWoodPrimary) ? '🪓' : '⛏️';
-    activities.push(`• ${gatherEmoji} **Gather** (2 Stamina): Harvest ${resourceNames}`);
-  }
-  const isDocks = currentLoc.id === 'river_docks';
-  const isRiver = currentLoc.id === 'silverbrook_river';
-  const hasFish = resources.some((r: string) => r.startsWith('fish_'));
-  if (isDocks || isRiver || hasFish) {
-    activities.push('• 🎣 **Fish** (3 Stamina): Cast a line into the water');
-  }
-  if (currentLoc.hasRestBed) {
-    activities.push('• 💤 **Rest**: Sleep at the Cozy Tavern to fully restore vitals');
-  }
-
-  // Build advice / guide text dynamically
-  let adviceText = '';
-
+  // Build guidance dynamically
+  let guidanceLine = 'Travel to new zones, take on quests, and hunt monsters to grow stronger!';
   const hpPct = player.hpCurrent / stats.hpMax;
-  if (hpPct < 0.3 || player.stamina < 5) {
-    adviceText += `• 💤 **Vitals Low**: You are low on HP or Stamina! Travel to the **Cozy Tavern** and click the **Rest** button to fully recover your vitals.\n`;
-  }
 
   const activeQuests = await getActiveQuests(player.id);
-  if (activeQuests.length > 0) {
-    for (const q of activeQuests) {
-      const qDef = questsCatalog.find((qc) => qc.id === q.questId);
-      if (!qDef) continue;
-
-      const progressObj = q.progress as Record<string, number> || {};
-      
+  if (hpPct < 0.3 || player.stamina < 5) {
+    guidanceLine = '⚠️ Vitals Low! Travel to Cozy Tavern to Rest and recover.';
+  } else if (activeQuests.length > 0) {
+    const activeQ = activeQuests[0]!;
+    const qDef = questsCatalog.find((qc) => qc.id === activeQ.questId);
+    if (qDef) {
+      const progressObj = activeQ.progress as Record<string, number> || {};
+      let conditionText = '';
       for (const cond of qDef.conditions || []) {
         const currentCount = progressObj[cond.target] || 0;
         const needed = cond.required;
-        if (currentCount >= needed) continue;
-
-        if (cond.type === 'kill') {
-          const zonesWithCreature = zonesCatalog.filter((z) => (z.enemies || []).includes(cond.target));
-          const enemyName = enemiesCatalog.find((e) => e.id === cond.target)?.name || cond.target;
-          
-          if (zonesWithCreature.some((z) => z.id === currentLoc.id)) {
-            adviceText += `• ⚔️ **Quest: ${qDef.name}**: Defeat **${enemyName}** (${currentCount}/${needed}). (Tip: Hunt directly in this area using the **Hunt** button!).\n`;
-          } else if (zonesWithCreature.length > 0) {
-            adviceText += `• ⚔️ **Quest: ${qDef.name}**: Defeat **${enemyName}** (${currentCount}/${needed}). (Go to: **${zonesWithCreature[0].name}**).\n`;
-          } else {
-            adviceText += `• ⚔️ **Quest: ${qDef.name}**: Defeat **${enemyName}** (${currentCount}/${needed}).\n`;
+        if (currentCount < needed) {
+          if (cond.type === 'kill') {
+            const enemyName = enemiesCatalog.find((e) => e.id === cond.target)?.name || cond.target;
+            conditionText = `Defeat ${enemyName} (${currentCount}/${needed})`;
+          } else if (cond.type === 'gather') {
+            const itemDef = itemsCatalog.find((i) => i.id === cond.target);
+            const itemName = itemDef?.name || cond.target;
+            conditionText = `Gather ${itemName} (${currentCount}/${needed})`;
+          } else if (cond.type === 'explore') {
+            const targetLoc = zonesCatalog.find((z) => z.id === cond.target);
+            conditionText = `Travel to ${targetLoc ? targetLoc.name : cond.target}`;
           }
-        } else if (cond.type === 'gather') {
-          const itemDef = itemsCatalog.find((i) => i.id === cond.target);
-          const itemName = itemDef?.name || cond.target;
-          const zonesWithResource = zonesCatalog.filter((z) => (z.ecosystem?.resources || []).includes(cond.target));
-          if (zonesWithResource.some((z) => z.id === currentLoc.id)) {
-            adviceText += `• ⛏️ **Quest: ${qDef.name}**: Gather **${itemName}** (${currentCount}/${needed}). (Tip: Gather directly in this area using the **Gather** button!).\n`;
-          } else if (zonesWithResource.length > 0) {
-            adviceText += `• ⛏️ **Quest: ${qDef.name}**: Gather **${itemName}** (${currentCount}/${needed}). (Go to: **${zonesWithResource[0].name}**).\n`;
-          } else {
-            adviceText += `• ⛏️ **Quest: ${qDef.name}**: Gather **${itemName}** (${currentCount}/${needed}).\n`;
-          }
-        } else if (cond.type === 'explore') {
-          const targetLoc = zonesCatalog.find((z) => z.id === cond.target);
-          if (targetLoc) {
-            adviceText += `• 🗺️ **Quest: ${qDef.name}**: Travel to **${targetLoc.name}** to discover it (${currentCount}/${needed}).\n`;
-          } else {
-            adviceText += `• 🗺️ **Quest: ${qDef.name}**: Travel to location (${currentCount}/${needed}).\n`;
-          }
+          break;
         }
+      }
+      if (conditionText) {
+        guidanceLine = `📜 **${qDef.name}**: ${conditionText}`;
+      } else {
+        guidanceLine = `📜 **${qDef.name}**: Ready to turn in!`;
       }
     }
   } else {
-    adviceText += `• 📜 **No Active Quests**: Visit the Quest Board (click the **Quests** button below) to accept new quests for XP and gold!\n`;
-  }
-
-  const levelLockedConns = [];
-  for (const connId of currentLoc.connections || []) {
-    const connLoc = zonesCatalog.find((z) => z.id === connId);
-    if (connLoc && player.level < connLoc.minLevel) {
-      levelLockedConns.push(connLoc);
+    if (currentLoc.id !== 'oakhaven_square') {
+      guidanceLine = '🧭 Travel to Oakhaven Square and check the Quest Board!';
+    } else {
+      guidanceLine = '🧭 Check the Quest Board here to accept a new quest!';
     }
   }
-  if (levelLockedConns.length > 0) {
-    const lockedNames = levelLockedConns.map((c) => `${c.name} (Requires Lv.${c.minLevel})`).join(', ');
-    adviceText += `• 💪 **Level Up**: Adjacent zones locked by level: ${lockedNames}. (Tip: Grind XP by fighting in the **Oakhaven Sewers** dungeon or **Glittering Meadows**!).\n`;
-  } else if (player.level === 1 && currentLoc.id === 'cozy_tavern') {
-    adviceText += `• 🗺️ **First Steps**: Travel to the **Town Square** using the Travel menu, then check the Quest Board!\n`;
-  }
 
-  if (!adviceText) {
-    adviceText = `• 🧭 Travel to new zones, take on quests, and hunt monsters to grow stronger!`;
-  }
+  const embed = baseEmbed()
+    .setColor(COLORS.EXPLORATION)
+    .setTitle(`📍 ${currentLoc.name}`)
+    .setDescription(embedDescription);
 
-  const embed = new EmbedBuilder()
-    .setColor(0x7C3AED)
-    .setTitle(`🗺️ ${currentLoc.name}`)
-    .setDescription(descriptionText)
-    .setFooter({ text: 'Arcanora — ⚔️ Hunt: 5 Stamina  🚶 Travel: Free' })
-    .setTimestamp();
-
-  embed.addFields({
-    name: '🧭 Next Steps & Advice',
-    value: adviceText,
-    inline: false
-  });
-
-  if (activities.length > 0) {
-    embed.addFields({
-      name: '⛏️ Available Activities',
-      value: activities.join('\n'),
+  const asciiMap = renderWorldMap(player.currentZoneId, discoveredLocIds);
+  embed.addFields(
+    {
+      name: '🗺️ World Map',
+      value: `\`\`\`\n${asciiMap}\n\`\`\``,
       inline: false
-    });
-  }
+    },
+    {
+      name: '🧭 Guidance',
+      value: guidanceLine,
+      inline: false
+    }
+  );
+
+  const resources = currentLoc.ecosystem?.resources || [];
+  const isDocks = currentLoc.id === 'river_docks';
+  const isRiver = currentLoc.id === 'silverbrook_river';
+  const hasFish = resources.some((r: string) => r.startsWith('fish_'));
 
   const components: any[] = [];
 

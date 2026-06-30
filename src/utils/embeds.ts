@@ -31,8 +31,8 @@ export {
 } from './embeds/combat.js';
 
 export {
-  profileEmbed,
-  statsEmbed,
+  buildProfileEmbed,
+  buildProfileTabButtons,
   inventoryEmbed,
   shopEmbed,
   questEmbed,

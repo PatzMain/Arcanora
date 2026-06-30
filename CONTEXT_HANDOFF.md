@@ -640,6 +640,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Vitest Suite Updates**: Updated and expanded test coverage (72 tests total passing).
 
 ### 2026-06-30
+- **Phase 1 UI/UX Overhaul**: Redesigned game embeds, introduced unified item cards (compact/detail), integrated details toggle in codex inspect, updated colors (COLORS.COMBAT, COLORS.LOOT), and cleaned up inventory, shop, and combat UIs.
 - **Codex & Bestiary System**: Implemented the `/codex` slash command with `enemies` (bestiary), `items` (inventory collection), and `locations` subcommands, including pagination, custom detail inspect views, and interactive select menus.
 - **Auto-Discovery Integration**: Integrated codex updates automatically when players defeat enemies, acquire items via `addItem`, travel the world map, or crawl through dungeons.
 - **Component ID Bug Fixes**: Fixed component interaction routing for select menus in [codex.ts](file:///c:/Users/Patz/Desktop/My%20Projects/Arcanora/src/commands/player/codex.ts) to strictly align split indexing.

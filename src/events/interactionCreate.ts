@@ -109,6 +109,9 @@ export async function execute(interaction: Interaction) {
         await handleDungeonInteraction(interaction as any);
       } else if (customId.startsWith('player_preset_')) {
         await handlePresetInteraction(interaction as any);
+      } else if (customId.startsWith('player_profile_')) {
+        const { handleProfileInteraction } = await import('../commands/player/player.js');
+        await handleProfileInteraction(interaction as any);
       } else if (customId.startsWith('admin_')) {
         await handleAdminInteraction(interaction as any);
       } else if (customId.startsWith('house_')) {

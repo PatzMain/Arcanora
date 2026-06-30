@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 import {
   baseEmbed,
   COLORS,
@@ -11,7 +11,8 @@ import {
   petBar,
   capitalize,
   classEmoji,
-  prestigeStars
+  prestigeStars,
+  compactBar
 } from './base.js';
 import {
   getItemEmoji,
@@ -19,6 +20,7 @@ import {
   getPetEmoji,
   getCurrencyEmoji
 } from '../emojis.js';
+import { petsCatalog } from '../catalog.js';
 
 const RARITY_EMOJIS: Record<string, string> = {
   common: '🪨',
@@ -36,113 +38,125 @@ const CLASS_EMOJIS: Record<string, string> = {
   healer: '❇️',
 };
 
-export function profileEmbed(
-  player: {
-    username: string;
-    level: number;
-    className: string | null;
-    gold: number;
-    gems: number;
-    prestige: number;
-    currentHp: number;
-    maxHp: number;
-    currentMana: number;
-    maxMana: number;
-    storyQuestName: string;
-    stamina: number;
-    staminaMax: number;
-    currentZoneName: string;
-    exp?: number;
-    nextLevelXp?: number;
-  },
-  stats: {
-    hpMax: number;
-    manaMax: number;
-    attack: number;
-    defense: number;
-    critChance: number;
-    critDmg: number;
-    speed: number;
-    luck: number;
-  },
-  equipment: { slot: string; name: string; rarity: string; id?: string; emoji?: string | null }[],
-  guildName?: string,
+export function buildProfileTabButtons(discordId: string, activeTab: 'identity' | 'equipment' | 'stats'): ActionRowBuilder<ButtonBuilder> {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`player_profile_${discordId}_identity`)
+      .setLabel('Profile')
+      .setStyle(activeTab === 'identity' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setEmoji('📋'),
+    new ButtonBuilder()
+      .setCustomId(`player_profile_${discordId}_equipment`)
+      .setLabel('Equipment')
+      .setStyle(activeTab === 'equipment' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setEmoji('⚔️'),
+    new ButtonBuilder()
+      .setCustomId(`player_profile_${discordId}_stats`)
+      .setLabel('Stats')
+      .setStyle(activeTab === 'stats' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setEmoji('📊')
+  );
+}
+
+export function buildProfileEmbed(
+  player: any,
+  stats: any,
+  equippedItemsList: any[],
+  guildName: string | undefined,
+  storyQuestName: string,
+  currentZoneName: string,
+  tab: 'identity' | 'equipment' | 'stats'
 ): EmbedBuilder {
+  const embed = baseEmbed().setColor(COLORS.PROFILE);
   const classIcon = getClassEmoji(player.className);
   const classDisplay = player.className ? capitalize(player.className) : 'Novice (unlock at Lv.5)';
   const stars = prestigeStars(player.prestige);
- 
-  const equipLines = equipment.length > 0
-    ? equipment.map((e) => `${e.emoji || (e.id ? getItemEmoji(e.id, e.rarity) : (RARITY_EMOJIS[e.rarity] || '🪨'))} **${capitalize(e.slot)}**: ${e.name}`).join('\n')
-    : '*No equipment*';
- 
-  const hpBarString = hpBar(player.currentHp, stats.hpMax, 10);
-  const manaBarString = manaBar(player.currentMana, stats.manaMax, 10);
-  const staminaBarString = staminaBar(player.stamina, player.staminaMax, 10);
-  const xpBarString = progressBar(player.exp || 0, player.nextLevelXp || 100, 10);
- 
-  const statsLine1 = `⚔️ ${stats.attack} ATK  ·  🛡️ ${stats.defense} DEF  ·  💨 ${stats.speed} SPD`;
-  const statsLine2 = `⚡ ${stats.critChance}% Crit  ·  💥 ${stats.critDmg}% CritDmg  ·  🍀 ${stats.luck} LUK`;
- 
-  const embedDescription =
-    `${DIVIDER}\n` +
-    `Level **${player.level}** ${classDisplay} ${player.prestige > 0 ? `· Prestige ${player.prestige}` : ''}\n` +
-    `📍 Location: **${player.currentZoneName}**\n` +
-    `📜 Story: **${player.storyQuestName}**\n\n` +
-    `❤️ ${hpBarString} \`${player.currentHp}/${stats.hpMax} HP\`\n` +
-    `💧 ${manaBarString} \`${player.currentMana}/${stats.manaMax} MP\`\n` +
-    `🔋 ${staminaBarString} \`${player.stamina}/${player.staminaMax} Stamina\`\n` +
-    `🌟 ${xpBarString} \`${player.exp || 0}/${player.nextLevelXp || 0} XP\`\n\n` +
-    `─── 📊 **Combat Stats** ───\n` +
-    `${statsLine1}\n` +
-    `${statsLine2}\n\n` +
-    `─── 🛡️ **Equipment** ───\n` +
-    `${equipLines}\n\n` +
-    `─── 💰 **Wealth** ───\n` +
-    `${getCurrencyEmoji('gold')} **${player.gold.toLocaleString()}** Gold  ·  ${getCurrencyEmoji('gems')} **${player.gems.toLocaleString()}** Gems\n` +
-    (guildName ? `\n🏰 **Guild**: ${guildName}` : '');
 
-  return baseEmbed()
-    .setColor(COLORS.PRIMARY)
-    .setTitle(`${classIcon} ${player.username}${stars}`)
-    .setDescription(embedDescription);
-}
+  if (tab === 'identity') {
+    embed.setTitle(`${classIcon} ${player.username}${stars}  「${classDisplay}」`);
+    
+    const hpB = compactBar(player.currentHp, stats.hpMax, 'hp');
+    const mpB = compactBar(player.currentMana, stats.manaMax, 'mana');
+    const stB = compactBar(player.stamina, player.staminaMax, 'stamina');
+    const xpB = compactBar(player.exp || 0, player.nextLevelXp || 100, 'xp');
+    const xpPct = player.nextLevelXp > 0 ? Math.round(((player.exp || 0) / player.nextLevelXp) * 100) : 0;
 
-export function statsEmbed(
-  player: { username: string; level: number; className: string | null },
-  stats: {
-    hpMax: number;
-    manaMax: number;
-    attack: number;
-    defense: number;
-    critChance: number;
-    critDmg: number;
-    speed: number;
-    luck: number;
-  },
-): EmbedBuilder {
-  const classIcon = classEmoji(player.className);
-  const classDisplay = player.className ? capitalize(player.className) : 'None';
+    const description = 
+      `Lv. ${player.level}  •  ${currentZoneName}  •  ${guildName || 'Guildless'}\n\n` +
+      `🟥 HP  ${hpB}  ${player.currentHp}/${stats.hpMax}\n` +
+      `🟦 MP  ${mpB}  ${player.currentMana}/${stats.manaMax}\n` +
+      `🟪 ST  ${stB}  ${player.stamina}/${player.staminaMax}\n` +
+      `🟨 XP  ${xpB}  ${xpPct}%\n\n` +
+      `${getCurrencyEmoji('gold')} **${player.gold.toLocaleString()}** Gold    ${getCurrencyEmoji('gems')} **${player.gems.toLocaleString()}** Gems\n\n` +
+      `📜 **Story Quest**: ${storyQuestName}`;
 
-  return baseEmbed()
-    .setColor(COLORS.INFO)
-    .setTitle(`📊 ${player.username}'s Stats`)
-    .setDescription(
-      `${DIVIDER}\n` +
-      `**Level ${player.level}** — ${classIcon} ${classDisplay}\n` +
-      `${DIVIDER_SHORT}`
-    )
-    .addFields(
-      { name: '❤️ Max HP', value: `\`${stats.hpMax}\``, inline: true },
-      { name: '💧 Max Mana', value: `\`${stats.manaMax}\``, inline: true },
-      { name: '⚔️ Attack', value: `\`${stats.attack}\``, inline: true },
-      { name: '🛡️ Defense', value: `\`${stats.defense}\``, inline: true },
-      { name: '⚡ Crit Chance', value: `\`${stats.critChance}%\``, inline: true },
-      { name: '💥 Crit Damage', value: `\`${stats.critDmg}%\``, inline: true },
-      { name: '💨 Speed', value: `\`${stats.speed}\``, inline: true },
-      { name: '🍀 Luck', value: `\`${stats.luck}\``, inline: true },
-      { name: '\u200b', value: '\u200b', inline: true },
-    );
+    embed.setDescription(description);
+
+  } else if (tab === 'equipment') {
+    embed.setTitle('⚔️ Equipment');
+
+    const slots = [
+      { key: 'weapon', label: '🗡️ Weapon ', prefix: 'Weapon' },
+      { key: 'helmet', label: '🪖 Helmet ', prefix: 'Helmet' },
+      { key: 'chest',  label: '👕 Chest  ', prefix: 'Chest' },
+      { key: 'gloves', label: '🧤 Gloves ', prefix: 'Gloves' },
+      { key: 'boots',  label: '👢 Boots  ', prefix: 'Boots' },
+      { key: 'accessory', label: '💍 Ring   ', prefix: 'Ring' }
+    ];
+
+    const lines: string[] = [];
+    for (const slot of slots) {
+      const eqItem = equippedItemsList.find(i => i.slot === slot.key);
+      if (eqItem) {
+        const itemEmoji = eqItem.emoji || getItemEmoji(eqItem.id, eqItem.rarity);
+        const statParts: string[] = [];
+        if (eqItem.stats) {
+          for (const [k, v] of Object.entries(eqItem.stats)) {
+            if (v && typeof v === 'number') {
+              statParts.push(`+${v} ${k.toUpperCase()}`);
+            }
+          }
+        }
+        const statText = statParts.length > 0 ? `  ${statParts.join(', ')}` : '';
+        lines.push(`${slot.label}  │  ${itemEmoji} **${eqItem.name}**${statText}`);
+      } else {
+        lines.push(`${slot.label}  │  ── empty ──`);
+      }
+    }
+
+    const eqPet = equippedItemsList.find(i => i.slot === 'pet');
+    if (eqPet) {
+      const petDef = petsCatalog.find(p => p.id === eqPet.id);
+      const petName = petDef?.name || eqPet.name;
+      const petEmoji = eqPet.emoji || getPetEmoji(eqPet.id, eqPet.rarity);
+      lines.push(`🐾 Pet     │  ${petEmoji} **${petName}**  Lv. ${eqPet.enhancement}`);
+    } else {
+      lines.push(`🐾 Pet     │  ── empty ──`);
+    }
+
+    embed.setDescription(lines.join('\n'));
+
+  } else if (tab === 'stats') {
+    embed.setTitle(`📊 ${player.username}'s Detailed Stats`)
+      .setDescription(
+        `**Level ${player.level}** — ${classIcon} ${classDisplay}\n` +
+        `Prestige Level: **${player.prestige}**\n` +
+        `${DIVIDER}`
+      )
+      .addFields(
+        { name: '❤️ Max HP', value: `\`${stats.hpMax}\``, inline: true },
+        { name: '💧 Max Mana', value: `\`${stats.manaMax}\``, inline: true },
+        { name: '⚔️ Attack', value: `\`${stats.attack}\``, inline: true },
+        { name: '🛡️ Defense', value: `\`${stats.defense}\``, inline: true },
+        { name: '⚡ Crit Chance', value: `\`${stats.critChance}%\``, inline: true },
+        { name: '💥 Crit Damage', value: `\`${stats.critDmg}%\``, inline: true },
+        { name: '💨 Speed', value: `\`${stats.speed}\``, inline: true },
+        { name: '🍀 Luck', value: `\`${stats.luck}\``, inline: true },
+        { name: '\u200b', value: '\u200b', inline: true }
+      );
+  }
+
+  return embed;
 }
 
 import { buildCompactItemCard } from './itemCard.js';
