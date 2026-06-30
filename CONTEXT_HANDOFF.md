@@ -659,3 +659,11 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Lore Injection in Quests**: Introduced `"narrative"` blocks inside quest JSON schemas, rendering contextual NPC dialog upon accepting a quest, tracking custom narrative hints on map screens, and writing cinematic complete text into success announcers.
 - **Location Arrival Flavor**: Integrated location-specific `"arrivalText"` strings dynamically presented as italicized flavor text when traveling node-to-node on the map.
 
+### 2026-06-30 (Phase 4 & 5)
+- **Data Fixes & Content Gaps**: Created 21 missing enemy JSON files for higher-level areas (e.g. Shimmering Cave, Goblin Sanctuary, Crystal Caverns, Volcanic Wastes, Lava Keep, Abyssal Depths, Sunken Temple) following stat rules.
+- **Quest Chain Expansion & Renumbering**: Built 7 missing quest JSON files referenced in locations, assigned sequential `displayOrder` fields to all 41 quests, and sorted the available quest list on the board by `displayOrder`.
+- **Chronological Quest Progression**: Updated `STORY_QUEST_ORDER` in `questSystem.ts` to include all 35 story and tutorial quests in non-decreasing level requirement order. Updated unit tests to align with 35 quests.
+- **Location JSON Standardization**: Standardized `hasRestBed: false` and `isDungeon` variables across all location files, deduplicated creatures and enemies lists, and normalized encounters weights to sum to exactly 100.
+- **AI Agent Skills**: Created 7 localized skill instruction files (`.agents/skills/*`) detailing commands, game content, combat skills, database migrations, embed UI patterns, components, and git workflows.
+
+
