@@ -32,17 +32,17 @@ export async function handlePlayerTurnAction(
   let action: CombatAction = { type: 'attack' };
 
   if (interaction.isButton()) {
-    if (interaction.customId === 'combat_attack') {
+    if (interaction.customId.startsWith('combat_attack')) {
       state.activePresetSlot = undefined;
       action = { type: 'attack' };
-    } else if (interaction.customId === 'combat_defend') {
+    } else if (interaction.customId.startsWith('combat_defend')) {
       state.activePresetSlot = undefined;
       action = { type: 'defend' };
-    } else if (interaction.customId === 'combat_flee') {
+    } else if (interaction.customId.startsWith('combat_flee')) {
       state.activePresetSlot = undefined;
       action = { type: 'flee' };
     } else if (interaction.customId.startsWith('combat_preset_')) {
-      const slotNum = parseInt(interaction.customId.split('_')[2] || '1', 10);
+      const slotNum = parseInt(interaction.customId.split('_')[3] || '1', 10);
       state.activePresetSlot = slotNum;
       const presets = parsePresets(player.presets);
       const slot = presets[slotNum - 1];
@@ -154,7 +154,7 @@ export async function handlePlayerTurnAction(
     }
   } else if (interaction.isStringSelectMenu()) {
     state.activePresetSlot = undefined;
-    if (interaction.customId === 'combat_use_skill') {
+    if (interaction.customId.startsWith('combat_use_skill')) {
       const skillId = interaction.values[0]!;
       const skillDef = getSkillById(skillId);
 
@@ -221,7 +221,7 @@ export async function handlePlayerTurnAction(
 
       action = { type: 'skill', skillId };
       state.combatLog.push(result.description);
-    } else if (interaction.customId === 'combat_use_item') {
+    } else if (interaction.customId.startsWith('combat_use_item')) {
       const inventoryId = interaction.values[0]!;
       const dbItem = await db.query.inventory.findFirst({
         where: eq(inventory.id, inventoryId)

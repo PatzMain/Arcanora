@@ -666,4 +666,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Location JSON Standardization**: Standardized `hasRestBed: false` and `isDungeon` variables across all location files, deduplicated creatures and enemies lists, and normalized encounters weights to sum to exactly 100.
 - **AI Agent Skills**: Created 7 localized skill instruction files (`.agents/skills/*`) detailing commands, game content, combat skills, database migrations, embed UI patterns, components, and git workflows.
 
+### 2026-06-30 (Presets & Interaction Fix)
+- **Presets & Interaction Fix**: Resolved preset combo activation failures by fixing the parsed slot ID index (extracting from index 3 instead of 2). Updated combat buttons and select menus to use `.startsWith()` instead of exact matching `===` to successfully route interactions with dynamic user ID suffixes (e.g. `combat_attack_${userId}`).
+
 
