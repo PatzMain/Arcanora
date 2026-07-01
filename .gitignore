@@ -6,3 +6,10 @@ dist/
 *.tsbuildinfo
 CONTEXT_HANDOFF.md
 .eslintcache
+
+# IDE / Editor
+.vscode/
+
+# Internal planning & scratch files (not for contributors)
+early_game_world_redesign.md
+scratch_simulate_playthrough.ts
