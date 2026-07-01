@@ -7,6 +7,7 @@ import { getEquippedItems, addItem } from '../../../database/queries/inventory.j
 import { computeStats } from '../../progression/stats.js';
 import { itemsCatalog } from '../../../utils/catalog.js';
 import { type NodeInteractionHandler } from '../dungeonInteractions.js';
+import { buildCompactItemCard } from '../../../utils/embeds/itemCard.js';
 
 export const eventHandler: NodeInteractionHandler = {
   async onEnter(context) {
@@ -24,6 +25,7 @@ export const eventHandler: NodeInteractionHandler = {
 
     if (context.node.status === 'cleared') {
       examineBtn.setDisabled(true).setLabel('Already Examined');
+      embed.setDescription('✨ **The mysterious phenomenon has faded.** Only faint trace magic remains here.');
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(examineBtn);
@@ -102,7 +104,13 @@ export const eventHandler: NodeInteractionHandler = {
           resultText += `\n\n🕷️ A toxic spider bites you! You lose **10 HP**.`;
         } else {
           await addItem(player.id, 'potion_stamina_small', 1);
-          resultText += `\n\n🎒 You found a **Small Stamina Potion**!`;
+          const itemDef = itemsCatalog.find(i => i.id === 'potion_stamina_small');
+          if (itemDef) {
+            const card = buildCompactItemCard(itemDef, { quantity: 1 });
+            resultText += `\n\n🎒 **Loot Found:**\n▸ ${card}`;
+          } else {
+            resultText += `\n\n🎒 You found a **Small Stamina Potion**!`;
+          }
         }
       }
 
@@ -115,7 +123,11 @@ export const eventHandler: NodeInteractionHandler = {
       const embed = new EmbedBuilder()
         .setColor(0x10B981)
         .setTitle(event?.title || '✨ Strange Discovery')
-        .setDescription(resultText);
+        .setDescription(
+          `✨ ── ── ── ── ── ── ── ✨\n` +
+          `*You resolve the mysterious event...*\n\n` +
+          resultText
+        );
 
       return {
         success: true,

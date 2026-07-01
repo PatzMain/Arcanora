@@ -26,6 +26,7 @@ export const campsiteHandler: NodeInteractionHandler = {
 
     if (context.node.status === 'cleared' || context.node.status === 'visited') {
       restBtn.setDisabled(true).setLabel('Already Rested Here');
+      embed.setDescription('🏕️ **The campfire embers have cooled down.** You have already rested at this camp.');
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(restBtn);

@@ -6,6 +6,7 @@ import { generateTreasureLoot, getItemData } from '../loot.js';
 import { awardGold } from '../../../economy/currency.js';
 import { itemsCatalog } from '../../../utils/catalog.js';
 import { type NodeInteractionHandler } from '../dungeonInteractions.js';
+import { buildCompactItemCard } from '../../../utils/embeds/itemCard.js';
 
 export const treasureHandler: NodeInteractionHandler = {
   async onEnter(context) {
@@ -22,6 +23,7 @@ export const treasureHandler: NodeInteractionHandler = {
 
     if (context.node.status === 'cleared') {
       openBtn.setDisabled(true).setLabel('Chest Already Opened');
+      embed.setDescription('🔓 **The ornate chest lies wide open and empty.** All of its treasures have already been looted.');
     }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openBtn);
@@ -53,7 +55,7 @@ export const treasureHandler: NodeInteractionHandler = {
     const lootDrops = generateTreasureLoot(player.level, stats.luck);
 
     let goldGained = 0;
-    const acquiredItems: { name: string; quantity: number; rarity: string }[] = [];
+    const acquiredCompactCards: string[] = [];
 
     for (const drop of lootDrops) {
       if (drop.itemId === 'gold') {
@@ -63,11 +65,7 @@ export const treasureHandler: NodeInteractionHandler = {
         const itemDef = getItemData(drop.itemId);
         if (itemDef) {
           await addItem(player.id, drop.itemId, drop.quantity);
-          acquiredItems.push({
-            name: itemDef.name,
-            quantity: drop.quantity,
-            rarity: itemDef.rarity
-          });
+          acquiredCompactCards.push(buildCompactItemCard(itemDef, { quantity: drop.quantity }));
         }
       }
     }
@@ -78,14 +76,17 @@ export const treasureHandler: NodeInteractionHandler = {
     const embed = new EmbedBuilder()
       .setColor(0xFBBF24)
       .setTitle('🎁 Chest Opened!')
-      .setDescription('You popped open the heavy lid and claimed the rewards:');
+      .setDescription(
+        `🎁 ── ── ── ── ── ── ── 🎁\n` +
+        `*You pop open the heavy iron-bound lid, revealing the treasures inside:*`
+      );
 
     if (goldGained > 0) {
-      embed.addFields({ name: '🪙 Gold Recieved', value: `\`+${goldGained} Gold\``, inline: true });
+      embed.addFields({ name: '🪙 Gold Received', value: `\`+${goldGained} Gold\``, inline: true });
     }
 
-    if (acquiredItems.length > 0) {
-      const list = acquiredItems.map(item => `• **${item.name}** x${item.quantity} (${item.rarity})`).join('\n');
+    if (acquiredCompactCards.length > 0) {
+      const list = acquiredCompactCards.map(card => `▸ ${card}`).join('\n');
       embed.addFields({ name: '🎒 Items Found', value: list, inline: false });
     } else if (goldGained === 0) {
       embed.setDescription('The chest was empty! What bad luck.');
