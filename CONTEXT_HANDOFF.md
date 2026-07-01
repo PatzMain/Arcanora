@@ -690,6 +690,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **E2E Playthrough Simulator**: Created `scratch_simulate_playthrough.ts` in the project root to run character creation, travel, dungeon grid walking, chest looting, campsite resting, event choices, standard fights, and boss encounters inside a mock database sandbox.
 - **In-Memory E2E Playthrough Integration Test**: Created `tests/playthrough.test.ts` to simulate the full player lifecycle (onboarding, travel, grid procedurals, resting, looting, events, and boss victory) as a zero-dependency, in-memory Drizzle mock integration test.
 - **test-pipeline Skill Registration**: Registered `.agents/skills/test-pipeline/SKILL.md` to define the full verification pipeline (linter, type checking, and unit/integration test suites) as an agent-usable skill.
+- **Combat Engagement UI Redesign**: Fixed the "looping engage enemy" bug by replacing the automated `runMap` redirect after successful engagement with a direct redirection to `runFight`. Added interactive **Resume Combat** buttons to the "Already in Combat" screens inside both the dungeon combat interaction handler and the `/map` block page, and secured `huntNode` and `onAction` against spam-click DB constraint violations using try/catch fallbacks.
 
 
 
