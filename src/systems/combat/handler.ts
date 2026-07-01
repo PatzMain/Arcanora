@@ -148,6 +148,8 @@ export async function handleCombatInteraction(
     state.playerMaxMana = playerStats.manaMax;
     state.enemyMaxHp = scaledEnemyStats.hp;
 
+    const initialEnemyHp = state.enemyHp;
+
     // 3. Resolve player action
     const action = await handlePlayerTurnAction(
       interaction,
@@ -163,7 +165,6 @@ export async function handleCombatInteraction(
       return;
     }
 
-    const initialEnemyHp = state.enemyHp;
     // Resolve Player Turn
     processPlayerTurn(state, action, combatStats, scaledEnemyStats);
     const damageDealt = Math.max(0, initialEnemyHp - state.enemyHp);

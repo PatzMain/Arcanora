@@ -47,6 +47,7 @@ export async function handlePlayerTurnAction(
       const presets = parsePresets(player.presets);
       const slot = presets[slotNum - 1];
       if (!slot || !slot.actions || slot.actions.length === 0) {
+        state.activePresetSlot = undefined;
         await interaction.followUp({ content: '❌ Preset slot is empty or invalid.', ephemeral: true });
         return null;
       }
@@ -67,16 +68,19 @@ export async function handlePlayerTurnAction(
         // Skill execution
         const skillDef = getSkillById(actionId);
         if (!skillDef) {
+          state.activePresetSlot = undefined;
           await interaction.followUp({ content: `❌ Skill definition for "${actionId}" not found.`, ephemeral: true });
           return null;
         }
 
         if (!learnedSkillIds.includes(actionId)) {
+          state.activePresetSlot = undefined;
           await interaction.followUp({ content: `❌ You have not learned "${skillDef.name}".`, ephemeral: true });
           return null;
         }
 
         if (state.playerMana < skillDef.manaCost) {
+          state.activePresetSlot = undefined;
           await interaction.followUp({ content: `❌ Not enough Mana! Required: ${skillDef.manaCost}, Current: ${state.playerMana}`, ephemeral: true });
           return null;
         }
