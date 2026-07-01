@@ -19,20 +19,28 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Load or create the player profile
     const player = await findOrCreatePlayer(discordId, username);
 
-    // Check if the player already has an active thread in the guild
-    if (player.activeThreadId && interaction.guild) {
+    // Check if the player already has an active thread in any channel or server
+    if (player.activeThreadId) {
       try {
-        const existingThread = await interaction.guild.channels.fetch(player.activeThreadId);
+        const existingThread = await interaction.client.channels.fetch(player.activeThreadId);
         if (existingThread && 'archived' in existingThread && !existingThread.archived) {
-          const embed = successEmbed(
-            'Adventure Active',
-            `You already have an active adventure thread here: <#${player.activeThreadId}>!\n\n` +
-            `Please proceed to your thread to continue playing.`
+          let locationMsg = `<#${player.activeThreadId}>`;
+          if ('guild' in existingThread && existingThread.guild) {
+            const isSameGuild = existingThread.guild.id === interaction.guildId;
+            if (!isSameGuild) {
+              locationMsg = `in the server **${existingThread.guild.name}**: <#${player.activeThreadId}>`;
+            }
+          }
+          const embed = errorEmbed(
+            'Adventure Already Active',
+            `You already have an active adventure thread running ${locationMsg}.\n\n` +
+            `You cannot generate another private thread in another channel or server.\n` +
+            `Please proceed to your thread to continue playing, or run \`/stop\` to delete it.`
           );
           await interaction.editReply({ embeds: [embed] });
           return;
         }
-      } catch (_err) {
+      } catch {
         // Thread was probably deleted or we can't find it, ignore and create a new one
       }
     }

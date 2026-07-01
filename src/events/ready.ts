@@ -26,6 +26,7 @@ import * as farmCmd from '../commands/player/farm.js';
 import * as dungeonCmd from '../commands/combat/dungeon.js';
 import * as codexCmd from '../commands/player/codex.js';
 import * as playCmd from '../commands/player/play.js';
+import * as stopCmd from '../commands/player/stop.js';
 import { initEmojis } from '../utils/emojis.js';
 import { initMapAssets } from '../utils/mapCanvas.js';
 
@@ -55,7 +56,8 @@ export const commandsList = [
   farmCmd,
   dungeonCmd,
   codexCmd,
-  playCmd
+  playCmd,
+  stopCmd
 ];
 
 export async function execute(client: Client) {

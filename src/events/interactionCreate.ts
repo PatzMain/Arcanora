@@ -19,7 +19,7 @@ import { getPlayerWithClampedStats } from '../database/queries/player.js';
 import { checkRateLimit } from '../utils/rateLimit.js';
 
 // Commands that bypass the thread gate entirely
-const THREAD_EXEMPT_COMMANDS = new Set(['play', 'tutorial', 'invite', 'help', 'admin']);
+const THREAD_EXEMPT_COMMANDS = new Set(['play', 'tutorial', 'invite', 'help', 'admin', 'stop']);
 
 /** Returns a styled embed telling the user to use /play first */
 function buildPlayGateEmbed(activeThreadId?: string | null): EmbedBuilder {
