@@ -688,6 +688,8 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Enemy Encounters Enrichment**: Mapped 15+ missing boss/rare/normal monsters into combat zone locations (e.g. adding Grak'Zul to Forgotten Ironmine, The Nameless One to Abyssal Depths, and Infernal Titan / Fire Elemental to Lava Keep), significantly enriching dungeon spawns and hunts.
 - **Dungeon Interaction Routing Fixes**: Resolved routing checks mismatch where `'room'`/`'elite'`/`'boss'` node types failed to match the `'combat'` condition, and `'browse'`/`'examine'` button actions failed to match `'merchant'`/`'event'` strings. Programmed explicit dynamic nodeType translation during registry lookup (mapping `'combat'` inputs to their underlying grid cell formats: `'room'`, `'elite'`, or `'boss'`) to allow battles, traveling merchant shops, and random events to activate successfully.
 - **E2E Playthrough Simulator**: Created `scratch_simulate_playthrough.ts` in the project root to run character creation, travel, dungeon grid walking, chest looting, campsite resting, event choices, standard fights, and boss encounters inside a mock database sandbox.
+- **In-Memory E2E Playthrough Integration Test**: Created `tests/playthrough.test.ts` to simulate the full player lifecycle (onboarding, travel, grid procedurals, resting, looting, events, and boss victory) as a zero-dependency, in-memory Drizzle mock integration test.
+- **test-pipeline Skill Registration**: Registered `.agents/skills/test-pipeline/SKILL.md` to define the full verification pipeline (linter, type checking, and unit/integration test suites) as an agent-usable skill.
 
 
 
