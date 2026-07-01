@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "active_thread_id" varchar(20);

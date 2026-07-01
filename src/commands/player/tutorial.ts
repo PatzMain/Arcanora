@@ -4,6 +4,7 @@ import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
   MessageFlags,
+  ChannelType,
   type ChatInputCommandInteraction,
   type StringSelectMenuInteraction
 } from 'discord.js';
@@ -42,6 +43,27 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   try {
     const discordId = interaction.user.id;
     const username = interaction.user.username;
+
+    // Gate: /tutorial must be run inside a private adventure thread.
+    // The thread is created by /play. We allow both PrivateThread and PublicThread
+    // so that admins can set up public adventure channels if needed.
+    const isThread =
+      interaction.channel?.type === ChannelType.PrivateThread ||
+      interaction.channel?.type === ChannelType.PublicThread;
+
+    if (!isThread) {
+      const gateEmbed = new EmbedBuilder()
+        .setColor(0x7C3AED)
+        .setTitle('🏰 Start Your Adventure First!')
+        .setDescription(
+          `To begin your journey in Arcanora, you need a **private adventure thread**.\n\n` +
+          `Run \`/play\` in any text channel — it will open your own private space where you can play the game freely.\n\n` +
+          `*Once inside your thread, run \`/tutorial\` again to create your character!*`
+        )
+        .setFooter({ text: 'Arcanora — use /play to begin' });
+      await interaction.reply({ embeds: [gateEmbed], flags: [MessageFlags.Ephemeral] });
+      return;
+    }
 
     // Check if player already exists
     const existingPlayer = await getPlayerByDiscordId(discordId);

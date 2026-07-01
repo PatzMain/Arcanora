@@ -1,4 +1,4 @@
-import { type Interaction, MessageFlags } from 'discord.js';
+import { type Interaction, MessageFlags, EmbedBuilder, ChannelType } from 'discord.js';
 import { commandsList } from './ready.js';
 import { handleCombatInteraction } from '../systems/combat/handler.js';
 import { handleTutorialInteraction } from '../commands/player/tutorial.js';
@@ -17,6 +17,21 @@ import { errorEmbed } from '../utils/embeds.js';
 import { logger } from '../utils/logger.js';
 import { getPlayerWithClampedStats } from '../database/queries/player.js';
 import { checkRateLimit } from '../utils/rateLimit.js';
+
+// Commands that bypass the thread gate entirely
+const THREAD_EXEMPT_COMMANDS = new Set(['play', 'tutorial', 'invite', 'help', 'admin']);
+
+/** Returns a styled embed telling the user to use /play first */
+function buildPlayGateEmbed(activeThreadId?: string | null): EmbedBuilder {
+  const desc = activeThreadId
+    ? `Your adventure is running in <#${activeThreadId}>!\n\nHead over there to keep playing.`
+    : `Use the \`/play\` command in any text channel to open your own private adventure thread.\nAll game commands will only work inside it.`;
+  return new EmbedBuilder()
+    .setColor(0x7C3AED)
+    .setTitle('🏰 Adventure Thread Required')
+    .setDescription(desc)
+    .setFooter({ text: 'Arcanora — use /play to begin' });
+}
 
 export async function execute(interaction: Interaction) {
   // Rate Limit Check
@@ -43,16 +58,26 @@ export async function execute(interaction: Interaction) {
     }
 
     try {
-      // Access Control: check if player profile exists
-      if (cmdName !== 'tutorial' && cmdName !== 'invite' && cmdName !== 'help') {
+      // ── Thread Gate ──────────────────────────────────────────────────────────
+      // All commands except the exempt set must be run inside the player's
+      // registered private adventure thread.
+      if (!THREAD_EXEMPT_COMMANDS.has(cmdName)) {
+        const isThread =
+          interaction.channel?.type === ChannelType.PrivateThread ||
+          interaction.channel?.type === ChannelType.PublicThread;
+
         const player = await getPlayerWithClampedStats(interaction.user.id);
+
         if (!player) {
-          const embed = errorEmbed(
-            '🌌 Welcome to Arcanora!',
-            'Before you can start your adventure, you need to create a profile and learn the basics.\n\n' +
-            'Please run the **/tutorial** command to begin!'
-          );
-          embed.setColor(0x7C3AED); // Premium purple onboarding theme
+          // No profile yet → direct them to /play
+          const embed = buildPlayGateEmbed();
+          await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+          return;
+        }
+
+        if (!isThread || interaction.channelId !== player.activeThreadId) {
+          // Has a profile but is typing in the wrong place
+          const embed = buildPlayGateEmbed(player.activeThreadId);
           await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
           return;
         }

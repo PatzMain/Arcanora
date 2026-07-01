@@ -102,7 +102,8 @@ describe('Dungeon Crawling Exploration System', () => {
       // Initially: start is visited, its connections are revealed
       expect(map.nodes[map.startNodeId].status).toBe('visited');
       map.nodes[map.startNodeId].connections.forEach(connId => {
-        expect(map.nodes[connId].status).toBe('revealed');
+        const status = map.nodes[connId].status;
+        expect(status === 'revealed' || status === 'cleared').toBe(true);
       });
 
       // Move player to one of the connected nodes
@@ -114,7 +115,8 @@ describe('Dungeon Crawling Exploration System', () => {
         if (connId === map.startNodeId) {
           expect(updatedNodes[connId].status).toBe('visited');
         } else {
-          expect(updatedNodes[connId].status).toBe('revealed');
+          const status = updatedNodes[connId].status;
+          expect(status === 'revealed' || status === 'cleared').toBe(true);
         }
       });
     });

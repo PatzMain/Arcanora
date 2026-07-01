@@ -33,6 +33,7 @@ export const players = pgTable('players', {
   housingTier: integer('housing_tier').default(0).notNull(),
   lastRestAt: timestamp('last_rest_at', { withTimezone: true }),
   restType: varchar('rest_type', { length: 32 }).default('none').notNull(),
+  activeThreadId: varchar('active_thread_id', { length: 20 }),
 }, (table) => ({
   discordIdIdx: uniqueIndex('players_discord_id_idx').on(table.discordId),
   levelExpIdx: index('players_level_exp_idx').on(table.level, table.exp),

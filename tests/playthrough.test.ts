@@ -131,6 +131,14 @@ import { enemiesCatalog } from '../src/utils/catalog.js';
 
 describe('End-to-End Game Playthrough Simulation (In-Memory Database)', () => {
   it('should complete onboarding, scouting, traveling, and full grid dungeon clearing successfully', async () => {
+    // Reset store to ensure test isolation
+    inMemoryStore.players = [];
+    inMemoryStore.inventory = [];
+    inMemoryStore.exploration_sessions = [];
+    inMemoryStore.combat_sessions = [];
+    inMemoryStore.player_quests = [];
+    inMemoryStore.codex_entries = [];
+
     // 1. Character Creation (Tutorial Onboarding)
     const player = await findOrCreatePlayer('999999999999999999', 'SimulatedHero');
     expect(player).toBeDefined();
