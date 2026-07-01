@@ -692,6 +692,9 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **test-pipeline Skill Registration**: Registered `.agents/skills/test-pipeline/SKILL.md` to define the full verification pipeline (linter, type checking, and unit/integration test suites) as an agent-usable skill.
 - **Combat Engagement UI Redesign**: Fixed the "looping engage enemy" bug by replacing the automated `runMap` redirect after successful engagement with a direct redirection to `runFight`. Added interactive **Resume Combat** buttons to the "Already in Combat" screens inside both the dungeon combat interaction handler and the `/map` block page, and secured `huntNode` and `onAction` against spam-click DB constraint violations using try/catch fallbacks.
 - **Node Clearance State Persistence**: Resolved the bug where defeated combat rooms incorrectly kept displaying the "Engage Enemy" button by fixing `updateFogOfWar` in `dungeonGenerator.ts` to prevent it from overwriting nodes already marked as `'cleared'` back to `'visited'`.
+- **Chance for Empty Rooms**: Implemented a 10% weight for generating `'💨 Empty Chamber'` rooms inside dungeons, starting with status `'cleared'` so players can walk through without engaging.
+- **Autoplay UI & Preset Visuals**: Enhanced the preset combat flow by disabling all buttons/select menus during autoplay steps. Re-rendered the combat embed with a loader status footer (`⚡ Autoplay Active: Executing Slot X combo step... ⏳`) to clearly visualize automatic turn progression.
+- **Combat Damage Reports & Co-op Leaderboards**: Programmed real-time damage tracking on combat state (`state.damageReport`). When an enemy is defeated, players receive a detailed "Combat Damage Report" (if solo) or an interactive, formatted "Damage Leaderboard" showing contributions from all party members (if co-op). Allowed party members to participate in the same dungeon combat session.
 
 
 
