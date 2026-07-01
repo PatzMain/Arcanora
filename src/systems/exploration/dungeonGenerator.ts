@@ -338,7 +338,7 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
  * Recomputes node statuses based on visited nodes.
  */
 export function updateFogOfWar(nodes: Record<string, DungeonNode>, currentNodeId: string): Record<string, DungeonNode> {
-  if (nodes[currentNodeId]) {
+  if (nodes[currentNodeId] && nodes[currentNodeId]!.status !== 'cleared') {
     nodes[currentNodeId]!.status = 'visited';
   }
   
