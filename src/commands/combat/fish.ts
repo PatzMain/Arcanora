@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction
@@ -102,7 +103,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = successEmbed('🎣 Fish Caught!', result.message);
     await interaction.editReply({ embeds: [embed] });
   } catch (error: any) {
-    console.error('Error running fish command:', error);
+    logger.error({ err: error }, 'Error running fish command:');
     const embed = errorEmbed('Fishing Error', error.message || 'An unexpected error occurred while fishing.');
     await interaction.editReply({ embeds: [embed] });
   }

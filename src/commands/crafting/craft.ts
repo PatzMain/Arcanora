@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, type ChatInputCommandInteraction } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, addItem, removeItem } from '../../database/queries/inventory.js';
@@ -228,7 +229,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply(payload);
 
   } catch (error: any) {
-    console.error(error);
+    logger.error({ err: error }, 'Unexpected error');
     const embed = errorEmbed('Crafting Error', 'An unexpected error occurred during crafting.');
     if (interaction.deferred) {
       await interaction.editReply({ embeds: [embed] });

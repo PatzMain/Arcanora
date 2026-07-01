@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -75,7 +76,7 @@ export async function runGuildCreate(
     );
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Error creating guild:', error);
+    logger.error({ err: error }, 'Error creating guild:');
     const embed = errorEmbed('Guild Error', 'Failed to create guild.');
     await interaction.editReply({ embeds: [embed] });
   }
@@ -118,7 +119,7 @@ export async function runGuildJoin(
     const embed = successEmbed('Guild Joined', `You have successfully joined the guild: **${guildInfo.name}**!`);
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Error joining guild:', error);
+    logger.error({ err: error }, 'Error joining guild:');
     const embed = errorEmbed('Guild Error', 'Failed to join guild.');
     await interaction.editReply({ embeds: [embed] });
   }
@@ -157,7 +158,7 @@ export async function runGuildLeave(
       await interaction.editReply({ embeds: [embed] });
     }
   } catch (error) {
-    console.error('Error leaving guild:', error);
+    logger.error({ err: error }, 'Error leaving guild:');
     const embed = errorEmbed('Guild Error', 'Failed to leave guild.');
     await interaction.editReply({ embeds: [embed] });
   }
@@ -211,7 +212,7 @@ export async function runGuildKick(
     );
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('Error kicking guild member:', error);
+    logger.error({ err: error }, 'Error kicking guild member:');
     const embed = errorEmbed('Guild Error', 'Failed to kick member.');
     await interaction.editReply({ embeds: [embed] });
   }
@@ -304,7 +305,7 @@ export async function handleGuildInteraction(
       await interaction.update({ embeds: [kickEmbed], components: disabledRows });
     }
   } catch (error) {
-    console.error('Error handling guild button/menu:', error);
+    logger.error({ err: error }, 'Error handling guild button/menu:');
     await interaction.followUp({ content: '❌ Failed to process guild action.', ephemeral: true });
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 import { createCanvas, loadImage, GlobalFonts, type Image } from '@napi-rs/canvas';
 import { join } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
@@ -78,7 +79,7 @@ export async function initMapAssets(): Promise<void> {
 
     initialized = true;
   } catch (err) {
-    console.error('[MapCanvas] Error during initialization:', err);
+    logger.error({ err: err }, '[MapCanvas] Error during initialization:');
     throw err;
   }
 }
@@ -277,7 +278,7 @@ export async function renderMapImage(
     return buffer;
 
   } catch (err) {
-    console.error('[MapCanvas] Failed to render map image:', err);
+    logger.error({ err: err }, '[MapCanvas] Failed to render map image:');
     return null;
   }
 }

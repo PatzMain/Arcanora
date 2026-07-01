@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -73,7 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      console.error('Error rendering dungeon leaderboard:', error);
+      logger.error({ err: error }, 'Error rendering dungeon leaderboard:');
       const err = new EmbedBuilder()
         .setColor(0xEF4444)
         .setTitle('Leaderboard Error')

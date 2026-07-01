@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   EmbedBuilder,
   ActionRowBuilder,
@@ -397,7 +398,7 @@ export async function handleMapTravelInteraction(interaction: ButtonInteraction 
     await runMap(interaction as any, `You successfully traveled to the ${targetZone.name}!`);
 
   } catch (error) {
-    console.error('Error executing travel interaction:', error);
+    logger.error({ err: error }, 'Error executing travel interaction:');
     await interaction.reply({ content: '❌ An error occurred during travel.', flags: [MessageFlags.Ephemeral] });
   }
 }
@@ -419,7 +420,7 @@ export async function runTavernRest(
 
     await runMap(interaction as any, result.message || '💤 You slept peacefully. HP, Mana, and Stamina fully restored!');
   } catch (error) {
-    console.error('Error resting at tavern:', error);
+    logger.error({ err: error }, 'Error resting at tavern:');
     const err = errorEmbed('Rest Error', 'Failed to rest at the tavern.');
     await interaction.editReply({ embeds: [err] });
   }
@@ -644,7 +645,7 @@ export async function handleWorldMapInteraction(
     }
 
   } catch (err: any) {
-    console.error('Error handling world map interaction:', err);
+    logger.error({ err: err }, 'Error handling world map interaction:');
     await interaction.followUp({ content: `❌ Error: ${err.message || err}`, flags: [MessageFlags.Ephemeral] });
   }
 }

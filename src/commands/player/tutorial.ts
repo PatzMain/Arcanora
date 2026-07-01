@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -131,7 +132,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       flags: [MessageFlags.Ephemeral]
     });
   } catch (error: any) {
-    console.error('Tutorial command error:', error);
+    logger.error({ err: error }, 'Tutorial command error:');
     const embed = errorEmbed('Tutorial Error', 'Failed to initialize onboarding.');
     await interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
   }
@@ -270,7 +271,7 @@ export async function handleTutorialInteraction(interaction: StringSelectMenuInt
     await interaction.update({ embeds: [successEmbed], components: navButtons ? [navButtons] : [] });
 
   } catch (error: any) {
-    console.error('Tutorial select interaction error:', error);
+    logger.error({ err: error }, 'Tutorial select interaction error:');
     const embed = errorEmbed('Onboarding Error', 'Failed to complete character creation.');
     await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
   }

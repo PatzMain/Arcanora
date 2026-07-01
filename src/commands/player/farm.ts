@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -202,7 +203,7 @@ export async function execute(interaction: ChatInputCommandInteraction | ButtonI
     await interaction.editReply({ embeds: [embed], components: slicedRows });
 
   } catch (error) {
-    console.error('Error in farm command:', error);
+    logger.error({ err: error }, 'Error in farm command:');
     const err = errorEmbed('Farming Error', 'Failed to retrieve your farm plots.');
     await interaction.editReply({ embeds: [err] });
   }

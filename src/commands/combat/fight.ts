@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -133,7 +134,7 @@ export async function runFight(
       .where(eq(combatSessions.id, activeSession.id));
 
   } catch (error: any) {
-    console.error(error);
+    logger.error({ err: error }, 'Unexpected error');
     const embed = errorEmbed('Combat Error', 'Failed to resume combat session.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

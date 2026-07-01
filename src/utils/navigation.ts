@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -324,7 +325,7 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
           await huntNode(player.id, extra || undefined);
           await runFight(interaction);
         } catch (err: any) {
-          console.error('Error in combat_hunt navigation:', err);
+          logger.error({ err: err }, 'Error in combat_hunt navigation:');
           if (interaction.deferred || interaction.replied) {
             await interaction.followUp({ content: `❌ ${err.message || 'Hunt failed.'}`, flags: [MessageFlags.Ephemeral] });
           } else {
@@ -391,7 +392,7 @@ export async function handleNavInteraction(interaction: ButtonInteraction) {
         });
     }
   } catch (error) {
-    console.error(`Error handling navigation interaction for ${targetAction}:`, error);
+    logger.error({ err: error }, `Error handling navigation interaction for ${targetAction}:`);
     await interaction.reply({
       content: '❌ Failed to process navigation. Please try typing the command manually.',
       flags: [MessageFlags.Ephemeral]

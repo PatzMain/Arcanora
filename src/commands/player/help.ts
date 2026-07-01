@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -237,7 +238,7 @@ export async function runHelp(interaction: ChatInputCommandInteraction | ButtonI
     });
 
   } catch (error) {
-    console.error('Help command error:', error);
+    logger.error({ err: error }, 'Help command error:');
     const errEmbed = errorEmbed('Help Error', 'An unexpected error occurred while showing the help menu.');
     await interaction.editReply({ embeds: [errEmbed], components: [] });
   }

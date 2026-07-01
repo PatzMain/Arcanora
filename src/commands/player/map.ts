@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -106,7 +107,7 @@ export async function runMap(
     }
 
   } catch (error) {
-    console.error('Error displaying world map:', error);
+    logger.error({ err: error }, 'Error displaying world map:');
     const err = errorEmbed('Map Error', 'Failed to load the world map.');
     await interaction.editReply({ embeds: [err], components: [] });
   }

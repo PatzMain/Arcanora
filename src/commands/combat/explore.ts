@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   type ChatInputCommandInteraction,
   type ButtonInteraction
@@ -23,7 +24,7 @@ export async function runExplore(
     );
     await interaction.editReply({ embeds: [embed], components: [] });
   } catch (error: any) {
-    console.error(error);
+    logger.error({ err: error }, 'Unexpected error');
     try {
       const embed = errorEmbed('Exploration Error', 'Failed to complete exploration.');
       await interaction.editReply({ embeds: [embed], components: [] });

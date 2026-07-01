@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, ChannelType } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { db } from '../../database/client.js';
@@ -91,7 +92,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [linkEmbed] });
 
   } catch (error) {
-    console.error('Failed to execute /play command:', error);
+    logger.error({ err: error }, 'Failed to execute /play command:');
     const err = errorEmbed('Command Error', 'An unexpected error occurred while setting up your private thread.');
     await interaction.editReply({ embeds: [err] });
   }

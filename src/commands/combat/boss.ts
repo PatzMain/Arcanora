@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
@@ -34,7 +35,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await runBossFight(interaction);
     }
   } catch (error) {
-    console.error('Boss command error:', error);
+    logger.error({ err: error }, 'Boss command error:');
     const errEmbed = errorEmbed('Boss Error', 'An unexpected error occurred while interacting with the boss.');
     try {
       if (interaction.replied || interaction.deferred) {
@@ -111,7 +112,7 @@ export async function runBossInfo(interaction: ChatInputCommandInteraction | But
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error('runBossInfo error:', error);
+    logger.error({ err: error }, 'runBossInfo error:');
     const errEmbed = errorEmbed('Boss Error', 'Failed to retrieve boss information.');
     try {
       if (interaction.replied || interaction.deferred) {

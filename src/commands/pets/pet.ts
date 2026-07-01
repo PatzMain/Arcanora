@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, type ChatInputCommandInteraction } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { getEquippedItems, unequipItem, removeItem } from '../../database/queries/inventory.js';
@@ -216,7 +217,7 @@ export async function execute(interaction: ChatInputCommandInteraction): Promise
 
     return;
   } catch (error: any) {
-    console.error(error);
+    logger.error({ err: error }, 'Unexpected error');
     const embed = errorEmbed('Pet Command Error', 'Failed to manage pet companion.');
     if (interaction.deferred) {
       await interaction.editReply({ embeds: [embed] });

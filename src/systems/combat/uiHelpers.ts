@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import { ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
 import { db } from '../../database/client.js';
 import { playerSkills, inventory } from '../../database/schema.js';
@@ -30,7 +31,7 @@ export async function getCombatSkillsRow(playerId: string, playerClass: string, 
 
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
   } catch (error) {
-    console.error('Failed to get combat skills:', error);
+    logger.error({ err: error }, 'Failed to get combat skills:');
     return null;
   }
 }
@@ -62,7 +63,7 @@ export async function getCombatItemsRow(playerId: string, discordId: string, isD
 
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
   } catch (error) {
-    console.error('Failed to get combat items:', error);
+    logger.error({ err: error }, 'Failed to get combat items:');
     return null;
   }
 }

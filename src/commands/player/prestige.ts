@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ButtonBuilder,
   ButtonStyle,
@@ -76,7 +77,7 @@ export async function runPrestige(
       components: [row]
     });
   } catch (error) {
-    console.error('Error running prestige:', error);
+    logger.error({ err: error }, 'Error running prestige:');
     const embed = errorEmbed('Prestige Error', 'An unexpected error occurred during prestige reset.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -159,7 +160,7 @@ export async function handlePrestigeInteraction(interaction: ButtonInteraction) 
       });
     }
   } catch (error) {
-    console.error('Error handling prestige button:', error);
+    logger.error({ err: error }, 'Error handling prestige button:');
     await interaction.followUp({ content: '❌ Failed to process prestige action.', ephemeral: true });
   }
 }

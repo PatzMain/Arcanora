@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   EmbedBuilder,
   ActionRowBuilder,
@@ -972,7 +973,7 @@ export async function handleDungeonInteraction(
     }
 
   } catch (err) {
-    console.error('Error handling dungeon interaction:', err);
+    logger.error({ err: err }, 'Error handling dungeon interaction:');
     await interaction.reply({ content: '❌ An error occurred.', flags: [MessageFlags.Ephemeral] });
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   type ButtonInteraction,
   type StringSelectMenuInteraction,
@@ -279,7 +280,7 @@ export async function handleCombatInteraction(
     }
 
   } catch (error) {
-    console.error('Failed to handle combat interaction:', error);
+    logger.error({ err: error }, 'Failed to handle combat interaction:');
     try {
       await interaction.followUp({
         embeds: [errorEmbed('Combat Error', 'Something went wrong during combat. Please try `/fight` to resume.')],
@@ -300,7 +301,7 @@ function queueAutoplayStep(
     try {
       await runAutoplayStep(playerId, sessionId, client, expectedRound, activeSlot);
     } catch (err) {
-      console.error('Error in autoplay step:', err);
+      logger.error({ err: err }, 'Error in autoplay step:');
     }
   }, 5000);
 }

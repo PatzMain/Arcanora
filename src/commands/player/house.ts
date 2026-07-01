@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -143,7 +144,7 @@ export async function execute(interaction: ChatInputCommandInteraction | ButtonI
     await interaction.editReply({ embeds: [embed], components: [row] });
 
   } catch (error) {
-    console.error('Error in house command:', error);
+    logger.error({ err: error }, 'Error in house command:');
     const err = errorEmbed('Housing Error', 'Failed to retrieve your housing cottage.');
     await interaction.editReply({ embeds: [err] });
   }

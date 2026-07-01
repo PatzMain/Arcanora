@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import { db } from '../../database/client.js';
 import { players, playerQuests } from '../../database/schema.js';
 import { eq, and } from 'drizzle-orm';
@@ -102,7 +103,7 @@ export async function advanceQuestProgress(
       }
     }
   } catch (error) {
-    console.error(`Failed to advance quest progress for player ${playerId}:`, error);
+    logger.error({ err: error }, `Failed to advance quest progress for player ${playerId}:`);
   }
 }
 
@@ -218,7 +219,7 @@ async function completeQuestAndCheckNext(
         embeds: [embed]
       });
     } catch (err) {
-      console.error('Failed to send quest completion announcement:', err);
+      logger.error({ err: err }, 'Failed to send quest completion announcement:');
     }
   }
 }

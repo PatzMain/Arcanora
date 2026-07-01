@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { findOrCreatePlayer } from '../../database/queries/player.js';
 import { db } from '../../database/client.js';
@@ -59,7 +60,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [embed] });
 
   } catch (error) {
-    console.error('Failed to execute /stop command:', error);
+    logger.error({ err: error }, 'Failed to execute /stop command:');
     const err = errorEmbed('Command Error', 'An unexpected error occurred while deleting your adventure thread.');
     try {
       await interaction.editReply({ embeds: [err] });

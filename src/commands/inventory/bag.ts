@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ButtonStyle,
   ButtonBuilder,
@@ -84,7 +85,7 @@ export async function runBag(
       components
     });
   } catch (error) {
-    console.error('Error running bag:', error);
+    logger.error({ err: error }, 'Error running bag:');
     const embed = errorEmbed('Bag Error', 'Failed to retrieve your bag contents.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

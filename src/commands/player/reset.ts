@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -100,7 +101,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await interaction.editReply({ embeds: [timeout], components: [] });
     }
   } catch (error) {
-    console.error('Error running reset command:', error);
+    logger.error({ err: error }, 'Error running reset command:');
     const err = errorEmbed('Reset Error', 'An unexpected error occurred while resetting your profile.');
     try {
       if (interaction.replied || interaction.deferred) {

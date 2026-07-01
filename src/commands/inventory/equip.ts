@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
@@ -192,7 +193,7 @@ export async function runEquip(
       components: [selectRow]
     });
   } catch (error) {
-    console.error('Error running equip:', error);
+    logger.error({ err: error }, 'Error running equip:');
     const embed = errorEmbed('Equip Error', 'Failed to equip the item.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

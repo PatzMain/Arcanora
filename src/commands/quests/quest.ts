@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -144,7 +145,7 @@ export async function runQuestsActive(
       components
     });
   } catch (error) {
-    console.error('Error running active quests:', error);
+    logger.error({ err: error }, 'Error running active quests:');
     const embed = errorEmbed('Quests Error', 'Failed to retrieve active quests.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -225,7 +226,7 @@ export async function runQuestsBoard(
       components
     });
   } catch (error) {
-    console.error('Error running quest board:', error);
+    logger.error({ err: error }, 'Error running quest board:');
     const embed = errorEmbed('Quest Board Error', 'Failed to retrieve quest board.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -294,7 +295,7 @@ export async function runQuestsAccept(
       components: navRow ? [navRow] : []
     });
   } catch (error) {
-    console.error('Error accepting quest:', error);
+    logger.error({ err: error }, 'Error accepting quest:');
     const embed = errorEmbed('Quest Error', 'Failed to accept quest.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -394,7 +395,7 @@ export async function runDaily(
       components: navRow ? [navRow] : []
     });
   } catch (error) {
-    console.error('Error claiming daily:', error);
+    logger.error({ err: error }, 'Error claiming daily:');
     const embed = errorEmbed('Daily Error', 'Failed to claim your daily reward.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

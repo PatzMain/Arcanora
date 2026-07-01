@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -172,7 +173,7 @@ export async function runBalance(
       components: navButtons ? [navButtons] : []
     });
   } catch (error) {
-    console.error('Error running balance:', error);
+    logger.error({ err: error }, 'Error running balance:');
     const embed = errorEmbed('Balance Error', 'Failed to retrieve your currency balances.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -196,7 +197,7 @@ export async function runShopList(
     const messageOptions = getShopMessageOptions(player, page);
     await interaction.editReply(messageOptions);
   } catch (error) {
-    console.error('Error running shop list:', error);
+    logger.error({ err: error }, 'Error running shop list:');
     const embed = errorEmbed('Shop Error', 'Failed to load shop list.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -260,7 +261,7 @@ export async function runShopBuy(
       components: navButtons ? [navButtons] : []
     });
   } catch (error) {
-    console.error('Error running shop buy:', error);
+    logger.error({ err: error }, 'Error running shop buy:');
     const embed = errorEmbed('Shop Error', 'An unexpected error occurred in the shop.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -327,7 +328,7 @@ export async function handleShopInteraction(interaction: ButtonInteraction | Str
       return;
     }
   } catch (error: any) {
-    console.error('Shop interaction error:', error);
+    logger.error({ err: error }, 'Shop interaction error:');
     const embed = errorEmbed('Shop Interaction Error', 'Failed to process your shop action.');
     await interaction.followUp({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
   }

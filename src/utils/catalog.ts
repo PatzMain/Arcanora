@@ -1,3 +1,4 @@
+import { logger } from './logger.js';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { Registry } from './registry.js';
@@ -26,7 +27,7 @@ function loadJsonDirectory<T>(dirName: string): T[] {
     }
     return data;
   } catch (error) {
-    console.error(`Failed to load directory ${dirName}:`, error);
+    logger.error({ err: error }, `Failed to load directory ${dirName}:`);
     return [];
   }
 }

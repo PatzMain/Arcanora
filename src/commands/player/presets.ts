@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   EmbedBuilder,
   ActionRowBuilder,
@@ -93,7 +94,7 @@ export async function runPreset(
       components
     });
   } catch (err) {
-    console.error('Error running preset command:', err);
+    logger.error({ err: err }, 'Error running preset command:');
     const embed = errorEmbed('Preset Error', 'An error occurred while loading presets.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
@@ -242,7 +243,7 @@ export async function runConfigurePreset(
     });
 
   } catch (error) {
-    console.error('Error displaying configure preset:', error);
+    logger.error({ err: error }, 'Error displaying configure preset:');
     const err = errorEmbed('Preset Config Error', 'Failed to load configuration panel.');
     await interaction.editReply({ embeds: [err], components: [] });
   }

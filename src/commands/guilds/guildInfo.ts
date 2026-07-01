@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -120,7 +121,7 @@ export async function runGuildInfo(
       components: actionRows
     });
   } catch (error) {
-    console.error('Error running guild info:', error);
+    logger.error({ err: error }, 'Error running guild info:');
     const embed = errorEmbed('Guild Error', 'Failed to retrieve guild info.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

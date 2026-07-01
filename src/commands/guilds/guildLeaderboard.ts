@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -80,7 +81,7 @@ export async function runLeaderboard(
       components: totalPages > 1 ? [row] : []
     });
   } catch (error) {
-    console.error('Error running leaderboard:', error);
+    logger.error({ err: error }, 'Error running leaderboard:');
     const embed = errorEmbed('Leaderboard Error', 'Failed to retrieve leaderboard statistics.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

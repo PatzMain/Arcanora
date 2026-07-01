@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -134,7 +135,7 @@ export async function runProfile(
       components: [tabButtons]
     });
   } catch (error) {
-    console.error('Error running profile:', error);
+    logger.error({ err: error }, 'Error running profile:');
     const embed = errorEmbed('Profile Error', 'Failed to retrieve profile data.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }

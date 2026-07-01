@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
@@ -228,7 +229,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await runFeedbackResolve(interaction);
     }
   } catch (error: any) {
-    console.error('Admin command error:', error);
+    logger.error({ err: error }, 'Admin command error:');
     const embed = errorEmbed('Admin Error', 'Failed to execute admin command.');
     await interaction.editReply({ embeds: [embed] });
   }

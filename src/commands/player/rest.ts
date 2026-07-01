@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   EmbedBuilder,
@@ -31,7 +32,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [embed] });
 
   } catch (error) {
-    console.error('Error executing /rest:', error);
+    logger.error({ err: error }, 'Error executing /rest:');
     const err = errorEmbed('Rest Error', 'Something went wrong while resting.');
     await interaction.editReply({ embeds: [err] });
   }

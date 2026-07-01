@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction
@@ -101,7 +102,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = successEmbed('🌲 Resource Harvested!', result.message);
     await interaction.editReply({ embeds: [embed] });
   } catch (error: any) {
-    console.error('Error running gather command:', error);
+    logger.error({ err: error }, 'Error running gather command:');
     const embed = errorEmbed('Gathering Error', error.message || 'An unexpected error occurred while gathering.');
     await interaction.editReply({ embeds: [embed] });
   }

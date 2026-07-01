@@ -1,3 +1,4 @@
+import { logger } from '../../utils/logger.js';
 import {
   ActionRowBuilder,
   StringSelectMenuBuilder,
@@ -142,7 +143,7 @@ export async function runSell(
       components: [selectRow]
     });
   } catch (error) {
-    console.error('Error running sell:', error);
+    logger.error({ err: error }, 'Error running sell:');
     const embed = errorEmbed('Sell Error', 'Failed to sell the item.');
     await interaction.editReply({ embeds: [embed], components: [] });
   }
