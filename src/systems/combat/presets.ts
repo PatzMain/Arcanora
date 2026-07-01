@@ -134,7 +134,7 @@ export function getPresetActionSummary(slot: PresetSlot, playerClass: string = '
 /**
  * Builds the ActionRow containing 3 preset buttons for standard combat or boss fights.
  */
-export function buildPresetButtons(presets: PlayerPresets, prefix: string, playerClass: string = 'novice', userId: string): ActionRowBuilder<ButtonBuilder> {
+export function buildPresetButtons(presets: PlayerPresets, prefix: string, playerClass: string = 'novice', userId: string, isDisabled: boolean = false): ActionRowBuilder<ButtonBuilder> {
   const buttons = [];
 
   const basicAttackEmoji = getBasicAttackEmoji(playerClass);
@@ -158,7 +158,7 @@ export function buildPresetButtons(presets: PlayerPresets, prefix: string, playe
           emoji = SKILL_EMOJIS[skill.id]!;
         }
       }
-      button.setLabel(`${slot.name} (${slot.actions.length})`).setEmoji(emoji);
+      button.setLabel(`${slot.name} (${slot.actions.length})`).setEmoji(emoji).setDisabled(isDisabled);
     }
     buttons.push(button);
   }
@@ -167,7 +167,8 @@ export function buildPresetButtons(presets: PlayerPresets, prefix: string, playe
     const setupButton = new ButtonBuilder()
       .setCustomId('combat_preset_configure')
       .setLabel('⚙️ Setup')
-      .setStyle(ButtonStyle.Secondary);
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(isDisabled);
     buttons.push(setupButton);
   }
 

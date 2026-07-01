@@ -48,6 +48,7 @@ export function combatEmbed(
   log: string[],
   playerBuffs?: any[],
   enemyBuffs?: any[],
+  activePresetSlot?: number,
 ): EmbedBuilder {
   const recentLog = log.slice(-5).map(line => {
     let emoji = '⚡';
@@ -71,7 +72,7 @@ export function combatEmbed(
   const weakness = getEnemyWeaknessHint(enemy.id);
   const weaknessLine = weakness ? `\n*${weakness}*` : '';
 
-  return baseEmbed()
+  const embed = baseEmbed()
     .setColor(COLORS.COMBAT)
     .setTitle(`⚔️ Battle — Round ${round}`)
     .addFields(
@@ -93,6 +94,12 @@ export function combatEmbed(
         inline: false,
       }
     );
+
+  if (activePresetSlot !== undefined) {
+    embed.setFooter({ text: `⚡ Autoplay Active: Executing Slot ${activePresetSlot} combo step... ⏳` });
+  }
+
+  return embed;
 }
 
 export function lootEmbed(

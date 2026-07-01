@@ -258,10 +258,14 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
     
     // Choose room content with weights
     const roll = Math.random() * 100;
-    if (roll < 55) {
+    if (roll < 45) {
       node.type = 'room';
       node.name = '🚪 Regular Room';
       node.encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'normal') };
+    } else if (roll < 55) {
+      node.type = 'room';
+      node.name = '💨 Empty Chamber';
+      node.status = 'cleared';
     } else if (roll < 70) {
       node.type = 'treasure';
       node.name = '🎁 Treasure Chamber';

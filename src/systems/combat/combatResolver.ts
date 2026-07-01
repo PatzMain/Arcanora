@@ -6,7 +6,7 @@ import {
   ButtonBuilder,
 } from 'discord.js';
 import { db } from '../../database/client.js';
-import { combatSessions, players, playerSkills, inventory } from '../../database/schema.js';
+import { combatSessions, players, playerSkills, inventory, explorationSessions } from '../../database/schema.js';
 import { eq } from 'drizzle-orm';
 import { executeSkill, getSkillById } from './skills.js';
 import { type CombatStats, type CombatAction, getStatModifier } from './engine.js';
@@ -371,6 +371,51 @@ export async function resolveCombatEnd(
         value: `You have discovered **${enemyDef.name}**! Check it out in the \`/codex enemies\`.`,
         inline: false
       });
+    }
+
+    // Build Damage Report / Leaderboard
+    const report = state.damageReport || {};
+    const reportKeys = Object.keys(report);
+    
+    if (reportKeys.length > 0) {
+      const sortedReport = reportKeys
+        .map(username => ({ username, damage: report[username] }))
+        .sort((a, b) => b.damage - a.damage);
+
+      let isCoop = reportKeys.length > 1;
+      if (!isCoop && state.explorationSessionId) {
+        const expSession = await db.query.explorationSessions.findFirst({
+          where: eq(explorationSessions.id, state.explorationSessionId)
+        });
+        if (expSession && expSession.party) {
+          const party = expSession.party as any;
+          if (party.members && party.members.length > 1) {
+            isCoop = true;
+          }
+        }
+      }
+
+      if (isCoop) {
+        const leaderboardText = sortedReport
+          .map((r, idx) => {
+            const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '⚔️';
+            return `${medal} **${r.username}** — \`${r.damage.toLocaleString()} DMG\``;
+          })
+          .join('\n');
+
+        embed.addFields({
+          name: '📊 Damage Leaderboard',
+          value: leaderboardText,
+          inline: false
+        });
+      } else {
+        const totalDmg = sortedReport.reduce((sum, r) => sum + r.damage, 0);
+        embed.addFields({
+          name: '📊 Combat Damage Report',
+          value: `💥 **Total Damage Dealt:** \`${totalDmg.toLocaleString()} DMG\``,
+          inline: false
+        });
+      }
     }
 
     const { buildNavId } = await import('../../utils/navigation.js');

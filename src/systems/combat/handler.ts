@@ -55,12 +55,21 @@ export async function handleCombatInteraction(
     const discordId = interaction.user.id;
     const username = interaction.user.username;
 
-    // 1. Fetch player
+    // 1. Fetch player (active clicker)
     const player = await findOrCreatePlayer(discordId, username);
 
-    // 2. Fetch active combat session
+    // Load owner of the combat session
+    let owner = player;
+    if (targetUserId && targetUserId !== discordId) {
+      const dbOwner = await findOrCreatePlayer(targetUserId, '');
+      if (dbOwner) {
+        owner = dbOwner;
+      }
+    }
+
+    // 2. Fetch active combat session (owner's session)
     const activeSession = await db.query.combatSessions.findFirst({
-      where: eq(combatSessions.playerId, player.id)
+      where: eq(combatSessions.playerId, owner.id)
     });
 
     if (!activeSession) {
@@ -68,6 +77,28 @@ export async function handleCombatInteraction(
         content: '❌ This combat session has expired or ended.',
         embeds: [],
         components: []
+      });
+      return;
+    }
+
+    // Verify co-op permission
+    const isOwner = owner.id === player.id;
+    let isPartyMember = false;
+    if (!isOwner && activeSession.state && (activeSession.state as any).explorationSessionId) {
+      const { explorationSessions } = await import('../../database/schema.js');
+      const expSession = await db.query.explorationSessions.findFirst({
+        where: eq(explorationSessions.id, (activeSession.state as any).explorationSessionId)
+      });
+      if (expSession && expSession.party) {
+        const party = expSession.party as any;
+        isPartyMember = party.members?.some((m: any) => m.playerId === player.id);
+      }
+    }
+
+    if (!isOwner && !isPartyMember) {
+      await interaction.followUp({
+        content: '❌ This combat session is not yours!',
+        flags: [MessageFlags.Ephemeral]
       });
       return;
     }
@@ -109,7 +140,7 @@ export async function handleCombatInteraction(
       luck: playerStats.luck
     };
 
-    const scaledEnemyStats = scaleEnemyStats(enemyDef, player.level);
+    const scaledEnemyStats = scaleEnemyStats(enemyDef, owner.level);
     const state = activeSession.state as any;
 
     // Inject max values in case they aren't saved
@@ -132,8 +163,14 @@ export async function handleCombatInteraction(
       return;
     }
 
+    const initialEnemyHp = state.enemyHp;
     // Resolve Player Turn
     processPlayerTurn(state, action, combatStats, scaledEnemyStats);
+    const damageDealt = Math.max(0, initialEnemyHp - state.enemyHp);
+    if (damageDealt > 0) {
+      if (!state.damageReport) state.damageReport = {};
+      state.damageReport[player.username] = (state.damageReport[player.username] || 0) + damageDealt;
+    }
 
     // If fled successfully
     if (state.isOver && !state.playerWon && action.type === 'flee') {
@@ -200,15 +237,17 @@ export async function handleCombatInteraction(
       .where(eq(players.id, player.id));
 
     // Rebuild components
+    const isAutoplay = state.activePresetSlot !== undefined;
+
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary).setDisabled(isAutoplay),
+      new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary).setDisabled(isAutoplay),
+      new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger).setDisabled(isAutoplay)
     );
 
-    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId);
-    const itemsRow = await getCombatItemsRow(player.id, player.discordId);
-    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId);
+    const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId, isAutoplay);
+    const itemsRow = await getCombatItemsRow(player.id, player.discordId, isAutoplay);
+    const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId, isAutoplay);
     const components: any[] = [row, presetsRow];
     if (selectMenuRow) components.push(selectMenuRow);
     if (itemsRow) components.push(itemsRow);
@@ -225,7 +264,8 @@ export async function handleCombatInteraction(
       state.round,
       state.combatLog,
       state.playerBuffs || [],
-      state.enemyBuffs || []
+      state.enemyBuffs || [],
+      state.activePresetSlot
     );
 
     await interaction.editReply({
@@ -324,6 +364,7 @@ export async function runAutoplayStep(
   const learnedSkillsDb = await db.select().from(playerSkills).where(eq(playerSkills.playerId, player.id));
   const learnedSkillIds = learnedSkillsDb.map((s) => s.skillId);
 
+  const initialEnemyHp = state.enemyHp;
   const actionIndex = (state.round - 1) % slot.actions.length;
   const actionId = slot.actions[actionIndex] || 'attack';
 
@@ -407,6 +448,11 @@ export async function runAutoplayStep(
   }
 
   processPlayerTurn(state, action, combatStats, scaledEnemyStats);
+  const damageDealt = Math.max(0, initialEnemyHp - state.enemyHp);
+  if (damageDealt > 0) {
+    if (!state.damageReport) state.damageReport = {};
+    state.damageReport[player.username] = (state.damageReport[player.username] || 0) + damageDealt;
+  }
 
   const channel = await client.channels.fetch(activeSession.channelId).catch(() => null);
   if (!channel) return;
@@ -461,15 +507,17 @@ async function updateCombatMessage(client: any, activeSession: any, state: any, 
     if (!message) return;
   }
 
+  const isAutoplay = state.activePresetSlot !== undefined;
+
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`combat_attack_${player.discordId}`).setLabel('⚔️ Attack').setStyle(ButtonStyle.Primary).setDisabled(isAutoplay),
+    new ButtonBuilder().setCustomId(`combat_defend_${player.discordId}`).setLabel('🛡️ Defend').setStyle(ButtonStyle.Secondary).setDisabled(isAutoplay),
+    new ButtonBuilder().setCustomId(`combat_flee_${player.discordId}`).setLabel('🏃 Flee').setStyle(ButtonStyle.Danger).setDisabled(isAutoplay)
   );
 
-  const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId);
-  const itemsRow = await getCombatItemsRow(player.id, player.discordId);
-  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId);
+  const selectMenuRow = await getCombatSkillsRow(player.id, player.playerClass, player.discordId, isAutoplay);
+  const itemsRow = await getCombatItemsRow(player.id, player.discordId, isAutoplay);
+  const presetsRow = buildPresetButtons(parsePresets(player.presets), 'combat', player.playerClass, player.discordId, isAutoplay);
   const components: any[] = [row, presetsRow];
   if (selectMenuRow) components.push(selectMenuRow);
   if (itemsRow) components.push(itemsRow);
@@ -486,7 +534,8 @@ async function updateCombatMessage(client: any, activeSession: any, state: any, 
     state.round,
     state.combatLog,
     state.playerBuffs || [],
-    state.enemyBuffs || []
+    state.enemyBuffs || [],
+    state.activePresetSlot
   );
 
   await message.edit({
