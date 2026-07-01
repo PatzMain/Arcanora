@@ -691,6 +691,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **In-Memory E2E Playthrough Integration Test**: Created `tests/playthrough.test.ts` to simulate the full player lifecycle (onboarding, travel, grid procedurals, resting, looting, events, and boss victory) as a zero-dependency, in-memory Drizzle mock integration test.
 - **test-pipeline Skill Registration**: Registered `.agents/skills/test-pipeline/SKILL.md` to define the full verification pipeline (linter, type checking, and unit/integration test suites) as an agent-usable skill.
 - **Combat Engagement UI Redesign**: Fixed the "looping engage enemy" bug by replacing the automated `runMap` redirect after successful engagement with a direct redirection to `runFight`. Added interactive **Resume Combat** buttons to the "Already in Combat" screens inside both the dungeon combat interaction handler and the `/map` block page, and secured `huntNode` and `onAction` against spam-click DB constraint violations using try/catch fallbacks.
+- **Node Clearance State Persistence**: Resolved the bug where defeated combat rooms incorrectly kept displaying the "Engage Enemy" button by fixing `updateFogOfWar` in `dungeonGenerator.ts` to prevent it from overwriting nodes already marked as `'cleared'` back to `'visited'`.
 
 
 
