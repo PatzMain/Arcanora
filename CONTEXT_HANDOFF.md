@@ -695,6 +695,7 @@ Each entity is a standalone JSON file with an `"id"` field. Loaded by `catalog.t
 - **Chance for Empty Rooms**: Implemented a 10% weight for generating `'💨 Empty Chamber'` rooms inside dungeons, starting with status `'cleared'` so players can walk through without engaging.
 - **Autoplay UI & Preset Visuals**: Enhanced the preset combat flow by disabling all buttons/select menus during autoplay steps. Re-rendered the combat embed with a loader status footer (`⚡ Autoplay Active: Executing Slot X combo step... ⏳`) to clearly visualize automatic turn progression.
 - **Combat Damage Reports & Co-op Leaderboards**: Programmed real-time damage tracking on combat state (`state.damageReport`). When an enemy is defeated, players receive a detailed "Combat Damage Report" (if solo) or an interactive, formatted "Damage Leaderboard" showing contributions from all party members (if co-op). Allowed party members to participate in the same dungeon combat session.
+- **Dungeon Room Visual Cues & Item Cards**: Implemented explicit visual cues for cleared campsite, chest, and event rooms (e.g., updating campsite description to cooled embers, chest description to wide open/empty). Integrated the unified compact item card builder (`buildCompactItemCard`) to display chest loot rewards and event loot findings with appropriate inline rarity emojis and badges.
 
 
 
