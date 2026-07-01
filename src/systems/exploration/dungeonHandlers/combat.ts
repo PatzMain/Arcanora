@@ -114,12 +114,19 @@ export const combatNodeHandler: NodeInteractionHandler = {
       const embed = new EmbedBuilder()
         .setColor(0xEF4444)
         .setTitle('Already in Combat')
-        .setDescription('You are already in an active battle! Use `/combat fight` to resume your fight.');
+        .setDescription('You are already in an active battle! Click the button below to resume.');
+
+      const { buildNavId } = await import('../../../utils/navigation.js');
+      const resumeBtn = new ButtonBuilder()
+        .setCustomId(buildNavId('combat_fight', player.discordId))
+        .setLabel('⚔️ Resume Combat')
+        .setStyle(ButtonStyle.Primary);
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(resumeBtn);
 
       return {
         success: false,
         embeds: [embed],
-        components: [],
+        components: [row],
         log: 'Already in combat.'
       };
     }
@@ -174,16 +181,43 @@ export const combatNodeHandler: NodeInteractionHandler = {
 
     // Save session in DB
     const sessionExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-    await db
-      .insert(combatSessions)
-      .values({
-        playerId: player.id,
-        enemyId: enemyDef.id,
-        zoneId: context.dbSession.zoneId,
-        state: initialCombatState,
-        channelId: context.dbSession.channelId || '',
-        expiresAt: sessionExpiresAt
+    try {
+      await db
+        .insert(combatSessions)
+        .values({
+          playerId: player.id,
+          enemyId: enemyDef.id,
+          zoneId: context.dbSession.zoneId,
+          state: initialCombatState,
+          channelId: context.dbSession.channelId || '',
+          expiresAt: sessionExpiresAt
+        });
+    } catch (err: any) {
+      const active = await db.query.combatSessions.findFirst({
+        where: eq(combatSessions.playerId, player.id)
       });
+      if (active) {
+        const embed = new EmbedBuilder()
+          .setColor(0xEF4444)
+          .setTitle('Already in Combat')
+          .setDescription('You are already in an active battle! Click the button below to resume.');
+
+        const { buildNavId } = await import('../../../utils/navigation.js');
+        const resumeBtn = new ButtonBuilder()
+          .setCustomId(buildNavId('combat_fight', player.discordId))
+          .setLabel('⚔️ Resume Combat')
+          .setStyle(ButtonStyle.Primary);
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(resumeBtn);
+
+        return {
+          success: false,
+          embeds: [embed],
+          components: [row],
+          log: 'Already in combat.'
+        };
+      }
+      throw err;
+    }
 
     return {
       success: true,

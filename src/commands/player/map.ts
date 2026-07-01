@@ -1,5 +1,8 @@
 import {
   SlashCommandBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   type ChatInputCommandInteraction,
   type ButtonInteraction,
   type StringSelectMenuInteraction
@@ -70,7 +73,14 @@ export async function runMap(
           'In Combat',
           '❌ You cannot access the map while you are in combat! Use `/combat fight` to resume the battle or finish/flee it first.'
         );
-        await interaction.editReply({ embeds: [err], components: [] });
+        const { buildNavId } = await import('../../utils/navigation.js');
+        const resumeBtn = new ButtonBuilder()
+          .setCustomId(buildNavId('combat_fight', player.discordId))
+          .setLabel('⚔️ Resume Combat')
+          .setStyle(ButtonStyle.Primary);
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(resumeBtn);
+
+        await interaction.editReply({ embeds: [err], components: [row] });
         return;
       } else {
         // Clean up expired session

@@ -188,6 +188,13 @@ export async function huntNode(playerId: string, expectedLocationId?: string): P
     throw new Error('Location mismatch. You are not at the expected location.');
   }
 
+  const activeCombat = await db.query.combatSessions.findFirst({
+    where: eq(combatSessions.playerId, player.id)
+  });
+  if (activeCombat) {
+    throw new Error('You are already in an active battle! Use `/combat fight` to resume your fight.');
+  }
+
   if (player.stamina < 5) {
     throw new Error('You need at least 5 Stamina to hunt.');
   }

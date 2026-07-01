@@ -918,10 +918,18 @@ export async function handleDungeonInteraction(
           await updateExplorationSession(session.id, {
             mapState: session.mapState
           });
-          await interaction.deferUpdate();
-          await runMap(interaction as any);
+          const { runFight } = await import('../../commands/combat/fight.js');
+          await runFight(interaction as any);
         } else {
-          await interaction.reply({ content: `❌ Action failed: ${result.log || 'Unknown error'}`, flags: [MessageFlags.Ephemeral] });
+          if (result.embeds && result.embeds.length > 0) {
+            await interaction.reply({
+              embeds: result.embeds,
+              components: result.components || [],
+              flags: [MessageFlags.Ephemeral]
+            });
+          } else {
+            await interaction.reply({ content: `❌ Action failed: ${result.log || 'Unknown error'}`, flags: [MessageFlags.Ephemeral] });
+          }
         }
         return;
       }
