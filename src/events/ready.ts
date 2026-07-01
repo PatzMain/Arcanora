@@ -80,26 +80,24 @@ export async function execute(client: Client) {
       return;
     }
 
-    // Clear stale guild-level commands to ensure global commands are visible
-    for (const guild of client.guilds.cache.values()) {
-      try {
-        const guildCommands = await guild.commands.fetch();
-        if (guildCommands.size > 0) {
-          logger.info(`Clearing ${guildCommands.size} stale guild-level commands for guild: ${guild.name} (${guild.id})`);
-          await guild.commands.set([]);
-        }
-      } catch (err) {
-        logger.warn(`Could not fetch/clear guild commands for guild ${guild.name}: ${err}`);
-      }
-    }
-
-    logger.info('Registering slash commands...');
+    logger.info('Registering slash commands per guild for instant propagation...');
 
     const body = commandsList.map((cmd) => cmd.data.toJSON());
 
-    await rest.put(Routes.applicationCommands(clientId), { body });
+    // Register commands guild-by-guild for instant updates across all servers.
+    // Global commands (Routes.applicationCommands) have up to 1-hour propagation
+    // delay, causing some servers to lag behind after a deployment.
+    let successCount = 0;
+    for (const guild of client.guilds.cache.values()) {
+      try {
+        await rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body });
+        successCount++;
+      } catch (err) {
+        logger.warn(`Could not register commands for guild ${guild.name} (${guild.id}): ${err}`);
+      }
+    }
 
-    logger.info('Successfully registered global slash commands!');
+    logger.info(`Successfully registered slash commands in ${successCount}/${client.guilds.cache.size} guilds!`);
   } catch (error) {
     logger.error({ error }, 'Failed to register slash commands.');
   }
