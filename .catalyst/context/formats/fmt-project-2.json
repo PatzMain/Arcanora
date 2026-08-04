@@ -1,0 +1,18 @@
+{
+  "body": "## Goal\n\n{{goal}}\n\n## Current state\n\n{{current_state}}\n\n## Decisions made\n\n{{decisions}}\n\n## Next steps\n\n{{next_steps}}\n\n## Risks / unknowns\n\n{{risks}}\n\n## Open questions\n\n{{open_questions}}\n\n## Artifacts\n\n{{artifacts}}\n",
+  "id": "fmt-project-2",
+  "isDefault": true,
+  "kind": "handoff",
+  "name": "Context Handoff",
+  "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+  "updatedAt": "2026-07-26T06:25:23.049Z",
+  "variables": [
+    "goal",
+    "current_state",
+    "decisions",
+    "next_steps",
+    "risks",
+    "open_questions",
+    "artifacts"
+  ]
+}

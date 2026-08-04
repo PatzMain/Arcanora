@@ -1,0 +1,249 @@
+{
+  "handoffs": [
+    {
+      "createdAt": "2026-07-26T06:25:23.049Z",
+      "id": "handoff-1",
+      "linkedFileIds": [
+        "file-skill",
+        "file-agents"
+      ],
+      "linkedPromptIds": [
+        "prompt-system"
+      ],
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "sections": [
+        {
+          "body": "Ship the Context page frontend for Arcanora",
+          "id": "sec-1",
+          "required": true,
+          "title": "Goal"
+        },
+        {
+          "body": "UI scaffold planned; backend deferred",
+          "id": "sec-2",
+          "required": true,
+          "title": "Current state"
+        },
+        {
+          "body": "- Frontend-first with LocalContextRepository\n- Model-agnostic handoff + adapters",
+          "id": "sec-3",
+          "required": false,
+          "title": "Decisions made"
+        },
+        {
+          "body": "1. Wire nav and shell\n2. Files + Handoffs tabs\n3. Engineering workspaces",
+          "id": "sec-4",
+          "required": true,
+          "title": "Next steps"
+        },
+        {
+          "body": "Disk scan not available until backend phase",
+          "id": "sec-5",
+          "required": false,
+          "title": "Risks / unknowns"
+        },
+        {
+          "body": "Whether to deep-link from ProjectDetailView",
+          "id": "sec-6",
+          "required": false,
+          "title": "Open questions"
+        },
+        {
+          "body": "- plan.md\n- ContextView component tree",
+          "id": "sec-7",
+          "required": false,
+          "title": "Artifacts"
+        }
+      ],
+      "status": "ready",
+      "targetModels": [
+        "generic",
+        "claude",
+        "gemini",
+        "grok"
+      ],
+      "title": "Continue: Context page for Arcanora",
+      "updatedAt": "2026-07-26T06:25:23.049Z"
+    }
+  ],
+  "formats": [
+    {
+      "body": "## Summary\n\n{{summary}}\n\n## Motivation\n\n{{motivation}}\n\n## Changes\n\n{{changes}}\n\n## Test plan\n\n- [ ] {{test_plan}}\n\n## Risks\n\n{{risks}}\n\n## Context handoff\n\n{{handoff_link}}\n",
+      "id": "fmt-project-1",
+      "isDefault": true,
+      "kind": "pr",
+      "name": "Pull Request",
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "updatedAt": "2026-07-26T06:25:23.049Z",
+      "variables": [
+        "summary",
+        "motivation",
+        "changes",
+        "test_plan",
+        "risks",
+        "handoff_link"
+      ]
+    },
+    {
+      "body": "## Goal\n\n{{goal}}\n\n## Current state\n\n{{current_state}}\n\n## Decisions made\n\n{{decisions}}\n\n## Next steps\n\n{{next_steps}}\n\n## Risks / unknowns\n\n{{risks}}\n\n## Open questions\n\n{{open_questions}}\n\n## Artifacts\n\n{{artifacts}}\n",
+      "id": "fmt-project-2",
+      "isDefault": true,
+      "kind": "handoff",
+      "name": "Context Handoff",
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "updatedAt": "2026-07-26T06:25:23.049Z",
+      "variables": [
+        "goal",
+        "current_state",
+        "decisions",
+        "next_steps",
+        "risks",
+        "open_questions",
+        "artifacts"
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "body": "You are an expert engineer working in {{project_name}}. Follow AGENTS.md and SKILL.md. Prefer small diffs and clear handoffs.",
+      "id": "prompt-system",
+      "modelHints": [
+        "claude",
+        "gemini",
+        "grok"
+      ],
+      "name": "Project system prompt",
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "role": "system",
+      "updatedAt": "2026-07-26T06:25:23.049Z",
+      "variables": [
+        "project_name"
+      ]
+    },
+    {
+      "body": "## Task\n{{task_description}}\n\n## Constraints\n{{constraints}}\n\n## Done when\n{{done_when}}",
+      "id": "prompt-task",
+      "name": "Implement feature task",
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "role": "task",
+      "updatedAt": "2026-07-26T06:25:23.049Z",
+      "variables": [
+        "task_description",
+        "constraints",
+        "done_when"
+      ]
+    }
+  ],
+  "packRules": [
+    {
+      "id": "pack-default",
+      "includeFileIds": [
+        "file-skill",
+        "file-agents"
+      ],
+      "maxTokens": 4000,
+      "name": "Default context pack",
+      "notes": "Core instruction files for any agent session",
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "updatedAt": "2026-07-26T06:25:23.049Z"
+    }
+  ],
+  "loops": [
+    {
+      "id": "loop-feature",
+      "name": "Feature delivery loop",
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "Plan approach",
+          "promptId": "prompt-task",
+          "type": "plan"
+        },
+        {
+          "id": "step-2",
+          "label": "Implement",
+          "type": "act"
+        },
+        {
+          "id": "step-3",
+          "label": "Verify (tests/build)",
+          "stopWhen": "All relevant tests pass",
+          "type": "verify"
+        },
+        {
+          "id": "step-4",
+          "label": "Write handoff",
+          "type": "handoff"
+        }
+      ],
+      "updatedAt": "2026-07-26T06:25:23.049Z"
+    }
+  ],
+  "graphs": [
+    {
+      "edges": [
+        {
+          "from": "n-skill",
+          "id": "e1",
+          "relation": "feeds",
+          "to": "n-prompt"
+        },
+        {
+          "from": "n-agents",
+          "id": "e2",
+          "relation": "feeds",
+          "to": "n-prompt"
+        },
+        {
+          "from": "n-prompt",
+          "id": "e3",
+          "relation": "includes",
+          "to": "n-loop"
+        },
+        {
+          "from": "n-loop",
+          "id": "e4",
+          "relation": "triggers",
+          "to": "n-handoff"
+        }
+      ],
+      "id": "graph-main",
+      "name": "Main context graph",
+      "nodes": [
+        {
+          "id": "n-skill",
+          "kind": "file",
+          "label": "SKILL.md",
+          "refId": "file-skill"
+        },
+        {
+          "id": "n-agents",
+          "kind": "file",
+          "label": "AGENTS.md",
+          "refId": "file-agents"
+        },
+        {
+          "id": "n-prompt",
+          "kind": "prompt",
+          "label": "System prompt",
+          "refId": "prompt-system"
+        },
+        {
+          "id": "n-handoff",
+          "kind": "handoff",
+          "label": "Continue Context page",
+          "refId": "handoff-1"
+        },
+        {
+          "id": "n-loop",
+          "kind": "loop",
+          "label": "Feature delivery loop",
+          "refId": "loop-feature"
+        }
+      ],
+      "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+      "updatedAt": "2026-07-26T06:25:23.049Z"
+    }
+  ]
+}

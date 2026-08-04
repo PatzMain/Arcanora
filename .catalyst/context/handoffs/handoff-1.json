@@ -1,0 +1,65 @@
+{
+  "createdAt": "2026-07-26T06:25:23.049Z",
+  "id": "handoff-1",
+  "linkedFileIds": [
+    "file-skill",
+    "file-agents"
+  ],
+  "linkedPromptIds": [
+    "prompt-system"
+  ],
+  "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+  "sections": [
+    {
+      "body": "Ship the Context page frontend for Arcanora",
+      "id": "sec-1",
+      "required": true,
+      "title": "Goal"
+    },
+    {
+      "body": "UI scaffold planned; backend deferred",
+      "id": "sec-2",
+      "required": true,
+      "title": "Current state"
+    },
+    {
+      "body": "- Frontend-first with LocalContextRepository\n- Model-agnostic handoff + adapters",
+      "id": "sec-3",
+      "required": false,
+      "title": "Decisions made"
+    },
+    {
+      "body": "1. Wire nav and shell\n2. Files + Handoffs tabs\n3. Engineering workspaces",
+      "id": "sec-4",
+      "required": true,
+      "title": "Next steps"
+    },
+    {
+      "body": "Disk scan not available until backend phase",
+      "id": "sec-5",
+      "required": false,
+      "title": "Risks / unknowns"
+    },
+    {
+      "body": "Whether to deep-link from ProjectDetailView",
+      "id": "sec-6",
+      "required": false,
+      "title": "Open questions"
+    },
+    {
+      "body": "- plan.md\n- ContextView component tree",
+      "id": "sec-7",
+      "required": false,
+      "title": "Artifacts"
+    }
+  ],
+  "status": "ready",
+  "targetModels": [
+    "generic",
+    "claude",
+    "gemini",
+    "grok"
+  ],
+  "title": "Continue: Context page for Arcanora",
+  "updatedAt": "2026-07-26T06:25:23.049Z"
+}

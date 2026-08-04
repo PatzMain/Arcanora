@@ -1,0 +1,17 @@
+{
+  "body": "## Summary\n\n{{summary}}\n\n## Motivation\n\n{{motivation}}\n\n## Changes\n\n{{changes}}\n\n## Test plan\n\n- [ ] {{test_plan}}\n\n## Risks\n\n{{risks}}\n\n## Context handoff\n\n{{handoff_link}}\n",
+  "id": "fmt-project-1",
+  "isDefault": true,
+  "kind": "pr",
+  "name": "Pull Request",
+  "projectPath": "c:\\Users\\Patz\\Desktop\\My Projects\\Arcanora",
+  "updatedAt": "2026-07-26T06:25:23.049Z",
+  "variables": [
+    "summary",
+    "motivation",
+    "changes",
+    "test_plan",
+    "risks",
+    "handoff_link"
+  ]
+}
