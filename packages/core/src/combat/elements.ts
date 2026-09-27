@@ -7,6 +7,9 @@ export interface CombatStatusEffect {
   type: 'buff' | 'debuff';
   damagePerTurn?: number;
   healPerTurn?: number;
+  stat?: any;
+  value?: number;
+  percentValue?: number;
   statModifier?: {
     stat: 'attack' | 'defense' | 'speed';
     percent: number;

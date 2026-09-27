@@ -1,57 +1,37 @@
-import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres';
-import { drizzle as drizzlePglite } from 'drizzle-orm/pglite';
+import { drizzle } from 'drizzle-orm/pglite';
 import { PGlite } from '@electric-sql/pglite';
-import pg from 'pg';
 import * as schema from './schema.js';
 import { runLocalMigrations } from './localMigrator.js';
 
-export type ArcanoraDatabase = ReturnType<typeof drizzlePglite<typeof schema>> | ReturnType<typeof drizzlePg<typeof schema>>;
+export type ArcanoraDatabase = ReturnType<typeof drizzle<typeof schema>>;
 
 let globalDb: ArcanoraDatabase | null = null;
 let globalPglite: PGlite | null = null;
-let globalPool: pg.Pool | null = null;
 
 export interface InitDbOptions {
-  driver?: 'pglite' | 'pg';
-  connectionString?: string;
-  dataDir?: string; // e.g. 'idb://arcanora_db' or memory
+  driver?: 'pglite';
+  dataDir?: string; // e.g. 'idb://arcanora_db' in browser or in-memory
   autoMigrate?: boolean;
 }
 
 /**
- * Initializes the database client.
- * Defaults to PGlite (local-first/zero-cloud) when no DATABASE_URL is provided.
+ * Initializes the local-first embedded PGlite WASM database.
+ * Supports IndexedDB persistence in the browser (`idb://arcanora_db`)
+ * and memory/local directory in Node.js.
  */
 export async function initDatabase(options: InitDbOptions = {}): Promise<ArcanoraDatabase> {
   const isBrowser = typeof window !== 'undefined';
-  const envUrl = typeof process !== 'undefined' && process.env ? process.env.DATABASE_URL : undefined;
-  const driver = options.driver || (options.connectionString || envUrl ? 'pg' : 'pglite');
 
-  if (driver === 'pglite' || isBrowser) {
-    if (!globalPglite) {
-      const dataDir = options.dataDir || (isBrowser ? 'idb://arcanora_db' : undefined);
-      globalPglite = dataDir ? new PGlite(dataDir) : new PGlite();
-    }
-
-    if (options.autoMigrate !== false) {
-      await runLocalMigrations(globalPglite);
-    }
-
-    globalDb = drizzlePglite(globalPglite, { schema });
-    return globalDb;
+  if (!globalPglite) {
+    const dataDir = options.dataDir || (isBrowser ? 'idb://arcanora_db' : undefined);
+    globalPglite = dataDir ? new PGlite(dataDir) : new PGlite();
   }
 
-  // Node.js PostgreSQL pool
-  const connectionString = options.connectionString || envUrl;
-  if (!globalPool) {
-    globalPool = new pg.Pool({
-      connectionString,
-      min: 2,
-      max: 10,
-    });
+  if (options.autoMigrate !== false) {
+    await runLocalMigrations(globalPglite);
   }
 
-  globalDb = drizzlePg(globalPool, { schema });
+  globalDb = drizzle(globalPglite as any, { schema });
   return globalDb;
 }
 
@@ -60,9 +40,8 @@ export async function initDatabase(options: InitDbOptions = {}): Promise<Arcanor
  */
 export function getDb(): ArcanoraDatabase {
   if (!globalDb) {
-    // Synchronous PGlite fallback for Node / test environments
     globalPglite = new PGlite();
-    globalDb = drizzlePglite(globalPglite, { schema });
+    globalDb = drizzle(globalPglite as any, { schema });
   }
   return globalDb;
 }
@@ -76,4 +55,4 @@ export const db = new Proxy({} as ArcanoraDatabase, {
   }
 });
 
-export { globalPool as pool, globalPglite as pglite, schema };
+export { globalPglite as pglite, schema };

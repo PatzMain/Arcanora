@@ -1,11 +1,13 @@
 import { STATIC_CATALOG } from './catalogBundle.js';
 
-export class Registry<T extends { id: string }> {
+export class Registry<T = any> {
   private items = new Map<string, T>();
 
   constructor(initialItems: readonly T[] = []) {
     for (const item of initialItems) {
-      this.items.set(item.id, item);
+      if (item && (item as any).id) {
+        this.items.set((item as any).id, item);
+      }
     }
   }
 

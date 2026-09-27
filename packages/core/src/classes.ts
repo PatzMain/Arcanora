@@ -24,7 +24,7 @@ export interface ClassDefinition {
   };
 }
 
-import { classesCatalog } from '../utils/catalog.js';
+import { classesCatalog } from './catalog/index.js';
 
 import { STAT_KEYS } from './progression/stats.js';
 
