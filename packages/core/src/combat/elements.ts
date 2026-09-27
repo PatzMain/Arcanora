@@ -54,11 +54,11 @@ export function evaluateElementalSynergy(
 
     return {
       reaction: 'electrocute',
-      name: '⚡ ELECTROCUTE',
+      name: 'ELECTROCUTE',
       bonusDamage: bonus,
       remainingEffects: removeEffect('wet'),
       addedEffects: [electrocuteDebuff],
-      message: `⚡ Synergistic Reaction: ELECTROCUTE! Water surged with lightning, dealing +${bonus} bonus damage and slowing the target!`
+      message: `[SYNERGY] Synergistic Reaction: ELECTROCUTE! Water surged with lightning, dealing +${bonus} bonus damage and slowing the target!`
     };
   }
 
@@ -79,11 +79,11 @@ export function evaluateElementalSynergy(
 
     return {
       reaction: 'shatter',
-      name: '💥 SHATTER',
+      name: 'SHATTER',
       bonusDamage: bonus,
       remainingEffects: removeEffect(isFrozen ? 'frozen' : 'chilled'),
       addedEffects: [staggerDebuff],
-      message: `💥 Synergistic Reaction: SHATTER! The brittle ice shattered, dealing +${bonus} true damage and sundering defenses!`
+      message: `[SYNERGY] Synergistic Reaction: SHATTER! The brittle ice shattered, dealing +${bonus} true damage and sundering defenses!`
     };
   }
 
@@ -105,11 +105,11 @@ export function evaluateElementalSynergy(
 
     return {
       reaction: 'hellfire',
-      name: '🔥 HELLFIRE',
+      name: 'HELLFIRE',
       bonusDamage: bonus,
       remainingEffects: remaining,
       addedEffects: [hellfireDebuff],
-      message: `🔥 Synergistic Reaction: HELLFIRE! Nether voids ignited with demonic flame for +${bonus} damage and defense reduction!`
+      message: `[SYNERGY] Synergistic Reaction: HELLFIRE! Nether voids ignited with demonic flame for +${bonus} damage and defense reduction!`
     };
   }
 
@@ -118,11 +118,11 @@ export function evaluateElementalSynergy(
     const bonus = Math.round(baseDamage * 0.45);
     return {
       reaction: 'purify',
-      name: '✨ PURIFY',
+      name: 'PURIFY',
       bonusDamage: bonus,
       remainingEffects: removeEffect('void-touched').filter(e => e.name.toLowerCase() !== 'poisoned'),
       addedEffects: [],
-      message: `✨ Synergistic Reaction: RADIANT PURIFY! Holy light purged dark afflictions, detonating for +${bonus} radiant damage!`
+      message: `[SYNERGY] Synergistic Reaction: RADIANT PURIFY! Holy light purged dark afflictions, detonating for +${bonus} radiant damage!`
     };
   }
 

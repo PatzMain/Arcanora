@@ -109,7 +109,7 @@ export function createCombatState(
     enemyBuffs: [],
     isPlayerDefending: false,
     playerStance: 'none',
-    combatLog: ['⚔️ Tactical Combat initialized!'],
+    combatLog: ['[COMBAT] Tactical Combat initialized!'],
     isOver: false,
     playerWon: false,
     enemyIntent: initialIntent,
@@ -143,19 +143,19 @@ export function executeCombatTurn(
     if (fled) {
       state.isOver = true;
       state.playerWon = false;
-      state.combatLog.push('💨 You successfully fled from battle!');
+      state.combatLog.push('[FLEE] You successfully fled from battle!');
       return { state, playerDmg: 0, enemyDmg: 0, synergy: null };
     } else {
-      state.combatLog.push('❌ Escape failed! The enemy blocks your retreat.');
+      state.combatLog.push('[ESCAPE FAILED] The enemy blocks your retreat.');
     }
   } else if (action.type === 'defend') {
     state.playerStance = 'guard';
     state.isPlayerDefending = true;
-    state.combatLog.push('🛡️ You brace into a sturdy Guard stance, preparing to mitigate incoming strikes.');
+    state.combatLog.push('[GUARD] You brace into a sturdy Guard stance, preparing to mitigate incoming strikes.');
   } else if (action.type === 'parry') {
     state.playerStance = 'parry';
     state.isPlayerDefending = true;
-    state.combatLog.push('⚡ You focus your blade into a Counter-Parry posture, waiting for the enemy swing.');
+    state.combatLog.push('[PARRY] You focus your blade into a Counter-Parry posture, waiting for the enemy swing.');
   } else {
     // Attack or Skill
     state.playerStance = 'none';
@@ -183,7 +183,7 @@ export function executeCombatTurn(
     playerDamageDealt = baseDamage;
     state.enemyHp = Math.max(0, state.enemyHp - playerDamageDealt);
     state.combatLog.push(
-      `⚔️ You strike with ${attackElement} dealing ${playerDamageDealt} damage!${isCrit ? ' 💥 CRITICAL HIT!' : ''}`
+      `[STRIKE] You strike with ${attackElement} dealing ${playerDamageDealt} damage!${isCrit ? ' [CRITICAL HIT!]' : ''}`
     );
 
     floatingNumbers.push({
@@ -198,7 +198,7 @@ export function executeCombatTurn(
   if (state.enemyHp <= 0) {
     state.isOver = true;
     state.playerWon = true;
-    state.combatLog.push('🏆 Victory! The hostile foe has been vanquished!');
+    state.combatLog.push('[VICTORY] The hostile foe has been vanquished!');
     state.lastSynergy = synergyResult;
     state.floatingNumbers = floatingNumbers;
     return { state, playerDmg: playerDamageDealt, enemyDmg: 0, synergy: synergyResult };
@@ -224,7 +224,7 @@ export function executeCombatTurn(
   } else if (mitigation.message) {
     state.combatLog.push(mitigation.message);
   } else {
-    state.combatLog.push(`👾 Enemy unleashed ${currentIntent.name} dealing ${enemyDamageDealt} damage.`);
+    state.combatLog.push(`[ENEMY] Enemy unleashed ${currentIntent.name} dealing ${enemyDamageDealt} damage.`);
   }
 
   state.playerHp = Math.max(0, state.playerHp - enemyDamageDealt);
@@ -243,7 +243,7 @@ export function executeCombatTurn(
   if (state.playerHp <= 0) {
     state.isOver = true;
     state.playerWon = false;
-    state.combatLog.push('💀 You were overwhelmed in combat...');
+    state.combatLog.push('[DEFEAT] You were overwhelmed in combat...');
   }
 
   // 3. Increment round and telegraph NEXT enemy intent

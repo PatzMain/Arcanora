@@ -171,6 +171,25 @@ export const WorldMapCanvas: React.FC = () => {
     }
   };
 
+  const handleCanvasTouch = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clickX = (touch.clientX - rect.left) * scaleX;
+    const clickY = (touch.clientY - rect.top) * scaleY;
+
+    for (const [id, loc] of Object.entries(locations)) {
+      const dist = Math.hypot(clickX - loc.x, clickY - loc.y);
+      if (dist <= 28) {
+        setSelectedZoneId(id);
+        break;
+      }
+    }
+  };
+
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -233,8 +252,9 @@ export const WorldMapCanvas: React.FC = () => {
             width={800}
             height={500}
             onClick={handleCanvasClick}
+            onTouchStart={handleCanvasTouch}
             onMouseMove={handleCanvasMouseMove}
-            className="w-full h-full cursor-pointer object-cover"
+            className="w-full h-full cursor-pointer object-cover touch-none"
           />
         </div>
 
@@ -301,8 +321,9 @@ export const WorldMapCanvas: React.FC = () => {
         <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-obsidian-700/60">
           {isSelectedCurrent ? (
             <div className="flex flex-col gap-2">
-              <div className="bg-amber-950/30 text-amber-300 border border-amber-800/40 text-xs py-2 px-3 rounded text-center font-fantasy font-semibold">
-                📍 You are currently here
+              <div className="bg-amber-950/30 text-amber-300 border border-amber-800/40 text-xs py-2 px-3 rounded text-center font-fantasy font-semibold flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+                <span>Current Location</span>
               </div>
               <button
                 onClick={() => setActiveTab('dungeon')}

@@ -7,7 +7,11 @@ import {
   StairsDownIcon,
   MerchantIcon,
   BossSkullIcon,
-  SwordsCrossedIcon
+  SwordsCrossedIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '../common/SvgIcons';
 import confetti from 'canvas-confetti';
 
@@ -35,7 +39,7 @@ export const DungeonCrawler: React.FC = () => {
       const updatedNodes = { ...prev.nodes };
       const currentId = `${currentCoord.x}_${currentCoord.y}`;
 
-      if (updatedNodes[currentId]) {
+      if (updatedNodes[currentId] && updatedNodes[currentId].status !== 'cleared') {
         updatedNodes[currentId].status = 'visited';
       }
 

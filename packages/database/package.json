@@ -9,7 +9,7 @@
     "./schema": "./src/schema.ts",
     "./client": "./src/client.ts",
     "./localMigrator": "./src/localMigrator.ts",
-    "./queries/*": "./src/queries/*.ts"
+    "./playerQueries": "./src/playerQueries.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

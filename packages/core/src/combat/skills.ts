@@ -121,7 +121,7 @@ export function executeSkill(
 
   // Special handling for Purify: remove all debuffs
   if (skill.id === 'healer_purify') {
-    descriptions.push('✨ All debuffs have been cleansed!');
+    descriptions.push('[PURIFY] All debuffs have been cleansed!');
     // The caller is responsible for clearing the debuff array on the caster's state
   }
 
@@ -135,7 +135,7 @@ export function executeSkill(
         const variance = varianceRoll / 100;
         const dmg = Math.max(1, Math.round(base * scaling * variance));
         totalDamage += dmg;
-        descriptions.push(`💥 ${skill.name} deals ${dmg} damage!`);
+        descriptions.push(`[DAMAGE] ${skill.name} deals ${dmg} damage!`);
         break;
       }
 
@@ -144,7 +144,7 @@ export function executeSkill(
         const healAmt = effect.value;
         totalHealing += healAmt;
         if (healAmt > 0) {
-          descriptions.push(`💚 ${skill.name} heals for ${healAmt} HP!`);
+          descriptions.push(`[HEAL] ${skill.name} heals for ${healAmt} HP!`);
         }
         break;
       }
@@ -153,14 +153,14 @@ export function executeSkill(
         if (effect.stat && effect.duration) {
           const statusEffect: StatusEffect = {
             id: `${skill.id}_${effect.stat}_buff`,
-            name: `${skill.name} (${effect.stat} ↑)`,
+            name: `${skill.name} (${effect.stat} +)`,
             type: 'buff',
             stat: effect.stat,
             value: effect.value,
             turnsRemaining: effect.duration,
           };
           appliedEffects.push(statusEffect);
-          descriptions.push(`⬆️ ${skill.name} boosts ${effect.stat} by ${effect.value} for ${effect.duration} turns!`);
+          descriptions.push(`[BUFF] ${skill.name} boosts ${effect.stat} by ${effect.value} for ${effect.duration} turns!`);
         }
         break;
       }
@@ -169,7 +169,7 @@ export function executeSkill(
         if (effect.stat && effect.duration) {
           const statusEffect: StatusEffect = {
             id: `${skill.id}_${effect.stat}_debuff`,
-            name: `${skill.name} (${effect.stat} ↓)`,
+            name: `${skill.name} (${effect.stat} -)`,
             type: 'debuff',
             stat: effect.stat,
             value: effect.value,
@@ -179,9 +179,9 @@ export function executeSkill(
 
           // Determine which target gets the debuff
           if (effect.target === 'self') {
-            descriptions.push(`⬇️ ${skill.name} reduces your ${effect.stat} by ${effect.value} for ${effect.duration} turns!`);
+            descriptions.push(`[DEBUFF] ${skill.name} reduces your ${effect.stat} by ${effect.value} for ${effect.duration} turns!`);
           } else {
-            descriptions.push(`⬇️ ${skill.name} reduces enemy ${effect.stat} by ${effect.value} for ${effect.duration} turns!`);
+            descriptions.push(`[DEBUFF] ${skill.name} reduces enemy ${effect.stat} by ${effect.value} for ${effect.duration} turns!`);
           }
         }
         break;
@@ -197,7 +197,7 @@ export function executeSkill(
             turnsRemaining: effect.duration,
           };
           appliedEffects.push(statusEffect);
-          descriptions.push(`☠️ ${skill.name} poisons the enemy for ${effect.value} damage/turn for ${effect.duration} turns!`);
+          descriptions.push(`[POISON] ${skill.name} poisons the enemy for ${effect.value} damage/turn for ${effect.duration} turns!`);
         }
         break;
       }
@@ -212,7 +212,7 @@ export function executeSkill(
             turnsRemaining: effect.duration,
           };
           appliedEffects.push(statusEffect);
-          descriptions.push(`🌿 ${skill.name} heals ${effect.value} HP/turn for ${effect.duration} turns!`);
+          descriptions.push(`[REGEN] ${skill.name} heals ${effect.value} HP/turn for ${effect.duration} turns!`);
         }
         break;
       }

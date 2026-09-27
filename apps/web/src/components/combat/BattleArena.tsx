@@ -179,8 +179,18 @@ export const BattleArena: React.FC = () => {
         {/* Recommended Counter */}
         <div className="shrink-0 bg-obsidian-950/80 px-3 py-1.5 rounded-lg border border-obsidian-700/80 text-right">
           <span className="text-[10px] text-slate-400 font-medium block">Suggested Counter:</span>
-          <span className="font-fantasy font-bold text-xs uppercase text-amber-400 tracking-wider">
-            {combatState.enemyIntent?.recommendedCounter === 'parry' ? '⚡ Timing Parry' : '🛡️ Firm Guard'}
+          <span className="font-fantasy font-bold text-xs uppercase text-amber-400 tracking-wider flex items-center justify-end gap-1.5">
+            {combatState.enemyIntent?.recommendedCounter === 'parry' ? (
+              <>
+                <ElementLightningIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Timing Parry</span>
+              </>
+            ) : (
+              <>
+                <ShieldIcon className="w-3.5 h-3.5 text-blue-400" />
+                <span>Firm Guard</span>
+              </>
+            )}
           </span>
         </div>
       </div>
@@ -227,10 +237,23 @@ export const BattleArena: React.FC = () => {
           {/* Stance Indicator */}
           <div className="bg-obsidian-950/60 p-2 rounded-lg border border-obsidian-800 text-xs flex justify-between items-center text-slate-300">
             <span>Combat Stance:</span>
-            <span className="font-fantasy font-semibold uppercase text-cyan-300">
-              {combatState.playerStance === 'guard' ? '🛡️ Guarding (-55% Dmg)'
-                : combatState.playerStance === 'parry' ? '⚡ Riposte Parry'
-                : '⚔️ Neutral'}
+            <span className="font-fantasy font-semibold uppercase text-cyan-300 flex items-center gap-1.5">
+              {combatState.playerStance === 'guard' ? (
+                <>
+                  <ShieldIcon className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Guarding (-55% Dmg)</span>
+                </>
+              ) : combatState.playerStance === 'parry' ? (
+                <>
+                  <ElementLightningIcon className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Riposte Parry</span>
+                </>
+              ) : (
+                <>
+                  <SwordsCrossedIcon className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Neutral Stance</span>
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -411,7 +434,7 @@ export const BattleArena: React.FC = () => {
                   setCombatState(prev => ({
                     ...prev,
                     playerHp: Math.min(prev.playerMaxHp, prev.playerHp + 60),
-                    combatLog: [...prev.combatLog, '🧪 Consumed Minor Health Flask! +60 HP']
+                    combatLog: [...prev.combatLog, '[POTION] Consumed Minor Health Flask! +60 HP']
                   }));
                 } else {
                   alert('No health potions in your bag! Visit the town merchant.');

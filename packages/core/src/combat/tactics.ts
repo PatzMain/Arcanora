@@ -104,7 +104,7 @@ export function resolveDefensiveStance(
       isStaggered: false,
       staminaRestored: 15,
       manaRestored: 10,
-      message: `🛡️ Firm Guard! Reduced damage by 55% (took ${mitigated} dmg) and restored 15 Stamina / 10 Mana.`
+      message: `[GUARD] Firm Guard! Reduced damage by 55% (took ${mitigated} dmg) and restored 15 Stamina / 10 Mana.`
     };
   }
 
@@ -123,7 +123,7 @@ export function resolveDefensiveStance(
         isStaggered: true,
         staminaRestored: 20,
         manaRestored: 15,
-        message: `⚡ PERFECT PARRY! Deflected 80% damage, staggered the enemy, and riposted for ${damageReflected} reflected damage!`
+        message: `[PARRY] PERFECT PARRY! Deflected 80% damage, staggered the enemy, and riposted for ${damageReflected} reflected damage!`
       };
     } else {
       // Partial parry failure (glancing block)
@@ -134,7 +134,7 @@ export function resolveDefensiveStance(
         isStaggered: false,
         staminaRestored: 5,
         manaRestored: 0,
-        message: `⚠️ Glancing Parry! Blocked 30% damage, but failed to stagger the enemy.`
+        message: `[GLANCING] Glancing Parry! Blocked 30% damage, but failed to stagger the enemy.`
       };
     }
   }

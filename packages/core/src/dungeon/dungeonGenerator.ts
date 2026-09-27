@@ -30,7 +30,7 @@ export interface DungeonMap {
 export const EVENTS = [
   {
     id: "ancient_shrine",
-    title: "✨ Ancient Shrine",
+    title: "Ancient Shrine",
     description: "You discover a moss-covered shrine with a pulsing, cracked crystal embedded in its altar.",
     choices: [
       {
@@ -52,7 +52,7 @@ export const EVENTS = [
   },
   {
     id: "mysterious_fountain",
-    title: "✨ Shimmering Fountain",
+    title: "Shimmering Fountain",
     description: "A natural spring of crystal-clear water wells up in a stone basin, smelling of fresh rain.",
     choices: [
       {
@@ -74,7 +74,7 @@ export const EVENTS = [
   },
   {
     id: "suspicious_bones",
-    title: "✨ Rusted Remains",
+    title: "Rusted Remains",
     description: "A heap of skeletal remains and decayed armor lies in the corner of a damp chamber.",
     choices: [
       {
@@ -148,7 +148,7 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
       const id = `${x}_${y}`;
       nodes[id] = {
         id,
-        name: '🪨 Wall',
+        name: 'Cavern Wall',
         type: 'wall',
         status: 'hidden',
         connections: [],
@@ -234,13 +234,13 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
   // 6. Populate cells with room types
   const isLastFloor = floor >= depth;
   const exitType = isLastFloor ? 'boss' : 'stairs';
-  const exitName = isLastFloor ? '☠️ Boss Chamber' : '🪜 Stairs Down';
+  const exitName = isLastFloor ? 'Boss Chamber' : 'Stairs Down';
   
   for (const cellId of pathCells) {
     const node = nodes[cellId]!;
     
     if (cellId === startId) {
-      node.name = '🏕️ Dungeon Entrance';
+      node.name = 'Dungeon Entrance';
       node.type = 'campsite';
       node.status = 'visited';
       continue;
@@ -260,23 +260,23 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
     const roll = Math.random() * 100;
     if (roll < 45) {
       node.type = 'room';
-      node.name = '🚪 Regular Room';
+      node.name = 'Chamber';
       node.encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'normal') };
     } else if (roll < 55) {
       node.type = 'room';
-      node.name = '💨 Empty Chamber';
+      node.name = 'Empty Hall';
       node.status = 'cleared';
     } else if (roll < 70) {
       node.type = 'treasure';
-      node.name = '🎁 Treasure Chamber';
+      node.name = 'Treasure Vault';
     } else if (roll < 80) {
       node.type = 'event';
-      node.name = '✨ Random Event';
+      node.name = 'Mystic Encounter';
       const eventIdx = Math.floor(Math.random() * EVENTS.length);
       node.encounterData = { event: EVENTS[eventIdx] };
     } else if (roll < 88) {
       node.type = 'merchant';
-      node.name = '🏪 Dungeon Merchant';
+      node.name = 'Dungeon Merchant';
       node.encounterData = {
         shopItems: [
           { id: 'potion_health_small', price: 20 },
@@ -289,10 +289,10 @@ export function generateDungeonMap(zoneId: string, playerLevel: number, floor: n
       };
     } else if (roll < 94) {
       node.type = 'campsite';
-      node.name = '🏕️ Campsite';
+      node.name = 'Rest Campsite';
     } else {
       node.type = 'elite';
-      node.name = '⚔️ Elite Encounter';
+      node.name = 'Elite Lair';
       node.encounterData = { enemyId: getRandomEnemyForZone(zoneId, 'rare') };
     }
   }

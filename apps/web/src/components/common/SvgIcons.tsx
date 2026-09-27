@@ -231,3 +231,57 @@ export const WrenchDevIcon: React.FC<IconProps> = ({ className = 'w-5 h-5 text-c
     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
   </svg>
 );
+
+export const SparkleIcon: React.FC<IconProps> = ({ className = 'w-5 h-5 text-yellow-300', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z" />
+  </svg>
+);
+
+export const CritBurstIcon: React.FC<IconProps> = ({ className = 'w-5 h-5 text-fuchsia-400', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 2l2 5 5-2-2 5 5 2-5 2 2 5-5-2-2 5-2-5-5 2 2-5-5-2 5-2-2-5 5 2z" />
+  </svg>
+);
+
+export const CloverLuckIcon: React.FC<IconProps> = ({ className = 'w-5 h-5 text-emerald-400', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <circle cx="8.5" cy="8.5" r="4.5" />
+    <circle cx="15.5" cy="8.5" r="4.5" />
+    <circle cx="8.5" cy="15.5" r="4.5" />
+    <circle cx="15.5" cy="15.5" r="4.5" />
+    <path d="M12 12v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+export const UserHeroIcon: React.FC<IconProps> = ({ className = 'w-5 h-5 text-amber-300', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+export const ChevronUpIcon: React.FC<IconProps> = ({ className = 'w-4 h-4', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="18 15 12 9 6 15" />
+  </svg>
+);
+
+export const ChevronDownIcon: React.FC<IconProps> = ({ className = 'w-4 h-4', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+export const ChevronLeftIcon: React.FC<IconProps> = ({ className = 'w-4 h-4', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+export const ChevronRightIcon: React.FC<IconProps> = ({ className = 'w-4 h-4', size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+

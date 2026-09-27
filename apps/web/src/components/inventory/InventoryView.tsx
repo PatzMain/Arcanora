@@ -10,7 +10,12 @@ import {
   AccessoryRingIcon,
   PotionRedIcon,
   PotionBlueIcon,
-  PotionGreenIcon
+  PotionGreenIcon,
+  SwordsCrossedIcon,
+  StaminaBoltIcon,
+  SparkleIcon,
+  CritBurstIcon,
+  CloverLuckIcon
 } from '../common/SvgIcons';
 
 export const InventoryView: React.FC = () => {
@@ -58,7 +63,7 @@ export const InventoryView: React.FC = () => {
               return (
                 <div
                   key={key}
-                  onClick={() => item && setSelectedItem(item)}
+                  onClick={() => item && setSelectedItem({ ...item, isEquipped: true, slotKey: key })}
                   className={`p-2.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
                     item
                       ? 'bg-obsidian-900/90 border-slate-700 hover:border-amber-400'
@@ -103,28 +108,46 @@ export const InventoryView: React.FC = () => {
             Computed Hero Attributes
           </h3>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between">
-              <span className="text-slate-400">⚔️ Attack:</span>
+            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <SwordsCrossedIcon className="w-3.5 h-3.5 text-rose-400" />
+                <span>Attack:</span>
+              </div>
               <span className="font-mono font-bold text-rose-300">{player.attack}</span>
             </div>
-            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between">
-              <span className="text-slate-400">🛡️ Defense:</span>
+            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <ShieldIcon className="w-3.5 h-3.5 text-blue-400" />
+                <span>Defense:</span>
+              </div>
               <span className="font-mono font-bold text-blue-300">{player.defense}</span>
             </div>
-            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between">
-              <span className="text-slate-400">⚡ Speed:</span>
+            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <StaminaBoltIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Speed:</span>
+              </div>
               <span className="font-mono font-bold text-amber-300">{player.speed}</span>
             </div>
-            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between">
-              <span className="text-slate-400">💥 Crit Rate:</span>
+            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <SparkleIcon className="w-3.5 h-3.5 text-yellow-300" />
+                <span>Crit Rate:</span>
+              </div>
               <span className="font-mono font-bold text-yellow-300">{player.critChance}%</span>
             </div>
-            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between">
-              <span className="text-slate-400">✨ Crit Dmg:</span>
+            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <CritBurstIcon className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span>Crit Dmg:</span>
+              </div>
               <span className="font-mono font-bold text-fuchsia-300">{player.critDmg}%</span>
             </div>
-            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between">
-              <span className="text-slate-400">🍀 Luck:</span>
+            <div className="bg-obsidian-900/70 p-2 rounded border border-obsidian-800 flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <CloverLuckIcon className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Luck:</span>
+              </div>
               <span className="font-mono font-bold text-emerald-300">{player.luck}</span>
             </div>
           </div>
@@ -145,11 +168,11 @@ export const InventoryView: React.FC = () => {
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
               {player.inventory.map((invItem) => {
                 const item = invItem.itemDef || {};
-                const isSelected = selectedItem?.id === item.id;
+                const isSelected = selectedItem?.invId === invItem.id;
                 return (
                   <div
                     key={invItem.id}
-                    onClick={() => setSelectedItem({ ...item, invId: invItem.id, quantity: invItem.quantity })}
+                    onClick={() => setSelectedItem({ ...item, invId: invItem.id, quantity: invItem.quantity, isEquipped: false })}
                     className={`aspect-square rounded-xl p-2 flex flex-col items-center justify-between cursor-pointer border transition-all rpg-btn relative ${
                       isSelected
                         ? 'border-amber-400 bg-amber-950/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
@@ -194,6 +217,11 @@ export const InventoryView: React.FC = () => {
                       {selectedItem.name}
                     </h4>
                     <RarityBadge rarity={selectedItem.rarity || 'common'} />
+                    {selectedItem.isEquipped && (
+                      <span className="text-[9px] font-pixel text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/50">
+                        EQUIPPED
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400 italic">
                     {selectedItem.description || 'A valuable gear piece or adventurer supply.'}
@@ -202,7 +230,17 @@ export const InventoryView: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                {selectedItem.type === 'consumable' ? (
+                {selectedItem.isEquipped ? (
+                  <button
+                    onClick={() => {
+                      if (selectedItem.slotKey) unequipItem(selectedItem.slotKey);
+                      setSelectedItem(null);
+                    }}
+                    className="px-4 py-2 bg-rose-700 hover:bg-rose-600 text-white rounded-lg font-fantasy text-xs font-bold rpg-btn"
+                  >
+                    Unequip Gear
+                  </button>
+                ) : selectedItem.type === 'consumable' ? (
                   <button
                     onClick={() => {
                       if (selectedItem.invId) usePotion(selectedItem.invId);
