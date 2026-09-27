@@ -232,15 +232,18 @@ describe('End-to-End Game Playthrough Simulation (In-Memory Database)', () => {
     }
 
     // Combat Room Node
-    const combatCellId = Object.keys(mapState.nodes).find(id => ['room', 'elite'].includes(mapState.nodes[id].type)) || '0_1';
+    const combatCellId = Object.keys(mapState.nodes).find(id => ['room', 'elite'].includes(mapState.nodes[id].type) && mapState.nodes[id].encounterData?.enemyId) || '0_1';
     mapState.nodes[combatCellId].status = 'visited';
+    if (!mapState.nodes[combatCellId].encounterData?.enemyId) {
+      mapState.nodes[combatCellId].encounterData = { enemyId: 'cave_bat' };
+    }
     const combatContext = {
       playerId: player.id,
       discordId: '999999999999999999',
       node: mapState.nodes[combatCellId],
       dbSession: session
     };
-    const enemyId = mapState.nodes[combatCellId].encounterData?.enemyId || 'cave_bat';
+    const enemyId = mapState.nodes[combatCellId].encounterData!.enemyId!;
     const enemy = getEnemyById(enemyId);
     expect(enemy).toBeDefined();
 
