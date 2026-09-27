@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "presets" jsonb DEFAULT '["attack",null,null]'::jsonb NOT NULL;

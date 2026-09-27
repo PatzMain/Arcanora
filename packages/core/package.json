@@ -1,0 +1,29 @@
+{
+  "name": "@arcanora/core",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./combat": "./src/combat/index.ts",
+    "./dungeon": "./src/dungeon/index.ts",
+    "./exploration": "./src/exploration/index.ts",
+    "./inventory": "./src/inventory/index.ts",
+    "./progression": "./src/progression/index.ts",
+    "./sandbox": "./src/sandbox/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@arcanora/database": "*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "typescript": "^5.7.2"
+  }
+}

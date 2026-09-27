@@ -4,19 +4,28 @@
   "description": "Arcanora — Discord MMORPG Bot",
   "main": "dist/index.js",
   "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsup src/index.ts --format esm --out-dir dist --target node20 --clean",
+    "dev": "turbo run dev --filter=@arcanora/web",
+    "dev:all": "turbo run dev",
+    "dev:bot": "turbo run dev --filter=@arcanora/bot",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "test:vitest": "vitest run",
     "start": "node dist/index.js",
     "migrate": "drizzle-kit migrate",
-    "generate": "drizzle-kit generate",
-    "lint": "eslint src --ext .ts --cache",
-    "test": "npm run lint && tsc --noEmit && vitest run"
+    "generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@napi-rs/canvas": "^1.0.2",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.7",
@@ -38,6 +47,7 @@
     "@typescript-eslint/parser": "^8.62.0",
     "eslint": "^8.57.1",
     "tsx": "^4.19.2",
+    "turbo": "^2.0.0",
     "vitest": "^1.6.0"
   },
   "overrides": {

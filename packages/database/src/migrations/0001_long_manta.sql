@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "current_zone_id" varchar(32) DEFAULT 'verdant_meadows' NOT NULL;

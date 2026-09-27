@@ -1,0 +1,1 @@
+ALTER TABLE "players" ALTER COLUMN "current_zone_id" SET DEFAULT 'cozy_tavern';
