@@ -7,3 +7,4 @@ export * from './progression/prestige.js';
 export * from './progression/questSystem.js';
 export * from './sandbox/index.js';
 export * from './campaign/index.js';
+export * from './cyberpunk/index.js';
