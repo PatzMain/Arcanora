@@ -32,4 +32,12 @@
   - [x] Run `npm test` / vitest and ensure all cyberpunk unit tests pass (25/25 passed)
   - [x] Run `npm run build` and ensure all packages compile cleanly in FULL TURBO
   - [x] Update `context.md` and `CONTEXT_HANDOFF.md`
-  - [x] Commit incremental changes following git workflow conventions
+  - [x] **Phase 5: 3D Visual Overhaul (Player Body, Unique Guns, Traveling Projectiles, Articulated Droids)**
+  - [x] Implement `ProjectileSystem3D.ts`: 3D traveling bullets, weapon-specific lighting, particle trails, and impact sparks
+  - [x] Implement `PlayerBody3D.ts`: Tactical cybernetic legs and boots visible when looking downward with walking cycle
+  - [x] Overhaul `Viewmodel3D.ts`: Articulated cybernetic arms and hands gripping 4 distinct procedural 3D weapon models
+  - [x] Overhaul `EnemyDroids3D.ts`: Articulated modular droids (Patrol Drone with spinning rotors, Bipedal Security Droid, Shock Hound, Heavy Titan Mech with reactor core)
+  - [x] Integrate `ProjectileSystem3D` and `PlayerBody3D` into `FpsScene.ts` and connect firing & animation loops
+  - [x] Add unit tests in `tests/cyberpunk3dVisuals.test.ts` verifying projectile physics, spread, and model configurations
+  - [x] Verify build (`npm run build`) and test suite (`npm test`), commit changes incrementally
+

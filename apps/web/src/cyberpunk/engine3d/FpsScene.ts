@@ -18,6 +18,8 @@ import { Viewmodel3D } from './Viewmodel3D.js';
 import { EnemyDroids3D } from './EnemyDroids3D.js';
 import { Comrades3D } from './Comrades3D.js';
 import { FpsControls } from './FpsControls.js';
+import { ProjectileSystem3D } from './ProjectileSystem3D.js';
+import { PlayerBody3D } from './PlayerBody3D.js';
 import { sounds } from './SoundManager.js';
 import type { RaycastInteraction } from './types3d.js';
 
@@ -37,6 +39,8 @@ export class FpsScene {
   readonly enemyDroids: EnemyDroids3D;
   readonly comrades3d: Comrades3D;
   readonly controls: FpsControls;
+  readonly projectileSystem: ProjectileSystem3D;
+  readonly playerBody: PlayerBody3D;
 
   private clock = new THREE.Clock();
   private animFrameId: number | null = null;
@@ -96,6 +100,12 @@ export class FpsScene {
 
     this.enemyDroids = new EnemyDroids3D();
     this.scene.add(this.enemyDroids.rootGroup);
+
+    this.projectileSystem = new ProjectileSystem3D();
+    this.scene.add(this.projectileSystem.rootGroup);
+
+    this.playerBody = new PlayerBody3D();
+    this.camera.add(this.playerBody.rootGroup);
 
     this.comrades3d = new Comrades3D();
     this.comrades3d.syncComrades(this.gameState.comrades);
@@ -253,65 +263,15 @@ export class FpsScene {
     // Play Sound
     sounds.playShoot(weapon.baseId, weapon.tier > 0);
 
-    // Raycast shot from camera forward
-    const camPos = this.camera.position;
+    // Get exact muzzle world position and camera aim direction
+    const muzzlePos = this.viewmodel.getMuzzleWorldPosition();
     const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
 
-    const shotRay = new THREE.Raycaster(camPos, camDir, 0.1, 100);
-    const targetPoint = camPos.clone().addScaledVector(camDir, 50);
+    // Spawn physical traveling 3D projectiles with dynamic lighting and trails
+    this.projectileSystem.spawnProjectiles(weapon, muzzlePos, camDir);
 
-    // Test intersection against droids
-    let hitAnyDroid = false;
-    for (const [droidId, droidInstance] of this.enemyDroids.droids.entries()) {
-      const intersects = shotRay.intersectObject(droidInstance.mesh, true);
-      if (intersects.length > 0) {
-        const hit = intersects[0];
-        targetPoint.copy(hit.point);
-        hitAnyDroid = true;
-
-        // Headshot detection: hit point near top of droid mesh
-        const isHeadshot = hit.point.y > droidInstance.mesh.position.y + 1.6;
-
-        // Calculate damage
-        const damageResult = calculateShotDamage(
-          this.gameState.player,
-          weapon,
-          droidInstance.data,
-          isHeadshot
-        );
-
-        sounds.playHitmarker(isHeadshot);
-        this.callbacks.onPlayerHit(isHeadshot, damageResult.killed);
-
-        const killed = this.enemyDroids.damageDroid(
-          droidId,
-          damageResult.shieldDamage,
-          damageResult.hpDamage,
-          damageResult.killed
-        );
-
-        if (killed && damageResult.lootAwarded) {
-          const loot = damageResult.lootAwarded;
-          this.callbacks.onStateUpdate((prev) => ({
-            ...prev,
-            player: {
-              ...prev.player,
-              credits: prev.player.credits + loot.credits,
-              scrap: prev.player.scrap + loot.scrap,
-              decryptKeys: prev.player.decryptKeys + (loot.keycardDropped ? 1 : 0),
-            },
-            stats: {
-              ...prev.stats,
-              droidsEliminated: prev.stats.droidsEliminated + 1,
-            },
-          }));
-        }
-        break;
-      }
-    }
-
-    // Trigger Viewmodel Recoil, Muzzle Flash, and Laser Tracer
-    this.viewmodel.triggerFire(weapon, targetPoint, this.scene);
+    // Trigger Viewmodel Recoil and Muzzle Flash
+    this.viewmodel.triggerFire(weapon);
   }
 
   private handlePlayerReload() {
@@ -438,7 +398,63 @@ export class FpsScene {
         }
       }
 
-      // 5. Update Enemy Droids with sectorBuilder for locked door collisions
+      // 5. Update Projectiles & Raycast Hit Reactions
+      this.projectileSystem.update(
+        delta,
+        this.sectorBuilder,
+        this.enemyDroids,
+        (droidId, hitPoint, isHeadshot, isWeakpoint, weaponId) => {
+          const droidInstance = this.enemyDroids.droids.get(droidId);
+          if (!droidInstance) return;
+
+          const currentWeapon = this.gameState.player.equippedWeapon;
+          const damageResult = calculateShotDamage(
+            this.gameState.player,
+            currentWeapon,
+            droidInstance.data,
+            isHeadshot
+          );
+
+          // If weakpoint on Heavy Mech, boost damage by 2.5x critical
+          if (isWeakpoint) {
+            damageResult.hpDamage = Math.round(damageResult.hpDamage * 2.5);
+            damageResult.shieldDamage = Math.round(damageResult.shieldDamage * 2.5);
+            damageResult.totalDamage = damageResult.hpDamage + damageResult.shieldDamage;
+            if (droidInstance.currentHp - damageResult.hpDamage <= 0) {
+              damageResult.killed = true;
+            }
+          }
+
+          sounds.playHitmarker(isHeadshot || isWeakpoint);
+          this.callbacks.onPlayerHit(isHeadshot || isWeakpoint, damageResult.killed);
+
+          const killed = this.enemyDroids.damageDroid(
+            droidId,
+            damageResult.shieldDamage,
+            damageResult.hpDamage,
+            damageResult.killed
+          );
+
+          if (killed && damageResult.lootAwarded) {
+            const loot = damageResult.lootAwarded;
+            this.callbacks.onStateUpdate((prev) => ({
+              ...prev,
+              player: {
+                ...prev.player,
+                credits: prev.player.credits + loot.credits,
+                scrap: prev.player.scrap + loot.scrap,
+                decryptKeys: prev.player.decryptKeys + (loot.keycardDropped ? 1 : 0),
+              },
+              stats: {
+                ...prev.stats,
+                droidsEliminated: prev.stats.droidsEliminated + 1,
+              },
+            }));
+          }
+        }
+      );
+
+      // 6. Update Enemy Droids with sectorBuilder for locked door collisions
       this.enemyDroids.update(delta, this.camera.position, this.sectorBuilder, (damage) => {
         sounds.playPlayerHurt();
         this.callbacks.onStateUpdate((prev) => {
@@ -450,10 +466,13 @@ export class FpsScene {
         });
       });
 
-      // 5. Update Viewmodel
-      this.viewmodel.update(delta, isMoving, this.scene);
+      // 7. Update Viewmodel Arms & Gun
+      this.viewmodel.update(delta, isMoving);
 
-      // 6. Render
+      // 8. Update Player Body Legs (visible when looking down)
+      this.playerBody.update(delta, isMoving, this.controls.getPitch());
+
+      // 9. Render
       this.renderer.render(this.scene, this.camera);
     };
 

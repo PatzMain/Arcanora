@@ -128,6 +128,10 @@ export class FpsControls {
     this.camera.quaternion.setFromEuler(euler);
   }
 
+  getPitch(): number {
+    return this.pitch;
+  }
+
   getCurrentInteraction(): RaycastInteraction {
     return this.currentInteraction;
   }
