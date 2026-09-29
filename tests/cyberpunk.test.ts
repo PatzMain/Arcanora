@@ -278,4 +278,58 @@ describe('Sector 0: Cyberpunk Domain Engine', () => {
       expect(newState.stats.revivals).toBe(1);
     });
   });
+
+  describe('3D Engine Spatial Synchronization & Catalogs', () => {
+    it('verifies all 6 sectors have spatial room definitions', async () => {
+      const { SECTOR_CONFIGS } = await import('../apps/web/src/cyberpunk/engine3d/SectorBuilder.js');
+      const expectedSectors = [
+        'platform_04',
+        'sector_01_power',
+        'sector_02_chop_shop',
+        'sector_03_ripper_clinic',
+        'sector_04_mag_junction',
+        'sector_05_deep_vault',
+      ];
+      for (const sectorId of expectedSectors) {
+        expect(SECTOR_CONFIGS[sectorId as keyof typeof SECTOR_CONFIGS]).toBeDefined();
+        const conf = SECTOR_CONFIGS[sectorId as keyof typeof SECTOR_CONFIGS];
+        expect(conf.size.x).toBeGreaterThan(0);
+        expect(conf.size.y).toBeGreaterThan(0);
+        expect(conf.size.z).toBeGreaterThan(0);
+      }
+    });
+
+    it('verifies all 5 blast doors have 3D door placements matching spatial graph', async () => {
+      const { DOOR_PLACEMENTS } = await import('../apps/web/src/cyberpunk/engine3d/SectorBuilder.js');
+      const expectedDoors = [
+        'door_power_substation',
+        'door_chop_shop',
+        'door_ripper_clinic',
+        'door_mag_junction',
+        'door_deep_vault',
+      ];
+      for (const doorId of expectedDoors) {
+        expect(DOOR_PLACEMENTS[doorId as keyof typeof DOOR_PLACEMENTS]).toBeDefined();
+        const placement = DOOR_PLACEMENTS[doorId as keyof typeof DOOR_PLACEMENTS];
+        expect(placement.width).toBeGreaterThanOrEqual(4);
+        expect(placement.height).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('verifies comrade workstations have assigned 3D coordinates', async () => {
+      const { COMRADE_STATIONS } = await import('../apps/web/src/cyberpunk/engine3d/Comrades3D.js');
+      const expectedComrades = [
+        'comrade_jax',
+        'comrade_echo',
+        'comrade_kane',
+        'comrade_vane',
+        'comrade_fang',
+        'comrade_nyx',
+      ];
+      for (const cId of expectedComrades) {
+        expect(COMRADE_STATIONS[cId]).toBeDefined();
+        expect(COMRADE_STATIONS[cId].position).toBeDefined();
+      }
+    });
+  });
 });

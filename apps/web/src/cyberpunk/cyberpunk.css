@@ -1,0 +1,356 @@
+/* Cyberpunk Sector 0 3D FPS Styling */
+
+.cyber-fps-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #050814;
+  font-family: 'Courier New', Courier, monospace, system-ui;
+  user-select: none;
+}
+
+.cyber-canvas-host {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* CRT Scanlines Overlay */
+.cyber-scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 10;
+  opacity: 0.6;
+}
+
+/* Top Breach Threat Banner */
+.cyber-threat-bar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid #1e293b;
+  padding: 6px 18px;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+  z-index: 20;
+}
+
+.cyber-threat-meter {
+  width: 180px;
+  height: 10px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cyber-threat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #eab308, #ef4444);
+  transition: width 0.3s ease;
+}
+
+/* HUD Overlay */
+.cyber-hud-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Center Crosshair */
+.cyber-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+.cyber-crosshair-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background-color: #00f0ff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px #00f0ff;
+}
+
+.cyber-crosshair-line {
+  position: absolute;
+  background-color: rgba(0, 240, 255, 0.75);
+}
+
+.cyber-crosshair-line.top {
+  top: 0;
+  left: 11px;
+  width: 2px;
+  height: 6px;
+}
+
+.cyber-crosshair-line.bottom {
+  bottom: 0;
+  left: 11px;
+  width: 2px;
+  height: 6px;
+}
+
+.cyber-crosshair-line.left {
+  top: 11px;
+  left: 0;
+  width: 6px;
+  height: 2px;
+}
+
+.cyber-crosshair-line.right {
+  top: 11px;
+  right: 0;
+  width: 6px;
+  height: 2px;
+}
+
+/* Hitmarker Cross */
+.cyber-hitmarker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.cyber-hitmarker-tick {
+  position: absolute;
+  background-color: #ffffff;
+}
+
+.cyber-hitmarker-tick.top { top: 0; left: 13px; width: 2px; height: 8px; }
+.cyber-hitmarker-tick.bottom { bottom: 0; left: 13px; width: 2px; height: 8px; }
+.cyber-hitmarker-tick.left { top: 13px; left: 0; width: 8px; height: 2px; }
+.cyber-hitmarker-tick.right { top: 13px; right: 0; width: 8px; height: 2px; }
+
+.cyber-hitmarker.headshot .cyber-hitmarker-tick {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+/* COD Zombies Style Interaction Prompt */
+.cyber-interact-prompt {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 15, 26, 0.88);
+  border: 1px solid #00f0ff;
+  padding: 8px 20px;
+  border-radius: 4px;
+  color: #00f0ff;
+  font-weight: bold;
+  font-size: 15px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  animation: pulsePrompt 1.5s infinite alternate;
+}
+
+@keyframes pulsePrompt {
+  0% { transform: translate(-50%, -50%) scale(1.0); }
+  100% { transform: translate(-50%, -50%) scale(1.04); }
+}
+
+/* Bottom Left HUD: Health, Shield & Perks */
+.cyber-hud-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.cyber-stat-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cyber-stat-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: bold;
+}
+
+.cyber-bar-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #334155;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cyber-bar-shield {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #00f0ff);
+  box-shadow: 0 0 8px #00f0ff;
+  transition: width 0.2s ease;
+}
+
+.cyber-bar-hp {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  box-shadow: 0 0 8px #ef4444;
+  transition: width 0.2s ease;
+}
+
+.cyber-perk-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cyber-perk-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Bottom Right HUD: Ammo & Weapon Tier */
+.cyber-hud-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.cyber-weapon-title {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.cyber-ammo-counter {
+  font-size: 38px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.cyber-ammo-sub {
+  font-size: 20px;
+  color: #64748b;
+  margin-left: 6px;
+}
+
+/* Top Right: Economy Resources */
+.cyber-resources-panel {
+  display: flex;
+  gap: 14px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid #1e293b;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.cyber-resource-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Modals Overlay */
+.cyber-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 8, 20, 0.8);
+  backdrop-filter: blur(6px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cyber-modal-box {
+  width: 90%;
+  max-width: 650px;
+  background: #0a0f1d;
+  border: 1px solid #00f0ff;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
+  border-radius: 6px;
+  padding: 24px;
+  color: #f1f5f9;
+}
+
+.cyber-btn-primary {
+  background: #00f0ff;
+  color: #050814;
+  font-weight: bold;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-btn-primary:hover {
+  background: #38bdf8;
+  box-shadow: 0 0 12px #38bdf8;
+}
+
+.cyber-btn-secondary {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cyber-btn-secondary:hover {
+  border-color: #64748b;
+  color: #f1f5f9;
+}

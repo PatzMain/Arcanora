@@ -9,6 +9,7 @@ import { DevSandboxToolbar } from './components/layout/DevSandboxToolbar';
 import { CampaignGame } from './campaign/CampaignGame';
 import { freshCampaign, loadCampaign, saveCampaign } from './campaign/save';
 import type { CampaignState } from '@arcanora/core';
+import { CyberpunkFpsGame } from './cyberpunk/CyberpunkFpsGame.js';
 import './campaign/campaign.css';
 
 function DemoContent() {
@@ -30,7 +31,7 @@ function ExistingAdventure({ onTitle }: { onTitle: () => void }) {
   </div></GameProvider>;
 }
 
-type Screen = 'title' | 'campaign' | 'demo';
+type Screen = 'title' | 'campaign' | 'demo' | 'cyberpunk_fps';
 const SETTINGS_KEY = 'arcanora_display_settings_v1';
 
 function loadMotionSetting(): boolean {
@@ -79,6 +80,7 @@ export default function App() {
     catch { setMessage('This setting could not be remembered on this device.'); }
   }
 
+  if (screen === 'cyberpunk_fps') return <CyberpunkFpsGame onReturnToTitle={() => setScreen('title')}/>;
   if (screen === 'demo') return <ExistingAdventure onTitle={() => setScreen('title')}/>;
   if (screen === 'campaign' && campaign) return <CampaignGame key={campaign.seed} initialState={campaign} onTitle={() => { if (!saveProblem) setLoaded(loadCampaign()); setScreen('title'); }} onStateChange={(next, failure) => { setCampaign(next); setLoaded({ state:next, error:null }); setSaveProblem(Boolean(failure)); setMessage(failure); }} reducedMotion={reduceMotion} onMotionChange={changeMotion}/>;
   return <div className="campaign-app" data-reduced-motion={reduceMotion}>
@@ -89,6 +91,18 @@ export default function App() {
         {!starting ? <div className="button-stack">
           <button className="camp-button primary" onClick={() => { setStarting(true); setConfirmNew(false); }}>Begin</button>
           <button className="camp-button" disabled={!loaded.state} onClick={continueCampaign}>Continue{loaded.state ? ` · ${loaded.state.hero.name}, night ${loaded.state.night}` : ''}</button>
+          <button
+            className="camp-button"
+            style={{
+              background: 'linear-gradient(90deg, #0369a1, #0891b2)',
+              color: '#ffffff',
+              fontWeight: 'bold',
+              border: '1px solid #38bdf8',
+            }}
+            onClick={() => setScreen('cyberpunk_fps')}
+          >
+            Sector 0: 3D Cyberpunk FPS
+          </button>
           <button className="camp-button" onClick={() => setScreen('demo')}>Existing Adventure</button>
           <button className="camp-button" onClick={() => setSettingsOpen(value => !value)} aria-expanded={settingsOpen}>Settings</button>
         </div> : <div className="camp-panel" style={{ marginTop: 28 }}><h2>Begin at the refuge</h2><p>Name your keeper, or leave this open and begin right away.</p><label className="camp-label">Keeper’s name<input className="camp-input" maxLength={40} value={name} onChange={event => setName(event.target.value)} placeholder="Optional" autoComplete="off"/></label>{confirmNew && <div className="camp-error" role="alert">Starting anew will replace your current campaign. Your Existing Adventure is separate.</div>}<div className="button-stack"><button className="camp-button primary" onClick={begin}>{confirmNew ? 'Replace campaign and begin' : 'Enter the refuge'}</button><button className="camp-button" onClick={() => { setStarting(false); setConfirmNew(false); }}>Back</button></div></div>}
