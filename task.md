@@ -29,7 +29,7 @@
   - [x] Integrate into `apps/web/src/App.tsx` with dedicated "Sector 0: 3D Cyberpunk FPS" mode
 
 - [x] **Phase 4: Verification, Build & Testing**
-  - [x] Run `npm test` / vitest and ensure all cyberpunk unit tests pass (23 passed)
+  - [x] Run `npm test` / vitest and ensure all cyberpunk unit tests pass (25/25 passed)
   - [x] Run `npm run build` and ensure all packages compile cleanly in FULL TURBO
   - [x] Update `context.md` and `CONTEXT_HANDOFF.md`
   - [x] Commit incremental changes following git workflow conventions
