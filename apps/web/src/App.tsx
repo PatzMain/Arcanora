@@ -41,7 +41,7 @@ function loadMotionSetting(): boolean {
 
 export default function App() {
   const [loaded, setLoaded] = useState(loadCampaign);
-  const [screen, setScreen] = useState<Screen>('title');
+  const [screen, setScreen] = useState<Screen>('cyberpunk_fps');
   const [name, setName] = useState('');
   const [starting, setStarting] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
