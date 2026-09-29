@@ -13,6 +13,7 @@
     "./inventory": "./src/inventory/index.ts",
     "./progression": "./src/progression/index.ts",
     "./sandbox": "./src/sandbox/index.ts"
+    ,"./campaign": "./src/campaign/index.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Arcanora refuge emblem</title>
+  <desc id="desc">An amber flame burns within a fractured teal ward beneath a dark stone arch.</desc>
+  <defs>
+    <radialGradient id="back" cx="50%" cy="40%" r="70%"><stop stop-color="#253330"/><stop offset=".72" stop-color="#12191b"/><stop offset="1" stop-color="#080c0e"/></radialGradient>
+    <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#58605a"/><stop offset=".3" stop-color="#2e3637"/><stop offset=".7" stop-color="#1a2326"/><stop offset="1" stop-color="#485354"/></linearGradient>
+    <linearGradient id="ward" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#1d7278"/><stop offset=".55" stop-color="#70c7ba"/><stop offset="1" stop-color="#276c72"/></linearGradient>
+    <linearGradient id="flame" x1=".3" y1="1" x2=".7" y2="0"><stop stop-color="#9b381c"/><stop offset=".28" stop-color="#ed7b2c"/><stop offset=".7" stop-color="#ffd076"/><stop offset="1" stop-color="#fff0b4"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="88" fill="url(#back)"/>
+  <path d="M59 444V229C59 120 147 45 256 45s197 75 197 184v215h-65V229c0-77-54-125-132-125s-132 48-132 125v215Z" fill="url(#stone)" stroke="#7e6b50" stroke-width="7"/>
+  <path d="M59 444h394" fill="none" stroke="#9b8056" stroke-width="12"/>
+  <path d="m108 198 28 21-12 36m264-36-27 25 15 31M256 47l-9 56m-113 13 35 35m209-35-35 35" stroke="#0a0e10" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <circle cx="256" cy="261" r="137" fill="none" stroke="#236167" stroke-width="35" opacity=".3" filter="url(#glow)"/>
+  <path d="M256 130 360 177l-12 125-92 91-92-91-12-125Z" fill="#132426" stroke="url(#ward)" stroke-width="17" stroke-linejoin="round"/>
+  <path d="m162 173 56 33 28-18m43-30-5 61 65-39m-11 124-44-19-42 47m-94-31 39-41-23-43" fill="none" stroke="#8bd8c7" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m246 190-17 64-31 31 18 57 40 27 42-32 20-61-29-42 2-50c-30 25-41 49-45 6Z" fill="#f2a244" opacity=".58" filter="url(#glow)"/>
+  <path d="M256 195c-6 35-22 48-38 67-22 27-23 61-7 84 11 16 30 25 48 25 39 0 61-29 61-61 0-26-13-47-31-69 1 25-6 39-14 43-3-29-7-55-19-89Z" fill="url(#flame)" stroke="#ffcb72" stroke-width="5"/>
+  <path d="M256 278c-2 19-21 30-18 50 2 12 10 23 22 23 17 0 24-14 22-28-2-17-14-29-26-45Z" fill="#fff3bd"/>
+</svg>

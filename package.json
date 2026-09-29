@@ -14,6 +14,8 @@
   },
   "packageManager": "npm@12.0.2",
   "scripts": {
+    "content:generate": "node tools/generate-campaign-content.mjs",
+    "content:check": "node tools/generate-campaign-content.mjs --check",
     "dev": "turbo run dev --filter=@arcanora/web",
     "dev:all": "turbo run dev",
     "dev:bot": "turbo run dev --filter=@arcanora/bot",

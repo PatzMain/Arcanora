@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "balance": {
+    "starting": {
+      "hero": { "hp": 60, "mana": 12, "attack": 8, "spellPower": 6, "resilience": 2 },
+      "resources": { "timber": 8, "provisions": 8, "essence": 5 },
+      "wardHp": 35,
+      "barricadeHp": 24,
+      "inventory": { "healing_draught": 1 },
+      "equipment": { "weapon": "worn_blade", "armor": "patched_coat", "focus": "ward_token" },
+      "spells": ["frost", "lightning"],
+      "villagers": ["mara", "tovin"]
+    },
+    "preparationTurns": 6,
+    "interludeTurns": 2,
+    "waveBudgets": [2, 4, 6],
+    "firstNightWaves": [["shambler"], ["shambler", "bonebreaker"], ["grave_caster", "shambler", "hollow_knight"]],
+    "workerOutput": { "timber": 2, "provisions": 2, "essence": 1 },
+    "scavenge": { "timber": 2, "provisions": 1, "essence": 0 },
+    "restHeal": 12,
+    "repairAmount": 8,
+    "villageOrders": {
+      "reinforce": { "provisions": 2, "repair": 8 },
+      "support": { "provisions": 2, "heal": 7 }
+    },
+    "recoveryKit": { "timber": 4, "provisions": 4, "essence": 2 },
+    "heroLevelThresholds": [0, 70, 170, 300, 460, 650],
+    "heroGrowth": { "hp": 4, "mana": 1, "attack": 1, "spellPower": 1, "resilienceEvery": 2 },
+    "maxConsumables": 2,
+    "maxEquippedSpells": 3,
+    "recentEventWindow": 3,
+    "unrewardingScavengePity": 2
+  },
+  "enemies": [
+    { "id": "shambler", "name": "Ashen Shambler", "role": "attacker", "hp": 16, "attack": 4, "armor": 0, "threat": 1, "target": "hero", "weight": 8, "intentModes": ["strike", "lunge"], "heavyCooldown": 1, "description": "A slow corpse that presses the closest living defender." },
+    { "id": "bonebreaker", "name": "Bonebreaker", "role": "breaker", "hp": 21, "attack": 6, "armor": 1, "threat": 2, "target": "barricade", "weight": 4, "intentModes": ["strike", "sunder"], "heavyCooldown": 1, "description": "Its iron club can crack a barricade; the heavy swing is telegraphed." },
+    { "id": "grave_caster", "name": "Grave Caster", "role": "caster", "hp": 15, "attack": 5, "armor": 0, "threat": 2, "target": "ward", "weight": 3, "intentModes": ["bolt", "curse"], "heavyCooldown": 1, "description": "A teal-lit skeleton whose curses threaten the ward." },
+    { "id": "hollow_knight", "name": "Hollow Knight", "role": "elite", "hp": 28, "attack": 7, "armor": 2, "threat": 3, "target": "barricade", "weight": 1, "intentModes": ["strike", "rally", "sunder"], "heavyCooldown": 1, "eliteEffect": "rally", "description": "An armored captain that strengthens nearby undead before a heavy breach." },
+    { "id": "crypt_guard", "name": "Crypt Guard", "role": "defender", "hp": 22, "attack": 4, "armor": 3, "threat": 2, "target": "hero", "weight": 3, "unlock": "night_two", "intentModes": ["strike", "guard_ally"], "description": "Its shield protects a companion until fire or concentrated attacks break the defense." },
+    { "id": "ward_leech", "name": "Ward Leech", "role": "drainer", "hp": 17, "attack": 4, "armor": 0, "threat": 2, "target": "ward", "weight": 3, "unlock": "night_two", "intentModes": ["drain", "bolt"], "description": "A leech spirit siphoning refuge energy; exposed while channeling." },
+    { "id": "bone_cantor", "name": "Bone Cantor", "role": "support", "hp": 16, "attack": 3, "armor": 0, "threat": 2, "target": "hero", "weight": 2, "unlock": "night_three", "intentModes": ["bolster", "bolt"], "description": "A ritualist that empowers one visible ally." },
+    { "id": "grave_summoner", "name": "Grave Summoner", "role": "summoner", "hp": 18, "attack": 3, "armor": 0, "threat": 3, "target": "ward", "weight": 1, "unlock": "night_four", "intentModes": ["summon", "bolt"], "summons": "shambler", "description": "Calls one shambler when a group has room; interrupt the ritual to stop it." },
+    { "id": "thorn_revenant", "name": "Thorn Revenant", "role": "retaliator", "hp": 19, "attack": 5, "armor": 1, "threat": 2, "target": "hero", "weight": 2, "unlock": "night_four", "intentModes": ["strike", "retaliate"], "retaliation": 2, "description": "Barbed bones punish repeated physical strikes; magic bypasses the thorns." },
+    { "id": "rime_bound", "name": "Rime Bound", "role": "elemental", "hp": 20, "attack": 5, "armor": 1, "threat": 2, "target": "hero", "weight": 2, "unlock": "night_five", "resistances": { "chill": 50 }, "vulnerabilities": { "burn": 50 }, "intentModes": ["strike", "chill_aura"], "description": "Cold does little; fire breaks its rime shell." },
+    { "id": "chapter_boss", "name": "The Bell Warden", "role": "boss", "hp": 76, "attack": 8, "armor": 2, "threat": 8, "target": "hero", "weight": 0, "unlock": "boss_night", "intentModes": ["strike", "ring_bell", "drain", "last_toll"], "phases": [{ "atHpPercent": 100, "intent": "strike", "summons": "shambler" }, { "atHpPercent": 65, "intent": "ring_bell", "target": "ward" }, { "atHpPercent": 30, "intent": "last_toll", "target": "barricade" }], "heavyCooldown": 1, "description": "A corpse-bound warden tolls an old bell to command the siege. Its next target and phase are always shown." }
+  ],
+  "spells": [
+    { "id": "frost", "name": "Frost Shard", "element": "frost", "manaCost": 2, "cooldown": 1, "power": 7, "status": { "id": "chill", "duration": 2 }, "unlock": "start", "description": "Chill one foe. Lightning exploits Chill; a physical hit Shatters it." },
+    { "id": "lightning", "name": "Storm Spark", "element": "lightning", "manaCost": 3, "cooldown": 2, "power": 10, "bonusAgainst": { "status": "chill", "power": 5 }, "unlock": "start", "description": "A focused bolt. Deals extra damage to Chilled foes." },
+    { "id": "ember", "name": "Ember Brand", "element": "fire", "manaCost": 3, "cooldown": 2, "power": 5, "status": { "id": "burn", "duration": 3, "power": 3 }, "unlock": "research_ember", "description": "Burn a foe over several rounds and strip fragile protection." },
+    { "id": "rime_lance", "name": "Rime Lance", "element": "frost", "manaCost": 4, "cooldown": 3, "power": 10, "status": { "id": "chill", "duration": 3 }, "unlock": "research_rime", "description": "A stronger Chill for a dangerous target." },
+    { "id": "arcane_barrier", "name": "Arcane Barrier", "element": "arcane", "manaCost": 4, "cooldown": 3, "power": 9, "status": { "id": "barrier", "duration": 2 }, "unlock": "research_barrier", "description": "Shield the hero or ward before a telegraphed strike." },
+    { "id": "chain_lightning", "name": "Chain Lightning", "element": "lightning", "manaCost": 5, "cooldown": 3, "power": 8, "bonusAgainst": { "status": "chill", "power": 4 }, "unlock": "research_chain", "description": "A bolt jumps to a second enemy when the first is Chilled." }
+  ],
+  "buildings": [
+    { "id": "barricade", "name": "Barricade", "cost": { "timber": 5, "provisions": 0, "essence": 0 }, "turns": 2, "maxHp": 24, "upgrades": ["barricade_repair", "barricade_reinforced", "barricade_spikes", "barricade_signal"] },
+    { "id": "workshop", "name": "Supply Workshop", "cost": { "timber": 6, "provisions": 2, "essence": 0 }, "turns": 2, "maxHp": 18, "upgrades": ["workshop_tools", "workshop_store", "workshop_apothecary", "workshop_scaffold"] },
+    { "id": "ward", "name": "Arcane Ward", "cost": { "timber": 3, "provisions": 0, "essence": 4 }, "turns": 3, "maxHp": 35, "upgrades": ["ward_lens", "ward_bastion", "ward_fount", "ward_pulse"] }
+  ],
+  "upgrades": [
+    { "id": "barricade_repair", "name": "Sound Footings", "building": "barricade", "branch": "foundation", "tier": 1, "cost": { "timber": 5, "provisions": 1, "essence": 0 }, "requires": [], "effects": { "maxHp": 8, "repairBonus": 2 }, "description": "Extra durability and stronger repairs." },
+    { "id": "barricade_reinforced", "name": "Bronze Bracing", "building": "barricade", "branch": "defense", "tier": 2, "cost": { "timber": 10, "provisions": 2, "essence": 0 }, "requires": ["barricade_repair"], "effects": { "maxHp": 12, "breakerReduction": 2 }, "description": "Blunts heavy attacks against the entrance." },
+    { "id": "barricade_spikes", "name": "Grave Spikes", "building": "barricade", "branch": "retaliation", "tier": 2, "cost": { "timber": 8, "provisions": 3, "essence": 1 }, "requires": ["barricade_repair"], "effects": { "retaliation": 3 }, "description": "Enemies striking the wall suffer a wound." },
+    { "id": "barricade_signal", "name": "Signal Platform", "building": "barricade", "branch": "tactical", "tier": 2, "cost": { "timber": 7, "provisions": 4, "essence": 1 }, "requires": ["barricade_repair"], "effects": { "reinforceBonus": 4, "intentPreview": 1 }, "description": "Improves reinforcement and scouts the next intent." },
+    { "id": "workshop_tools", "name": "Shared Tools", "building": "workshop", "branch": "foundation", "tier": 1, "cost": { "timber": 4, "provisions": 2, "essence": 0 }, "requires": [], "effects": { "timberOutput": 1, "constructionSpeed": 1 }, "description": "Better tools reward workers assigned to timber or building." },
+    { "id": "workshop_store", "name": "Covered Store", "building": "workshop", "branch": "production", "tier": 2, "cost": { "timber": 8, "provisions": 3, "essence": 0 }, "requires": ["workshop_tools"], "effects": { "provisionsOutput": 1, "storage": 12 }, "description": "Improves provision work and protects stores." },
+    { "id": "workshop_apothecary", "name": "Apothecary Bench", "building": "workshop", "branch": "crafting", "tier": 2, "cost": { "timber": 7, "provisions": 4, "essence": 2 }, "requires": ["workshop_tools"], "effects": { "recipeUnlock": "healing_draught" }, "description": "Lets a worker prepare practical remedies." },
+    { "id": "workshop_scaffold", "name": "Fast Scaffold", "building": "workshop", "branch": "construction", "tier": 2, "cost": { "timber": 9, "provisions": 3, "essence": 0 }, "requires": ["workshop_tools"], "effects": { "constructionSpeed": 1, "repairBonus": 2 }, "description": "Shortens projects only when a turn is committed." },
+    { "id": "ward_lens", "name": "Mended Lens", "building": "ward", "branch": "foundation", "tier": 1, "cost": { "timber": 2, "provisions": 0, "essence": 5 }, "requires": [], "effects": { "maxHp": 10, "wardOutput": 1 }, "description": "A stronger light and more effective wardkeepers." },
+    { "id": "ward_bastion", "name": "Ward Bastion", "building": "ward", "branch": "defense", "tier": 2, "cost": { "timber": 5, "provisions": 0, "essence": 9 }, "requires": ["ward_lens"], "effects": { "magicReduction": 2, "maxHp": 8 }, "description": "Protects the heart of the refuge against curses." },
+    { "id": "ward_fount", "name": "Mana Fount", "building": "ward", "branch": "support", "tier": 2, "cost": { "timber": 4, "provisions": 1, "essence": 8 }, "requires": ["ward_lens"], "effects": { "manaRecovery": 1, "spellPower": 1 }, "description": "Feeds careful spell use while the ward stands." },
+    { "id": "ward_pulse", "name": "Resonant Pulse", "building": "ward", "branch": "arcane", "tier": 2, "cost": { "timber": 3, "provisions": 2, "essence": 10 }, "requires": ["ward_lens"], "effects": { "wardPulse": 4 }, "description": "Unlocks an active ward pulse paid for with essence." }
+  ],
+  "roles": [
+    { "id": "timber", "name": "Gather timber", "output": { "timber": 2 }, "unlock": "start" },
+    { "id": "provisions", "name": "Prepare provisions", "output": { "provisions": 2 }, "unlock": "start" },
+    { "id": "essence", "name": "Maintain ward", "output": { "essence": 1 }, "unlock": "start" },
+    { "id": "repair", "name": "Repair defenses", "output": { "repair": 3 }, "unlock": "night_two" },
+    { "id": "craft", "name": "Craft supplies", "output": { "craftProgress": 1 }, "unlock": "research_remedies" },
+    { "id": "research", "name": "Study magic", "output": { "researchProgress": 1 }, "unlock": "night_three" },
+    { "id": "scout", "name": "Scout threats", "output": { "scoutProgress": 1 }, "unlock": "night_three" },
+    { "id": "recover", "name": "Recover from injury", "output": { "recoveryProgress": 1 }, "unlock": "start" }
+  ],
+  "villagers": [
+    { "id": "mara", "name": "Mara", "role": "timber", "efficiency": 1, "traits": [{ "id": "steady_hands", "role": "timber", "bonusEvery": 2, "bonus": 1 }, { "id": "builder", "role": "repair", "bonus": 1 }], "description": "Mara repairs what others assume is lost." },
+    { "id": "tovin", "name": "Tovin", "role": "provisions", "efficiency": 1, "traits": [{ "id": "hearthwise", "role": "provisions", "bonusEvery": 2, "bonus": 1 }, { "id": "wardkeeper", "role": "essence", "bonusEvery": 3, "bonus": 1 }], "description": "Tovin keeps the fire and reads the ward's shifting light." },
+    { "id": "sela", "name": "Sela", "role": "scout", "efficiency": 1, "traits": [{ "id": "pathfinder", "role": "scout", "bonus": 1 }], "unlock": "event_roadside_rescue", "description": "A sharp-eyed survivor who knows a safer road." },
+    { "id": "oren", "name": "Oren", "role": "craft", "efficiency": 1, "traits": [{ "id": "careful_mix", "role": "craft", "bonusEvery": 3, "bonus": 1 }], "unlock": "secure_ruined_farm", "description": "A former farm healer with a practical remedy for most troubles." }
+  ],
+  "items": [
+    { "id": "worn_blade", "name": "Worn Blade", "slot": "weapon", "rarity": "common", "bonus": { "attack": 1 }, "effect": "reliable_strike", "unlock": "start" },
+    { "id": "splitter_axe", "name": "Splitter Axe", "slot": "weapon", "rarity": "uncommon", "bonus": { "attack": 2 }, "effect": "shatter_bonus_2", "unlock": "night_two" },
+    { "id": "bell_hook", "name": "Bell Hook", "slot": "weapon", "rarity": "rare", "bonus": { "attack": 1 }, "effect": "bonus_vs_ward_attackers_3", "unlock": "crypt_clue" },
+    { "id": "patched_coat", "name": "Patched Coat", "slot": "armor", "rarity": "common", "bonus": { "hp": 4 }, "effect": "guard_bonus_1", "unlock": "start" },
+    { "id": "bronze_vest", "name": "Bronze Vest", "slot": "armor", "rarity": "uncommon", "bonus": { "resilience": 2 }, "effect": "resist_breaker_2", "unlock": "night_two" },
+    { "id": "rimed_cloak", "name": "Rimed Cloak", "slot": "armor", "rarity": "rare", "bonus": { "hp": 3 }, "effect": "barrier_after_spell_2", "unlock": "night_four" },
+    { "id": "ward_token", "name": "Ward Token", "slot": "focus", "rarity": "common", "bonus": { "mana": 2 }, "effect": "ward_attunement", "unlock": "start" },
+    { "id": "spark_charm", "name": "Spark Charm", "slot": "focus", "rarity": "uncommon", "bonus": { "spellPower": 1 }, "effect": "mana_after_shatter_1", "unlock": "night_three" },
+    { "id": "shrine_prism", "name": "Shrine Prism", "slot": "focus", "rarity": "rare", "bonus": { "mana": 1 }, "effect": "chill_extension_1", "unlock": "secure_abandoned_shrine" },
+    { "id": "healing_draught", "name": "Healing Draught", "slot": "consumable", "rarity": "common", "effect": "heal_15", "unlock": "start" },
+    { "id": "mana_tonic", "name": "Mana Tonic", "slot": "consumable", "rarity": "common", "effect": "mana_6", "unlock": "night_two" },
+    { "id": "cleansing_salt", "name": "Cleansing Salt", "slot": "consumable", "rarity": "common", "effect": "cleanse_status", "unlock": "night_three" },
+    { "id": "guard_powder", "name": "Guard Powder", "slot": "consumable", "rarity": "uncommon", "effect": "barrier_8", "unlock": "night_three" },
+    { "id": "ward_salvage", "name": "Ward Salvage", "slot": "consumable", "rarity": "uncommon", "effect": "ward_heal_10", "unlock": "night_four" },
+    { "id": "ember_flask", "name": "Ember Flask", "slot": "consumable", "rarity": "uncommon", "effect": "burn_5", "unlock": "research_ember" }
+  ],
+  "talents": [
+    { "id": "sure_shatter", "name": "Sure Shatter", "direction": "martial", "unlock": "night_three", "effect": { "shatterDamage": 3 }, "description": "Physical attacks make better use of Chill." },
+    { "id": "cold_conductor", "name": "Cold Conductor", "direction": "elemental", "unlock": "night_three", "effect": { "lightningVsChill": 3 }, "description": "Lightning bites deeper into Chilled foes." },
+    { "id": "watchful_keeper", "name": "Watchful Keeper", "direction": "refuge", "unlock": "night_three", "effect": { "orderValue": 2 }, "description": "Village orders protect more with the same provisions." },
+    { "id": "unyielding", "name": "Unyielding", "direction": "martial", "unlock": "night_five", "effect": { "guardValue": 3 }, "description": "Guard holds against heavy blows." },
+    { "id": "efficient_channel", "name": "Efficient Channel", "direction": "elemental", "unlock": "night_five", "effect": { "firstSpellManaDiscount": 1 }, "description": "The first spell each wave costs less mana." },
+    { "id": "field_steward", "name": "Field Steward", "direction": "refuge", "unlock": "night_five", "effect": { "expeditionProvisionDiscount": 1 }, "description": "Expeditions use fewer provisions." }
+  ],
+  "locations": [
+    { "id": "ruined_farm", "name": "Ruined Farm", "risk": 1, "turns": 2, "unlock": "night_one", "threat": "Strays near the grain store", "rewards": { "provisions": 5 }, "siteEffect": { "provisionsOutput": 1 }, "secureFlag": "secure_ruined_farm", "steps": [{ "id": "farm_yard", "text": "The granary door hangs open. Footprints lead to the cellar.", "choices": [{ "id": "gather", "label": "Gather visible grain", "risk": 0, "reward": { "provisions": 3 }, "secure": true }, { "id": "cellar", "label": "Search the cellar", "risk": 1, "combat": ["shambler"], "reward": { "provisions": 5 }, "flag": "secure_ruined_farm" }] }] },
+    { "id": "fallen_watchpost", "name": "Fallen Watchpost", "risk": 1, "turns": 2, "unlock": "night_one", "threat": "Undead scouts and a weak stair", "rewards": { "timber": 3 }, "siteEffect": { "intentPreview": 1 }, "secureFlag": "secure_fallen_watchpost", "steps": [{ "id": "watchpost_stairs", "text": "A warning bell lies below the ruined platform.", "choices": [{ "id": "salvage", "label": "Salvage the bell", "risk": 0, "reward": { "timber": 2 }, "secure": true }, { "id": "climb", "label": "Climb and map enemy tracks", "risk": 1, "combat": ["shambler"], "flag": "secure_fallen_watchpost", "reward": { "essence": 2 } }] }] },
+    { "id": "timber_camp", "name": "Timber Camp", "risk": 1, "turns": 2, "unlock": "night_two", "threat": "Loose logs and prowling dead", "rewards": { "timber": 6 }, "siteEffect": { "timberOutput": 1 }, "secureFlag": "secure_timber_camp", "steps": [{ "id": "camp_shed", "text": "The old saw can run again if its frame is cleared.", "choices": [{ "id": "haul", "label": "Haul what is ready", "risk": 0, "reward": { "timber": 3 }, "secure": true }, { "id": "restore", "label": "Clear the saw frame", "risk": 1, "combat": ["bonebreaker"], "flag": "secure_timber_camp", "reward": { "timber": 6 } }] }] },
+    { "id": "roadside_camp", "name": "Roadside Camp", "risk": 1, "turns": 2, "unlock": "night_two", "threat": "An anxious survivor and distant footsteps", "rewards": { "provisions": 3 }, "secureFlag": "event_roadside_rescue", "steps": [{ "id": "roadside_fire", "text": "Sela waits beside a failing fire and asks for help.", "choices": [{ "id": "rescue", "label": "Share food and escort Sela", "risk": 1, "cost": { "provisions": 2 }, "flag": "event_roadside_rescue", "reward": { "villager": "sela" }, "secure": true }, { "id": "supplies", "label": "Take spare supplies", "risk": 0, "reward": { "provisions": 3 }, "secure": true }] }] },
+    { "id": "abandoned_shrine", "name": "Abandoned Shrine", "risk": 2, "turns": 3, "unlock": "night_three", "threat": "Ward interference and a leech spirit", "rewards": { "essence": 6 }, "siteEffect": { "essenceOutput": 1 }, "secureFlag": "secure_abandoned_shrine", "steps": [{ "id": "shrine_pool", "text": "Teal light pools in cracked stone channels.", "choices": [{ "id": "skim", "label": "Gather loose essence", "risk": 0, "reward": { "essence": 3 }, "secure": true }, { "id": "stabilize", "label": "Stabilize the channels", "risk": 2, "combat": ["ward_leech"], "flag": "secure_abandoned_shrine", "reward": { "essence": 6 } }] }] },
+    { "id": "crypt", "name": "Small Crypt", "risk": 3, "turns": 3, "unlock": "night_four", "threat": "Armored guardians and a ritual below", "rewards": { "essence": 5 }, "secureFlag": "crypt_clue", "steps": [{ "id": "crypt_gate", "text": "Old bell marks repeat around each sealed vault.", "choices": [{ "id": "inspect", "label": "Record the bell marks", "risk": 1, "flag": "crypt_clue", "reward": { "essence": 2 }, "secure": true }, { "id": "descend", "label": "Descend for a relic", "risk": 3, "combat": ["crypt_guard", "grave_caster"], "reward": { "item": "bell_hook" } }] }] },
+    { "id": "old_bridge", "name": "Old Bridge", "risk": 2, "turns": 3, "unlock": "night_five", "threat": "A broken span watched by the undead", "rewards": { "timber": 4 }, "secureFlag": "bridge_repaired", "steps": [{ "id": "bridge_span", "text": "A safe route can be laid across the old supports.", "choices": [{ "id": "repair", "label": "Lay new planks", "risk": 1, "cost": { "timber": 5 }, "flag": "bridge_repaired", "reward": { "timber": 1 }, "secure": true }, { "id": "scout", "label": "Scout the far bank", "risk": 2, "combat": ["ward_leech", "shambler"], "reward": { "essence": 3 } }] }] },
+    { "id": "oakhaven_outskirts", "name": "Oakhaven Outskirts", "risk": 3, "turns": 3, "unlock": "chapter_complete", "threat": "The route into the city remains perilous", "rewards": { "essence": 4 }, "steps": [{ "id": "outer_gate", "text": "Through the mist, Oakhaven's outer walls are visible.", "choices": [{ "id": "survey", "label": "Survey the approach", "risk": 1, "reward": { "essence": 2 }, "secure": true }] }] }
+  ],
+  "events": [
+    { "id": "event_roadside_rescue", "name": "A Fire by the Road", "unlock": "night_two", "weight": 3, "choices": [{ "id": "shelter", "label": "Offer shelter; spend two provisions", "cost": { "provisions": 2 }, "reward": { "villager": "sela" }, "flag": "event_roadside_rescue" }, { "id": "supplies", "label": "Share directions; keep the stores", "reward": { "provisions": 1 } }] },
+    { "id": "event_trader", "name": "Wounded Traveler", "unlock": "night_two", "weight": 2, "choices": [{ "id": "treat", "label": "Use two provisions to help", "cost": { "provisions": 2 }, "reward": { "item": "mana_tonic" } }, { "id": "guide", "label": "Guide them to the road", "reward": { "timber": 2 } }] },
+    { "id": "event_ward_echo", "name": "Echo in the Ward", "unlock": "night_three", "weight": 2, "choices": [{ "id": "study", "label": "Spend two essence to study", "cost": { "essence": 2 }, "reward": { "essence": 3 } }, { "id": "stabilize", "label": "Let the light settle", "reward": { "wardHeal": 5 } }] },
+    { "id": "event_shortage", "name": "A Thin Evening", "unlock": "night_three", "weight": 2, "choices": [{ "id": "ration", "label": "Ration fairly; one worker rests", "effect": { "workerUnavailableTurns": 1 }, "reward": { "provisions": 2 } }, { "id": "forage", "label": "Send a short forage party", "risk": 1, "reward": { "provisions": 4 } }] },
+    { "id": "event_bell_trace", "name": "The Bell's Echo", "unlock": "night_four", "weight": 1, "choices": [{ "id": "follow", "label": "Follow the sound", "risk": 2, "combat": ["crypt_guard"], "flag": "crypt_clue", "reward": { "essence": 2 } }, { "id": "fortify", "label": "Strengthen the refuge", "reward": { "timber": 2 } }] }
+  ],
+  "research": [
+    { "id": "research_remedies", "name": "Field Remedies", "facility": "workshop", "turns": 2, "cost": { "timber": 2, "provisions": 3, "essence": 0 }, "requires": ["workshop_tools"], "unlocks": ["recipe_healing", "recipe_mana"] },
+    { "id": "research_ember", "name": "Ember Studies", "facility": "ward", "turns": 3, "cost": { "timber": 1, "provisions": 0, "essence": 6 }, "requires": ["ward_lens"], "unlocks": ["ember", "recipe_ember"] },
+    { "id": "research_rime", "name": "Rime Geometry", "facility": "ward", "turns": 3, "cost": { "timber": 0, "provisions": 1, "essence": 7 }, "requires": ["ward_lens"], "unlocks": ["rime_lance"] },
+    { "id": "research_barrier", "name": "Barrier Weaving", "facility": "ward", "turns": 3, "cost": { "timber": 2, "provisions": 0, "essence": 7 }, "requires": ["ward_lens"], "unlocks": ["arcane_barrier", "recipe_guard"] },
+    { "id": "research_chain", "name": "Chain Conduction", "facility": "ward", "turns": 4, "cost": { "timber": 1, "provisions": 1, "essence": 9 }, "requires": ["research_rime"], "unlocks": ["chain_lightning"] }
+  ],
+  "recipes": [
+    { "id": "recipe_healing", "name": "Healing Draught", "turns": 2, "cost": { "timber": 0, "provisions": 2, "essence": 1 }, "output": { "item": "healing_draught", "quantity": 1 }, "unlock": "research_remedies" },
+    { "id": "recipe_mana", "name": "Mana Tonic", "turns": 2, "cost": { "timber": 0, "provisions": 1, "essence": 2 }, "output": { "item": "mana_tonic", "quantity": 1 }, "unlock": "research_remedies" },
+    { "id": "recipe_guard", "name": "Guard Powder", "turns": 2, "cost": { "timber": 1, "provisions": 1, "essence": 2 }, "output": { "item": "guard_powder", "quantity": 1 }, "unlock": "research_barrier" },
+    { "id": "recipe_ember", "name": "Ember Flask", "turns": 2, "cost": { "timber": 1, "provisions": 0, "essence": 2 }, "output": { "item": "ember_flask", "quantity": 1 }, "unlock": "research_ember" }
+  ],
+  "rewards": [
+    { "id": "reward_supplies", "name": "Restocked Shelves", "kind": "resources", "weight": 5, "immediate": true, "grant": { "timber": 3, "provisions": 3 } },
+    { "id": "reward_ward", "name": "Ward Embers", "kind": "resources", "weight": 4, "immediate": true, "grant": { "essence": 4, "wardHeal": 6 } },
+    { "id": "reward_remedy", "name": "Field Remedy", "kind": "item", "weight": 5, "immediate": true, "grant": { "item": "healing_draught", "quantity": 2 } },
+    { "id": "reward_tonic", "name": "Clear Water Tonic", "kind": "item", "weight": 3, "immediate": true, "grant": { "item": "mana_tonic", "quantity": 2 }, "unlock": "night_two" },
+    { "id": "reward_axe", "name": "Splitter Axe", "kind": "equipment", "weight": 2, "immediate": true, "grant": { "item": "splitter_axe" }, "unlock": "night_two" },
+    { "id": "reward_vest", "name": "Bronze Vest", "kind": "equipment", "weight": 2, "immediate": true, "grant": { "item": "bronze_vest" }, "unlock": "night_two" },
+    { "id": "reward_repair", "name": "Repair Cache", "kind": "recovery", "weight": 3, "immediate": true, "grant": { "timber": 4, "barricadeHeal": 8 }, "unlock": "night_two" },
+    { "id": "reward_prism", "name": "Shrine Prism", "kind": "equipment", "weight": 1, "immediate": true, "grant": { "item": "shrine_prism" }, "unlock": "secure_abandoned_shrine" },
+    { "id": "reward_intel", "name": "Mapped Tracks", "kind": "information", "weight": 2, "immediate": false, "grant": { "threatPreview": 1 }, "unlock": "night_three" }
+  ],
+  "modifiers": [
+    { "id": "damaged_defenses", "name": "Broken Approach", "unlock": "night_two", "weight": 2, "effect": { "startingBarricadeDamage": 5 }, "counter": "Repair before the first wave." },
+    { "id": "mist", "name": "Heavy Mist", "unlock": "night_two", "weight": 2, "effect": { "hideExactEnemyCount": true }, "counter": "Scout for clearer threat information." },
+    { "id": "ward_interference", "name": "Ward Interference", "unlock": "night_three", "weight": 2, "effect": { "wardOutputPenalty": 1 }, "counter": "Assign a wardkeeper or improve the lens." },
+    { "id": "volatile_magic", "name": "Volatile Magic", "unlock": "night_four", "weight": 1, "effect": { "firstSpellBonus": 2, "firstSpellSelfDamage": 1 }, "counter": "Choose when to cast and prepare healing." },
+    { "id": "rich_scavenging", "name": "Abundant Scraps", "unlock": "night_two", "weight": 2, "effect": { "scavengeTimberBonus": 2 }, "counter": "Spend a preparation turn to gather." },
+    { "id": "grave_surge", "name": "Grave Surge", "unlock": "night_five", "weight": 1, "effect": { "summonerWeightBonus": 2 }, "counter": "Prioritize ritualists before they call reinforcements." }
+  ],
+  "objectives": [
+    { "id": "hold_ward", "name": "Keep the ward above half strength", "unlock": "night_two", "condition": { "wardHpPercentAtLeast": 50 }, "reward": { "essence": 2 } },
+    { "id": "protect_workshop", "name": "Protect the workshop", "unlock": "night_two", "condition": { "buildingDamageAtMost": 0, "building": "workshop" }, "reward": { "timber": 3 } },
+    { "id": "swift_elite", "name": "Stop the elite before its third action", "unlock": "night_four", "condition": { "eliteDefeatedBeforeRound": 3 }, "reward": { "essence": 3 } },
+    { "id": "ration_orders", "name": "Use at most four provisions on orders", "unlock": "night_three", "condition": { "orderProvisionsAtMost": 4 }, "reward": { "provisions": 3 } },
+    { "id": "stand_fast", "name": "Survive without retreating", "unlock": "night_two", "condition": { "retreatsAtMost": 0 }, "reward": { "timber": 2, "essence": 1 } }
+  ],
+  "milestones": [
+    { "id": "night_one", "name": "The First Night", "requires": [], "goal": { "nightsWon": 1 }, "unlocks": ["night_two", "ruined_farm", "fallen_watchpost"], "story": "The ward holds. Undead tracks point toward the old road." },
+    { "id": "night_two", "name": "The Wounded Refuge", "requires": ["night_one"], "goal": { "nightsWon": 2 }, "unlocks": ["night_three", "timber_camp", "roadside_camp"], "story": "The walls need work, and living voices have been heard beyond them." },
+    { "id": "night_three", "name": "A Wider Circle", "requires": ["night_two"], "goal": { "nightsWon": 3, "villagersAtLeast": 3 }, "unlocks": ["night_four", "abandoned_shrine"], "story": "A new survivor joins the work; the shrine's light answers the ward." },
+    { "id": "night_four", "name": "Pattern in the Dead", "requires": ["night_three"], "goal": { "nightsWon": 4, "sitesSecuredAtLeast": 1 }, "unlocks": ["night_five", "crypt"], "story": "The assaults are ordered. A bell mark appears on the fallen." },
+    { "id": "night_five", "name": "The Road Assault", "requires": ["night_four"], "goal": { "nightsWon": 5, "cryptClue": true }, "unlocks": ["boss_night", "old_bridge"], "story": "The Bell Warden is near. The refuge has one chance to prepare." },
+    { "id": "boss_night", "name": "The Bell Warden", "requires": ["night_five"], "goal": { "bossDefeated": "chapter_boss" }, "unlocks": ["chapter_complete"], "story": "The bell falls silent; the approach to Oakhaven clears." },
+    { "id": "chapter_complete", "name": "A Foothold of Light", "requires": ["boss_night"], "goal": { "flag": "chapter_boss_defeated" }, "unlocks": ["oakhaven_outskirts"], "story": "The refuge is a true settlement now. Oakhaven waits beyond the mist." }
+  ]
+}
