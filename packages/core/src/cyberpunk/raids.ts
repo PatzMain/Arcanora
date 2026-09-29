@@ -298,6 +298,7 @@ export function createInitialCyberpunkGameState(): CyberpunkGameState {
       raidsRepelled: 0,
       revivals: 0,
       timeAliveSec: 0,
+      currentWave: 1,
     },
     lastSavedAt: Date.now(),
   };

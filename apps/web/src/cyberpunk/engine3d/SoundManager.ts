@@ -293,6 +293,90 @@ class ProceduralSoundManager {
     osc.start(t);
     osc.stop(t + 0.22);
   }
+
+  playWaveStart() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.masterGain) return;
+
+    const t = this.ctx.currentTime;
+    // Ominous low electronic chord: C3 -> G3 -> C4
+    [130.81, 196.0, 261.63].forEach((f, i) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(f, t + i * 0.05);
+      gain.gain.setValueAtTime(0.25, t + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.005, t + i * 0.05 + 0.8);
+      osc.connect(gain);
+      gain.connect(this.masterGain!);
+      osc.start(t + i * 0.05);
+      osc.stop(t + i * 0.05 + 0.85);
+    });
+  }
+
+  playWaveClear() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.masterGain) return;
+
+    const t = this.ctx.currentTime;
+    // Triumphant cyber arpeggio: C4 -> E4 -> G4 -> C5
+    [261.63, 329.63, 392.0, 523.25].forEach((f, i) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(f, t + i * 0.08);
+      gain.gain.setValueAtTime(0.35, t + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + i * 0.08 + 0.4);
+      osc.connect(gain);
+      gain.connect(this.masterGain!);
+      osc.start(t + i * 0.08);
+      osc.stop(t + i * 0.08 + 0.45);
+    });
+  }
+
+  playRaidAlarm() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.masterGain) return;
+
+    const t = this.ctx.currentTime;
+    // Industrial Klaxon Siren
+    for (let cycle = 0; cycle < 3; cycle++) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      const startT = t + cycle * 0.35;
+      osc.frequency.setValueAtTime(440, startT);
+      osc.frequency.linearRampToValueAtTime(880, startT + 0.25);
+      gain.gain.setValueAtTime(0.4, startT);
+      gain.gain.exponentialRampToValueAtTime(0.01, startT + 0.32);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(startT);
+      osc.stop(startT + 0.33);
+    }
+  }
+
+  playWeaponSwitch() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.masterGain) return;
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(450, t);
+    osc.frequency.setValueAtTime(900, t + 0.04);
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.09);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }
 }
 
 export const sounds = new ProceduralSoundManager();

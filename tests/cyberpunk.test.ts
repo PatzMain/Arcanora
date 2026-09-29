@@ -14,6 +14,7 @@ import {
   WEAPON_DEFINITIONS,
   canOverclockWeapon,
   overclockWeapon,
+  switchWeapon,
   canBuyPerk,
   buyPerk,
   calculateShotDamage,
@@ -65,6 +66,7 @@ describe('Sector 0: Cyberpunk Domain Engine', () => {
       expect(res.newState.sectors.sector_01_power.unlocked).toBe(true);
       expect(res.newState.player.credits).toBe(150); // 500 - 350
       expect(res.newState.stats.doorsUnlocked).toBe(1);
+      expect(res.newState.comrades.some((c) => c.id === 'comrade_echo')).toBe(true);
     });
 
     it('repairs damaged blast doors with tech scrap', () => {
@@ -158,6 +160,16 @@ describe('Sector 0: Cyberpunk Domain Engine', () => {
       expect(res.newState.player.activePerks).toContain('titan_subdermal');
       expect(res.newState.player.maxShield).toBe(200); // 100 + 100
       expect(res.newState.player.credits).toBe(500); // 3000 - 2500
+    });
+
+    it('switches equipped weapon between inventory firearms', () => {
+      const state = createInitialCyberpunkGameState();
+      expect(state.player.equippedWeapon.baseId).toBe('scrap_pistol');
+
+      const res = switchWeapon(state, 'auto_shotgun');
+      expect(res.success).toBe(true);
+      expect(res.newState.player.equippedWeapon.baseId).toBe('auto_shotgun');
+      expect(res.newState.player.equippedWeapon.name).toContain('Trench Gun');
     });
   });
 
@@ -330,6 +342,17 @@ describe('Sector 0: Cyberpunk Domain Engine', () => {
         expect(COMRADE_STATIONS[cId]).toBeDefined();
         expect(COMRADE_STATIONS[cId].position).toBeDefined();
       }
+    });
+
+    it('verifies SectorBuilder builds world with connecting corridors and wall colliders', async () => {
+      const { SectorBuilder } = await import('../apps/web/src/cyberpunk/engine3d/SectorBuilder.js');
+      const state = createInitialCyberpunkGameState();
+      const builder = new SectorBuilder();
+      builder.buildWorld(state);
+
+      expect(builder.doors.size).toBe(5);
+      expect(builder.terminals.size).toBeGreaterThanOrEqual(6);
+      expect(builder.wallColliders.length).toBeGreaterThan(20);
     });
   });
 });

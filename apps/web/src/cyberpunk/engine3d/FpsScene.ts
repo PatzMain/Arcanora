@@ -4,10 +4,14 @@ import {
   type CombatEnemy,
   type CyberpunkGameState,
   type SectorId,
+  type WeaponId,
   calculateShotDamage,
   applyEnemyDamageToPlayer,
   unlockDoor,
   triggerEmpDischarge,
+  switchWeapon,
+  generateWaveEnemies,
+  repelRaid,
 } from '@arcanora/core';
 import { SectorBuilder } from './SectorBuilder.js';
 import { Viewmodel3D } from './Viewmodel3D.js';
@@ -41,6 +45,10 @@ export class FpsScene {
   private lastFireTime = 0;
   private isReloading = false;
   private reloadTimer = 0;
+
+  private isWaveActive = false;
+  private waveCooldownTimer = 1.5;
+  private raidSpawned = false;
 
   private gameState: CyberpunkGameState;
   private callbacks: FpsSceneCallbacks;
@@ -101,8 +109,10 @@ export class FpsScene {
     this.handleResize = this.handleResize.bind(this);
     window.addEventListener('resize', this.handleResize);
 
-    // 5. Initial Spawning of Droids if wave is active
-    this.syncEnemiesWithGameState();
+    // 5. Initial Spawning of Droids if raid is active
+    if (this.gameState.raidState.isActive) {
+      this.spawnRaidSquad();
+    }
 
     // 6. Start Render Loop
     this.startLoop();
@@ -112,6 +122,18 @@ export class FpsScene {
     this.controls.onFire = () => this.handlePlayerShoot();
     this.controls.onReload = () => this.handlePlayerReload();
     this.controls.onInteract = (interaction) => this.handlePlayerInteract(interaction);
+    this.controls.onSwitchWeapon = (baseId) => this.handleWeaponSwitch(baseId);
+  }
+
+  private handleWeaponSwitch(baseId: WeaponId) {
+    if (this.gameState.player.equippedWeapon.baseId === baseId) return;
+    const res = switchWeapon(this.gameState, baseId);
+    if (res.success) {
+      this.gameState = res.newState;
+      this.viewmodel.setWeapon(res.newState.player.equippedWeapon);
+      sounds.playWeaponSwitch();
+      this.callbacks.onStateUpdate(() => res.newState);
+    }
   }
 
   private handleResize() {
@@ -123,8 +145,13 @@ export class FpsScene {
   }
 
   updateGameState(nextState: CyberpunkGameState) {
+    const prevWeapon = this.gameState.player.equippedWeapon;
     this.gameState = nextState;
-    this.viewmodel.setWeapon(nextState.player.equippedWeapon);
+
+    if (prevWeapon.id !== nextState.player.equippedWeapon.id) {
+      this.viewmodel.setWeapon(nextState.player.equippedWeapon);
+    }
+
     this.comrades3d.syncComrades(nextState.comrades);
 
     // Check if any doors unlocked that need 3D visual opening
@@ -133,21 +160,68 @@ export class FpsScene {
         this.sectorBuilder.unlockDoor3D(id as BlastDoorId);
       }
     }
+
+    // Check if corporate raid started
+    if (nextState.raidState.isActive && !this.raidSpawned) {
+      this.spawnRaidSquad();
+    }
   }
 
-  private syncEnemiesWithGameState() {
-    // If raid is active, spawn active squad droids into 3D world
-    if (this.gameState.raidState.isActive && this.enemyDroids.droids.size === 0) {
-      const spawnCenter = new THREE.Vector3(0, 0, -28);
-      for (const enemy of this.gameState.raidState.activeSquad) {
-        const offset = new THREE.Vector3(
-          (Math.random() - 0.5) * 8,
-          0,
-          (Math.random() - 0.5) * 8
-        );
-        this.enemyDroids.spawnDroid(enemy, spawnCenter.clone().add(offset));
-      }
+  private spawnWave(waveNumber: number) {
+    const unlockedCount = Object.values(this.gameState.sectors).filter((s) => s.unlocked).length;
+    const enemies = generateWaveEnemies(waveNumber, unlockedCount);
+
+    const spawnPoints: THREE.Vector3[] = [];
+    spawnPoints.push(new THREE.Vector3(-10, 0, -12), new THREE.Vector3(-10, 0, 12));
+    if (this.gameState.sectors.sector_01_power.unlocked) {
+      spawnPoints.push(new THREE.Vector3(0, 0, -42), new THREE.Vector3(0, 0, -22));
     }
+    if (this.gameState.sectors.sector_02_chop_shop.unlocked) {
+      spawnPoints.push(new THREE.Vector3(-38, 0, 0), new THREE.Vector3(-20, 0, 0));
+    }
+    if (this.gameState.sectors.sector_03_ripper_clinic.unlocked) {
+      spawnPoints.push(new THREE.Vector3(0, 0, -78));
+    }
+    if (this.gameState.sectors.sector_04_mag_junction.unlocked) {
+      spawnPoints.push(new THREE.Vector3(-76, 0, 4));
+    }
+    if (this.gameState.sectors.sector_05_deep_vault.unlocked) {
+      spawnPoints.push(new THREE.Vector3(-76, 0, -50));
+    }
+
+    enemies.forEach((enemy, idx) => {
+      const sp = spawnPoints[idx % spawnPoints.length].clone();
+      sp.x += (Math.random() - 0.5) * 4;
+      sp.z += (Math.random() - 0.5) * 4;
+      this.enemyDroids.spawnDroid(enemy, sp);
+    });
+
+    sounds.playWaveStart();
+    this.isWaveActive = true;
+  }
+
+  private spawnRaidSquad() {
+    const squad = this.gameState.raidState.activeSquad;
+    if (squad.length === 0) return;
+
+    let spawnCenter = new THREE.Vector3(0, 0, -28);
+    if (this.gameState.raidState.targetDoorId === 'door_chop_shop') {
+      spawnCenter = new THREE.Vector3(-20, 0, 0);
+    } else if (this.gameState.raidState.targetDoorId === 'door_ripper_clinic') {
+      spawnCenter = new THREE.Vector3(0, 0, -60);
+    } else if (this.gameState.raidState.targetDoorId === 'door_mag_junction') {
+      spawnCenter = new THREE.Vector3(-55, 0, 0);
+    } else if (this.gameState.raidState.targetDoorId === 'door_deep_vault') {
+      spawnCenter = new THREE.Vector3(-76, 0, -25);
+    }
+
+    for (const enemy of squad) {
+      const offset = new THREE.Vector3((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6);
+      this.enemyDroids.spawnDroid(enemy, spawnCenter.clone().add(offset));
+    }
+
+    sounds.playRaidAlarm();
+    this.raidSpawned = true;
   }
 
   private handlePlayerShoot() {
@@ -321,8 +395,51 @@ export class FpsScene {
       // 3. Update Comrades
       this.comrades3d.update(delta);
 
-      // 4. Update Enemy Droids
-      this.enemyDroids.update(delta, this.camera.position, (damage) => {
+      // 4. Update Wave & Corporate Raid Cycle
+      if (this.gameState.raidState.isActive) {
+        if (!this.raidSpawned) {
+          this.spawnRaidSquad();
+        } else if (this.enemyDroids.droids.size === 0) {
+          // Raid defeated!
+          this.raidSpawned = false;
+          sounds.playWaveClear();
+          this.callbacks.onStateUpdate((prev) => {
+            const { newState } = repelRaid(prev);
+            return newState;
+          });
+        }
+      } else {
+        // Normal Wave cycle
+        if (this.isWaveActive && this.enemyDroids.droids.size === 0) {
+          this.isWaveActive = false;
+          this.waveCooldownTimer = 5.0;
+          sounds.playWaveClear();
+
+          const waveBonus = 150 * this.gameState.stats.currentWave;
+          const scrapBonus = 15 * this.gameState.stats.currentWave;
+
+          this.callbacks.onStateUpdate((prev) => ({
+            ...prev,
+            player: {
+              ...prev.player,
+              credits: prev.player.credits + waveBonus,
+              scrap: prev.player.scrap + scrapBonus,
+            },
+            stats: {
+              ...prev.stats,
+              currentWave: prev.stats.currentWave + 1,
+            },
+          }));
+        } else if (!this.isWaveActive) {
+          this.waveCooldownTimer -= delta;
+          if (this.waveCooldownTimer <= 0) {
+            this.spawnWave(this.gameState.stats.currentWave);
+          }
+        }
+      }
+
+      // 5. Update Enemy Droids with sectorBuilder for locked door collisions
+      this.enemyDroids.update(delta, this.camera.position, this.sectorBuilder, (damage) => {
         sounds.playPlayerHurt();
         this.callbacks.onStateUpdate((prev) => {
           const { updatedPlayer } = applyEnemyDamageToPlayer(prev.player, damage);

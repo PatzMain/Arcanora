@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { BlastDoorId, CyberpunkGameState, SectorId } from '@arcanora/core';
+import type { BlastDoorId, CyberpunkGameState, SectorId, WeaponId } from '@arcanora/core';
 import type { SectorBuilder } from './SectorBuilder.js';
 import type { Comrades3D } from './Comrades3D.js';
 import type { RaycastInteraction } from './types3d.js';
@@ -39,6 +39,8 @@ export class FpsControls {
   onInteract?: (interaction: RaycastInteraction) => void;
   onFire?: () => void;
   onReload?: () => void;
+  onSwitchWeapon?: (baseId: WeaponId) => void;
+  private currentWeaponIdx = 0;
 
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
     this.camera = camera;
@@ -85,8 +87,27 @@ export class FpsControls {
         } else if (e.code === 'Space' && this.isGrounded) {
           this.velocity.y = this.jumpForce;
           this.isGrounded = false;
+        } else if (e.code === 'Digit1') {
+          this.currentWeaponIdx = 0;
+          this.onSwitchWeapon?.('scrap_pistol');
+        } else if (e.code === 'Digit2') {
+          this.currentWeaponIdx = 1;
+          this.onSwitchWeapon?.('auto_shotgun');
+        } else if (e.code === 'Digit3') {
+          this.currentWeaponIdx = 2;
+          this.onSwitchWeapon?.('kinetic_smg');
+        } else if (e.code === 'Digit4') {
+          this.currentWeaponIdx = 3;
+          this.onSwitchWeapon?.('heavy_rail_rifle');
         }
       }
+    });
+
+    window.addEventListener('wheel', (e) => {
+      if (!this.isLocked || !this.onSwitchWeapon) return;
+      const weapons: WeaponId[] = ['scrap_pistol', 'auto_shotgun', 'kinetic_smg', 'heavy_rail_rifle'];
+      this.currentWeaponIdx = (this.currentWeaponIdx + (e.deltaY > 0 ? 1 : weapons.length - 1)) % weapons.length;
+      this.onSwitchWeapon(weapons[this.currentWeaponIdx]);
     });
 
     window.addEventListener('keyup', (e) => {
@@ -153,43 +174,62 @@ export class FpsControls {
       this.velocity.z = 0;
     }
 
+    // Movement with wall-sliding collision
+    const testPosX = this.camera.position.clone();
+    testPosX.x += this.velocity.x * deltaSec;
+    if (!this.checkCollision(testPosX, sectorBuilder)) {
+      this.camera.position.x = testPosX.x;
+    }
+
+    const testPosZ = this.camera.position.clone();
+    testPosZ.z += this.velocity.z * deltaSec;
+    if (!this.checkCollision(testPosZ, sectorBuilder)) {
+      this.camera.position.z = testPosZ.z;
+    }
+
     // Gravity
     if (!this.isGrounded) {
       this.velocity.y -= this.gravity * deltaSec;
     }
-
-    // New proposed position
-    const nextPos = this.camera.position.clone();
-    nextPos.x += this.velocity.x * deltaSec;
-    nextPos.z += this.velocity.z * deltaSec;
-    nextPos.y += this.velocity.y * deltaSec;
+    this.camera.position.y += this.velocity.y * deltaSec;
 
     // Floor collision
-    if (nextPos.y <= this.playerHeight) {
-      nextPos.y = this.playerHeight;
+    if (this.camera.position.y <= this.playerHeight) {
+      this.camera.position.y = this.playerHeight;
       this.velocity.y = 0;
       this.isGrounded = true;
     }
-
-    // Collision check against locked blast doors
-    const playerRadius = 0.5;
-    for (const door of sectorBuilder.doors.values()) {
-      if (!door.unlocked) {
-        if (door.collider.containsPoint(nextPos)) {
-          // Push back
-          nextPos.x = this.camera.position.x;
-          nextPos.z = this.camera.position.z;
-          break;
-        }
-      }
-    }
-
-    this.camera.position.copy(nextPos);
 
     // 2. Raycast forward for COD Zombies interactions
     this.updateRaycastInteraction(state, sectorBuilder, comrades3d);
 
     return isMoving;
+  }
+
+  private checkCollision(testPos: THREE.Vector3, sectorBuilder: SectorBuilder): boolean {
+    const playerRadius = 0.45;
+    const playerBox = new THREE.Box3(
+      new THREE.Vector3(testPos.x - playerRadius, testPos.y - this.playerHeight + 0.1, testPos.z - playerRadius),
+      new THREE.Vector3(testPos.x + playerRadius, testPos.y + 0.2, testPos.z + playerRadius)
+    );
+
+    // Check locked blast doors
+    for (const door of sectorBuilder.doors.values()) {
+      if (!door.unlocked) {
+        if (door.collider.intersectsBox(playerBox)) {
+          return true;
+        }
+      }
+    }
+
+    // Check walls
+    for (const wallBox of sectorBuilder.wallColliders) {
+      if (wallBox.intersectsBox(playerBox)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private updateRaycastInteraction(
@@ -199,9 +239,6 @@ export class FpsControls {
   ) {
     const camPos = this.camera.position;
     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-
-    this.raycaster.set(camPos, forward);
-    this.raycaster.far = 4.8;
 
     let nearestInteraction: RaycastInteraction = {
       type: 'none',
@@ -220,8 +257,12 @@ export class FpsControls {
       doorInstance.group.getWorldPosition(doorWorldPos);
       doorWorldPos.y += 2.0;
 
-      const dist = camPos.distanceTo(doorWorldPos);
-      if (dist < 4.8 && dist < nearestInteraction.distance) {
+      const toDoor = doorWorldPos.clone().sub(camPos);
+      const dist = toDoor.length();
+      toDoor.normalize();
+      const dot = forward.dot(toDoor);
+
+      if (dot > 0.65 && dist < 5.0 && dist < nearestInteraction.distance) {
         const cost = doorData.cost;
         const credits = cost.credits || 0;
         const scrap = cost.scrap || 0;
@@ -249,8 +290,12 @@ export class FpsControls {
       termInstance.mesh.getWorldPosition(termWorldPos);
       termWorldPos.y += 1.0;
 
-      const dist = camPos.distanceTo(termWorldPos);
-      if (dist < 3.8 && dist < nearestInteraction.distance) {
+      const toTerm = termWorldPos.clone().sub(camPos);
+      const dist = toTerm.length();
+      toTerm.normalize();
+      const dot = forward.dot(toTerm);
+
+      if (dot > 0.65 && dist < 4.2 && dist < nearestInteraction.distance) {
         let actionPrompt = '[E] ACCESS TERMINAL';
         if (termInstance.data.type === 'chop_shop') actionPrompt = '[E] OPEN CHOP-SHOP LATHE (PACK-A-PUNCH)';
         else if (termInstance.data.type === 'clinic') actionPrompt = '[E] BIO-SYNTH CYBER-PERKS';
@@ -273,8 +318,12 @@ export class FpsControls {
       comradeInstance.mesh.getWorldPosition(comradeWorldPos);
       comradeWorldPos.y += 1.5;
 
-      const dist = camPos.distanceTo(comradeWorldPos);
-      if (dist < 3.5 && dist < nearestInteraction.distance) {
+      const toComrade = comradeWorldPos.clone().sub(camPos);
+      const dist = toComrade.length();
+      toComrade.normalize();
+      const dot = forward.dot(toComrade);
+
+      if (dot > 0.65 && dist < 4.0 && dist < nearestInteraction.distance) {
         nearestInteraction = {
           type: 'comrade',
           id: comradeId,

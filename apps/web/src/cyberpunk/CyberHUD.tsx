@@ -25,6 +25,16 @@ export const CyberHUD: React.FC<CyberHUDProps> = ({
 
   return (
     <div className="cyber-hud-overlay">
+      {/* Top Left: Wave / Round Display */}
+      <div className="cyber-wave-display" style={{ position: 'absolute', top: 16, left: 16 }}>
+        <div style={{ color: '#ef4444', fontSize: 26, fontWeight: '900', letterSpacing: '2px', textShadow: '0 0 12px rgba(239, 68, 68, 0.6)' }}>
+          ROUND {state.stats.currentWave || 1}
+        </div>
+        <div style={{ color: '#94a3b8', fontSize: 11, fontWeight: 'bold' }}>
+          PLATFORM 04 // DEFENSE
+        </div>
+      </div>
+
       {/* Top Threat / Raid Status */}
       <div className="cyber-threat-bar">
         <span style={{ color: raidState.isActive ? '#ef4444' : '#94a3b8', fontSize: 13, fontWeight: 'bold' }}>
@@ -89,6 +99,34 @@ export const CyberHUD: React.FC<CyberHUDProps> = ({
           {interaction.prompt}
         </div>
       )}
+
+      {/* Weapon Quick Slots Bar */}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 12 }}>
+        {player.inventoryWeapons.map((w, idx) => {
+          const isSelected = w.baseId === weapon.baseId;
+          return (
+            <div
+              key={w.baseId}
+              style={{
+                background: isSelected ? 'rgba(6, 182, 212, 0.25)' : 'rgba(15, 23, 42, 0.75)',
+                border: isSelected ? `2px solid ${w.neonColor}` : '1px solid #334155',
+                padding: '4px 8px',
+                borderRadius: 4,
+                fontSize: 11,
+                color: isSelected ? '#ffffff' : '#94a3b8',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: isSelected ? `0 0 10px ${w.neonColor}` : undefined,
+              }}
+            >
+              <span style={{ color: w.neonColor, fontWeight: 'bold' }}>[{idx + 1}]</span>
+              <span>{w.name.split(' ')[0]}</span>
+              {w.tier > 0 && <span style={{ color: '#f59e0b', fontSize: 9 }}>T{w.tier}</span>}
+            </div>
+          );
+        })}
+      </div>
 
       {/* Bottom Area: Left Player Bars & Right Ammo */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%' }}>

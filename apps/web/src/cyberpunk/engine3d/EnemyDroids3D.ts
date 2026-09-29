@@ -3,6 +3,7 @@ import type { CombatEnemy } from '@arcanora/core';
 import { materials } from './materials.js';
 import { sounds } from './SoundManager.js';
 import type { Droid3DInstance, Particle3D } from './types3d.js';
+import type { SectorBuilder } from './SectorBuilder.js';
 
 export class EnemyDroids3D {
   readonly rootGroup: THREE.Group = new THREE.Group();
@@ -200,6 +201,7 @@ export class EnemyDroids3D {
   update(
     deltaSec: number,
     playerPos: THREE.Vector3,
+    sectorBuilder: SectorBuilder,
     onPlayerAttacked: (damage: number) => void
   ) {
     const now = performance.now();
@@ -231,7 +233,25 @@ export class EnemyDroids3D {
 
       if (dist > stopDist) {
         dir.normalize();
-        droid.mesh.position.addScaledVector(dir, moveSpeed * deltaSec);
+        const proposedPos = droid.mesh.position.clone().addScaledVector(dir, moveSpeed * deltaSec);
+
+        // Check if movement intersects any locked blast door
+        let blockedByDoor = false;
+        const droidBox = new THREE.Box3().setFromCenterAndSize(
+          new THREE.Vector3(proposedPos.x, proposedPos.y + 1, proposedPos.z),
+          new THREE.Vector3(0.8, 2.0, 0.8)
+        );
+
+        for (const door of sectorBuilder.doors.values()) {
+          if (!door.unlocked && door.collider.intersectsBox(droidBox)) {
+            blockedByDoor = true;
+            break;
+          }
+        }
+
+        if (!blockedByDoor) {
+          droid.mesh.position.copy(proposedPos);
+        }
       } else {
         // Attack player if within range
         const attackInterval = droid.data.type === 'heavy_mech' ? 2200 : 1500;

@@ -202,6 +202,7 @@ export interface CyberpunkGameState {
     raidsRepelled: number;
     revivals: number;
     timeAliveSec: number;
+    currentWave: number;
   };
   lastSavedAt: number;
 }

@@ -123,19 +123,8 @@ export const CyberpunkFpsGame: React.FC<CyberpunkFpsGameProps> = ({ onReturnToTi
         // Breach door damage
         const { newState: stateAfterBreach } = processBreachDamageTick(stateAfterThreat, 1);
 
-        // If raid is active and all droids defeated in 3D scene, repel raid
-        let finalState = stateAfterBreach;
-        if (
-          stateAfterBreach.raidState.isActive &&
-          fpsSceneRef.current &&
-          fpsSceneRef.current.enemyDroids.droids.size === 0
-        ) {
-          const { newState: stateAfterRepel } = repelRaid(stateAfterBreach);
-          finalState = stateAfterRepel;
-        }
-
-        saveGame(finalState);
-        return finalState;
+        saveGame(stateAfterBreach);
+        return stateAfterBreach;
       });
     }, 1000);
 

@@ -1,11 +1,17 @@
 import * as THREE from 'three';
 
 class MaterialManager {
-  private textures: Map<string, THREE.CanvasTexture> = new Map();
+  private textures: Map<string, THREE.Texture> = new Map();
   private materials: Map<string, THREE.Material> = new Map();
 
-  private getOrCreateTexture(key: string, drawFn: (ctx: CanvasRenderingContext2D, width: number, height: number) => void): THREE.CanvasTexture {
+  private getOrCreateTexture(key: string, drawFn: (ctx: CanvasRenderingContext2D, width: number, height: number) => void): THREE.Texture {
     if (this.textures.has(key)) return this.textures.get(key)!;
+
+    if (typeof document === 'undefined') {
+      const dummy = new THREE.Texture();
+      this.textures.set(key, dummy);
+      return dummy;
+    }
 
     const canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -181,6 +187,10 @@ class MaterialManager {
   }
 
   createBadgeSprite(text: string, subtext: string, color: string = '#00f0ff'): THREE.Sprite {
+    if (typeof document === 'undefined') {
+      return new THREE.Sprite();
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 128;
@@ -212,7 +222,11 @@ class MaterialManager {
     return sprite;
   }
 
-  createHealthBarSprite(hpRatio: number, shieldRatio: number): THREE.CanvasTexture {
+  createHealthBarSprite(hpRatio: number, shieldRatio: number): THREE.Texture {
+    if (typeof document === 'undefined') {
+      return new THREE.Texture();
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 32;

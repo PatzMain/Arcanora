@@ -102,7 +102,7 @@ export const DOOR_PLACEMENTS: Record<BlastDoorId, DoorPlacement> = {
   },
   door_deep_vault: {
     id: 'door_deep_vault',
-    position: new THREE.Vector3(-76, 0, -20),
+    position: new THREE.Vector3(-76, 0, -16),
     rotationY: 0,
     width: 6,
     height: 4.5,
@@ -121,13 +121,16 @@ export class SectorBuilder {
       this.buildSectorRoom(sectorConfig);
     }
 
-    // 2. Build subway station specific features in Platform 04
+    // 2. Build connecting underground corridors
+    this.buildCorridors();
+
+    // 3. Build subway station specific features in Platform 04
     this.buildPlatform04Details();
 
-    // 3. Build workstations / terminals in each sector
+    // 4. Build workstations / terminals in each sector
     this.buildSectorWorkstations(state);
 
-    // 4. Build 3D Blast Doors
+    // 5. Build 3D Blast Doors
     for (const placement of Object.values(DOOR_PLACEMENTS)) {
       this.buildBlastDoor(placement, state);
     }
@@ -173,20 +176,199 @@ export class SectorBuilder {
   }
 
   private buildPerimeterWalls(config: SectorRoomConfig, group: THREE.Group) {
-    const { center, size, wallColor } = config;
+    const { id, center, size, wallColor } = config;
     const wallMat = materials.getWallMaterial(wallColor);
     const halfX = size.x / 2;
     const halfZ = size.z / 2;
-    const wallThick = 1.0;
+    const wallThick = 0.6;
+    const doorWidth = 6.0;
+    const doorHeight = 4.5;
 
-    // North Wall (-Z)
-    this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z - halfZ), new THREE.Vector3(size.x, size.y, wallThick));
-    // South Wall (+Z)
-    this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z + halfZ), new THREE.Vector3(size.x, size.y, wallThick));
-    // East Wall (+X)
-    this.createWallSegment(group, wallMat, new THREE.Vector3(center.x + halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
-    // West Wall (-X)
-    this.createWallSegment(group, wallMat, new THREE.Vector3(center.x - halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+    if (id === 'platform_04') {
+      // North Wall (-Z = -15): Doorway to Power Substation (X = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.x - halfX, center.x + halfX, 'x', center.z - halfZ, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // West Wall (-X = -14): Doorway to Chop Shop (Z = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.z - halfZ, center.z + halfZ, 'z', center.x - halfX, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // South Wall (+Z = 15): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z + halfZ), new THREE.Vector3(size.x, size.y, wallThick));
+      // East Wall (+X = 14): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x + halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+    } else if (id === 'sector_01_power') {
+      // South Wall (+Z = -29): Doorway from Platform 04 (X = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.x - halfX, center.x + halfX, 'x', center.z + halfZ, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // North Wall (-Z = -55): Doorway to Ripper Clinic (X = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.x - halfX, center.x + halfX, 'x', center.z - halfZ, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // East Wall (+X = 12): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x + halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+      // West Wall (-X = -12): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x - halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+    } else if (id === 'sector_02_chop_shop') {
+      // East Wall (+X = -26): Doorway from Platform 04 (Z = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.z - halfZ, center.z + halfZ, 'z', center.x + halfX, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // West Wall (-X = -50): Doorway to Mag Junction (Z = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.z - halfZ, center.z + halfZ, 'z', center.x - halfX, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // North Wall (-Z = -12): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z - halfZ), new THREE.Vector3(size.x, size.y, wallThick));
+      // South Wall (+Z = 12): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z + halfZ), new THREE.Vector3(size.x, size.y, wallThick));
+    } else if (id === 'sector_03_ripper_clinic') {
+      // South Wall (+Z = -65): Doorway from Sector 01 (X = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.x - halfX, center.x + halfX, 'x', center.z + halfZ, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // North Wall (-Z = -91): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z - halfZ), new THREE.Vector3(size.x, size.y, wallThick));
+      // East Wall (+X = 12): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x + halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+      // West Wall (-X = -12): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x - halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+    } else if (id === 'sector_04_mag_junction') {
+      // East Wall (+X = -61): Doorway from Sector 02 (Z = -3 to 3)
+      this.buildWallWithOpening(group, wallMat, center.z - halfZ, center.z + halfZ, 'z', center.x + halfX, size.y, -doorWidth / 2, doorWidth / 2, doorHeight, wallThick);
+      // North Wall (-Z = -16): Doorway to Sector 05 (X = -79 to -73)
+      this.buildWallWithOpening(group, wallMat, center.x - halfX, center.x + halfX, 'x', center.z - halfZ, size.y, -79, -73, doorHeight, wallThick);
+      // South Wall (+Z = 16): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z + halfZ), new THREE.Vector3(size.x, size.y, wallThick));
+      // West Wall (-X = -91): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x - halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+    } else if (id === 'sector_05_deep_vault') {
+      // South Wall (+Z = -34): Doorway from Sector 04 (X = -79 to -73)
+      this.buildWallWithOpening(group, wallMat, center.x - halfX, center.x + halfX, 'x', center.z + halfZ, size.y, -79, -73, doorHeight, wallThick);
+      // North Wall (-Z = -66): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x, size.y / 2, center.z - halfZ), new THREE.Vector3(size.x, size.y, wallThick));
+      // East Wall (+X = -63): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x + halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+      // West Wall (-X = -89): Solid
+      this.createWallSegment(group, wallMat, new THREE.Vector3(center.x - halfX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+    }
+  }
+
+  private buildWallWithOpening(
+    group: THREE.Group,
+    mat: THREE.Material,
+    wallStart: number,
+    wallEnd: number,
+    wallAxis: 'x' | 'z',
+    fixedCoord: number,
+    wallHeight: number,
+    openingStart: number,
+    openingEnd: number,
+    openingHeight: number = 4.5,
+    wallThick: number = 0.6
+  ) {
+    // 1. First segment (wallStart to openingStart)
+    const len1 = openingStart - wallStart;
+    if (len1 > 0.1) {
+      const mid1 = (wallStart + openingStart) / 2;
+      const pos1 = wallAxis === 'x'
+        ? new THREE.Vector3(mid1, wallHeight / 2, fixedCoord)
+        : new THREE.Vector3(fixedCoord, wallHeight / 2, mid1);
+      const size1 = wallAxis === 'x'
+        ? new THREE.Vector3(len1, wallHeight, wallThick)
+        : new THREE.Vector3(wallThick, wallHeight, len1);
+      this.createWallSegment(group, mat, pos1, size1);
+    }
+
+    // 2. Second segment (openingEnd to wallEnd)
+    const len2 = wallEnd - openingEnd;
+    if (len2 > 0.1) {
+      const mid2 = (openingEnd + wallEnd) / 2;
+      const pos2 = wallAxis === 'x'
+        ? new THREE.Vector3(mid2, wallHeight / 2, fixedCoord)
+        : new THREE.Vector3(fixedCoord, wallHeight / 2, mid2);
+      const size2 = wallAxis === 'x'
+        ? new THREE.Vector3(len2, wallHeight, wallThick)
+        : new THREE.Vector3(wallThick, wallHeight, len2);
+      this.createWallSegment(group, mat, pos2, size2);
+    }
+
+    // 3. Lintel segment above opening
+    const lintelLen = openingEnd - openingStart;
+    const lintelHeight = wallHeight - openingHeight;
+    if (lintelLen > 0.1 && lintelHeight > 0.1) {
+      const lintelMid = (openingStart + openingEnd) / 2;
+      const lintelY = openingHeight + lintelHeight / 2;
+      const posL = wallAxis === 'x'
+        ? new THREE.Vector3(lintelMid, lintelY, fixedCoord)
+        : new THREE.Vector3(fixedCoord, lintelY, lintelMid);
+      const sizeL = wallAxis === 'x'
+        ? new THREE.Vector3(lintelLen, lintelHeight, wallThick)
+        : new THREE.Vector3(wallThick, lintelHeight, lintelLen);
+      this.createWallSegment(group, mat, posL, sizeL);
+    }
+  }
+
+  private buildCorridors() {
+    const floorMat = materials.getFloorMaterial();
+    const ceilMat = materials.getWallMaterial(0x0f172a);
+    const wallMat = materials.getWallMaterial(0x1e293b);
+    const corridorGroup = new THREE.Group();
+
+    interface CorridorDef {
+      center: THREE.Vector3;
+      size: THREE.Vector3;
+      axis: 'x' | 'z';
+      neonColor: number;
+    }
+
+    const corridors: CorridorDef[] = [
+      // Platform 04 -> Sector 01 (Z: -15 to -29, len = 14, width in X = 6)
+      { center: new THREE.Vector3(0, 2.25, -22), size: new THREE.Vector3(6, 4.5, 14), axis: 'z', neonColor: 0x3b82f6 },
+      // Platform 04 -> Sector 02 (X: -14 to -26, len = 12, width in Z = 6)
+      { center: new THREE.Vector3(-20, 2.25, 0), size: new THREE.Vector3(12, 4.5, 6), axis: 'x', neonColor: 0xf97316 },
+      // Sector 01 -> Sector 03 (Z: -55 to -65, len = 10, width in X = 6)
+      { center: new THREE.Vector3(0, 2.25, -60), size: new THREE.Vector3(6, 4.5, 10), axis: 'z', neonColor: 0x10b981 },
+      // Sector 02 -> Sector 04 (X: -50 to -61, len = 11, width in Z = 6)
+      { center: new THREE.Vector3(-55.5, 2.25, 0), size: new THREE.Vector3(11, 4.5, 6), axis: 'x', neonColor: 0xeab308 },
+      // Sector 04 -> Sector 05 (Z: -16 to -34, len = 18, width in X = 6 at X = -76)
+      { center: new THREE.Vector3(-76, 2.25, -25), size: new THREE.Vector3(6, 4.5, 18), axis: 'z', neonColor: 0xa855f7 },
+    ];
+
+    const wallThick = 0.6;
+
+    for (const c of corridors) {
+      const { center, size, axis, neonColor } = c;
+
+      // Floor
+      const floorGeo = new THREE.PlaneGeometry(size.x, size.z);
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.set(center.x, 0, center.z);
+      floor.receiveShadow = true;
+      corridorGroup.add(floor);
+
+      // Ceiling
+      const ceilGeo = new THREE.PlaneGeometry(size.x, size.z);
+      const ceil = new THREE.Mesh(ceilGeo, ceilMat);
+      ceil.rotation.x = Math.PI / 2;
+      ceil.position.set(center.x, size.y, center.z);
+      corridorGroup.add(ceil);
+
+      // Side Walls
+      if (axis === 'z') {
+        const leftX = center.x - size.x / 2;
+        const rightX = center.x + size.x / 2;
+        this.createWallSegment(corridorGroup, wallMat, new THREE.Vector3(leftX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+        this.createWallSegment(corridorGroup, wallMat, new THREE.Vector3(rightX, size.y / 2, center.z), new THREE.Vector3(wallThick, size.y, size.z));
+      } else {
+        const northZ = center.z - size.z / 2;
+        const southZ = center.z + size.z / 2;
+        this.createWallSegment(corridorGroup, wallMat, new THREE.Vector3(center.x, size.y / 2, northZ), new THREE.Vector3(size.x, size.y, wallThick));
+        this.createWallSegment(corridorGroup, wallMat, new THREE.Vector3(center.x, size.y / 2, southZ), new THREE.Vector3(size.x, size.y, wallThick));
+      }
+
+      // Overhead corridor neon light
+      const pLight = new THREE.PointLight(neonColor, 1.2, 16);
+      pLight.position.set(center.x, size.y - 0.5, center.z);
+      corridorGroup.add(pLight);
+
+      // Overhead light fixture tube
+      const tubeGeo = axis === 'z' ? new THREE.BoxGeometry(0.3, 0.1, 4) : new THREE.BoxGeometry(4, 0.1, 0.3);
+      const tubeMat = new THREE.MeshBasicMaterial({ color: neonColor });
+      const tube = new THREE.Mesh(tubeGeo, tubeMat);
+      tube.position.set(center.x, size.y - 0.1, center.z);
+      corridorGroup.add(tube);
+    }
+
+    this.rootGroup.add(corridorGroup);
   }
 
   private createWallSegment(parent: THREE.Group, mat: THREE.Material, pos: THREE.Vector3, size: THREE.Vector3) {

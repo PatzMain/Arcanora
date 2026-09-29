@@ -6,6 +6,7 @@ import type {
   SectorId,
   TerminalState,
 } from './types.js';
+import { RESCUE_CANDIDATES } from './comrades.js';
 
 export function createInitialSectors(): Record<SectorId, Sector> {
   return {
@@ -286,17 +287,30 @@ export function unlockDoor(
 
   // Unlock adjacent sector that was previously locked
   const updatedSectors = { ...state.sectors };
+  const newlyUnlockedSectors: SectorId[] = [];
+
   if (!updatedSectors[door.toSector].unlocked) {
     updatedSectors[door.toSector] = {
       ...updatedSectors[door.toSector],
       unlocked: true,
     };
+    newlyUnlockedSectors.push(door.toSector);
   }
   if (!updatedSectors[door.fromSector].unlocked) {
     updatedSectors[door.fromSector] = {
       ...updatedSectors[door.fromSector],
       unlocked: true,
     };
+    newlyUnlockedSectors.push(door.fromSector);
+  }
+
+  // Rescue candidate comrades stationed in newly unlocked sectors
+  let updatedComrades = [...state.comrades];
+  for (const secId of newlyUnlockedSectors) {
+    const candidate = RESCUE_CANDIDATES[secId];
+    if (candidate && !updatedComrades.some((c) => c.id === candidate.id)) {
+      updatedComrades.push({ ...candidate });
+    }
   }
 
   const newState: CyberpunkGameState = {
@@ -304,6 +318,7 @@ export function unlockDoor(
     player: updatedPlayer,
     doors: updatedDoors,
     sectors: updatedSectors,
+    comrades: updatedComrades,
     stats: {
       ...state.stats,
       doorsUnlocked: state.stats.doorsUnlocked + 1,
